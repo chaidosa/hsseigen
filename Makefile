@@ -1,28 +1,70 @@
-CPP=g++ #-std=c++11
-BLASHOME = ./OpenBLAS
-#INCLUDELIB = $(BLASHOME)/bin
-INCLUDELIB = $(BLASHOME)/lib
-INCLUDES += -I$(BLASHOME)/include -I.
-PAPI_HOME=/home/min/a/hegden/Research/PAPI
-ifeq ($(DEBUG),1)
-CFLAGS=-g -DDEBUG
-else
-CFLAGS=-DNDEBUG
-endif
+########################################################################
+####################### Makefile Template ##############################
+########################################################################
 
-ifeq ($(PAPI),1)
-CFLAGS += -DPAPI
-CFLAGS +=$(PAPI_HOME)/lib/libpapi.so
-endif
+# Compiler settings - Can be customized.
+CC = g++ 
+CXXFLAGS = -std=c++11 -Wall -g
+LDFLAGS = -lcblas
+LDFLAGS+= -llapacke
 
-BIN_DEPS = Test.cpp QR.cpp mat2hsssym.cpp BinTree.cpp makeband.cpp NPart.cpp compr.cpp RandGen.cpp Divide.cpp
+# Makefile settings - Can be customized.
+APPNAME = Test
+EXT = .cpp
+SRCDIR = src
+OBJDIR = obj
 
-#INCLUDES += $(INCLUDELIB)/libopenblas.dll
-INCLUDES += $(INCLUDELIB)/libopenblas_haswellp-r0.3.10.so#libopenblas.so
+############## Do not change anything from here downwards! #############
+SRC = $(wildcard $(SRCDIR)/*$(EXT))
+OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
+DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
 
-all : hsseigen
+# UNIX-based OS variables & settings
+RM = rm
+DELOBJ = $(OBJ)
+# Windows OS variables & settings
+DEL = del
+EXE = .exe
+WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
+########################################################################
+####################### Targets beginning here #########################
+########################################################################
 
-hsseigen: $(BIN_DEPS)
-	$(CPP) $(CFLAGS) -o $@ $^ $(INCLUDES) 
+all: $(APPNAME)
+
+# Builds the app
+$(APPNAME): $(OBJ)
+	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Creates the dependecy rules
+%.d: $(SRCDIR)/%$(EXT)
+	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Includes all .h files
+-include $(DEP) 
+
+# Building rule for .o files and its .c/.cpp in combination with all .h
+$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
+
+################### Cleaning rules for Unix-based OS ###################
+# Cleans complete project
+.PHONY: clean
 clean:
-	-rm hsseigen.exe hsseigen
+	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
+
+# Cleans only all files with the extension .d
+.PHONY: cleandep
+cleandep:
+	$(RM) $(DEP)
+
+#################### Cleaning rules for Windows OS #####################
+# Cleans complete project
+.PHONY: cleanw
+cleanw:
+	$(DEL) $(WDELOBJ) $(DEP) $(APPNAME)$(EXE)
+
+# Cleans only all files with the extension .d
+.PHONY: cleandepw
+cleandepw:
+	$(DEL) $(DEP)

@@ -373,11 +373,12 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
 
            U[i-1]      = NULL;
            uSizes[i-1] = {0,0};
+           printf("Deleting U%d\n",i);
            delete [] tempU;    
         }
 
     }
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
-    ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
+	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
 }

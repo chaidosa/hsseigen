@@ -230,5 +230,5 @@ int main()
 	tHSSMat* hss = t_mat2hsssym(A, n*n, bt, m, mSize);
 	//HSSMat* hss = mat2hsssym(A, n*n, bt, m, mSize);
 	//DivideOutParams* dd = Divide(hss,bt);
-	cout<<"Pritesh"<<endl;
+	cout<<"Generators created successfully"<<endl;
 }

@@ -157,7 +157,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                     
                     GetTransposeInPlace(temp_array,(rEI+1),(cEI-cSI+1));
                     
-                    for(int i = 0, id = 0; i < tSizes[i].first; i++, id++){
+                    int tempRow = tSizes[i].first;
+                    for(int i = 0, id = 0; i < tempRow; i++, id++){
                         for(int j = current_pos_col; j < current_pos_col+rEI+1; j++){
                             tempT[j+i*tRowWidth]=temp_array[id];                        
                         }

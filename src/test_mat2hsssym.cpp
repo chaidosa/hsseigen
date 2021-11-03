@@ -146,7 +146,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                     cSI                = tSizes[St[k]].second-(aRowWidth-l[i].first);
                     cEI                = tSizes[St[k]].second-(aRowWidth-l[i].second);
                     double *tempTT     = T[St[k]];
-                    double* temp_array = new double[(rEI+1)*(cEI-cSI+1)]; 
+                    double* temp_array = new double[(rEI)*(cEI-cSI+1)]; 
                     int index          = 0;
 
                     //copying elements into an temporary array
@@ -156,7 +156,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                         }
                     }
                     
-                    GetTransposeInPlace(temp_array,(rEI+1),(cEI-cSI+1));
+                    GetTransposeInPlace(temp_array,(rEI),(cEI-cSI+1));
                     index = 0;
                     int tempRow = tSizes[i].first;
                     for(int i = 0; i < tempRow; i++){
@@ -165,7 +165,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                         }
                     }
 
-                    current_pos_col = current_pos_col+rEI;
+                    current_pos_col = current_pos_col+rEI-1;
                     delete [] temp_array;                    
                 }
 

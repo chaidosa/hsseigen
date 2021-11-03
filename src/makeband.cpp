@@ -1,9 +1,12 @@
-#include<makeband.h>
+#include<iostream>
 #include<string.h>
 #include<stdlib.h>
 #include<fstream>
 #include"RandGen.h"
+#include"makeband.h"
 //#include<random>
+
+using namespace std;
 #ifdef DEBUG
 int counter=1.; 
 #endif
@@ -57,8 +60,9 @@ int MakeBand(int n, int r, double** bandMatrix)
     }
   }
 #else
-  std::ifstream inputStr("test_input.txt",std::ifstream::in);
-  if(inputStr.is_open()) {
+  std::ifstream inputStr("sparseOut.txt",std::ifstream::in);
+
+  if(!inputStr.is_open()) {
 	cout<<"Error opening test_input.txt."<<endl;
 	return -1;
   }
@@ -66,8 +70,8 @@ int MakeBand(int n, int r, double** bandMatrix)
     for (j = 0; j < n; j++) {
 		double val;
 		inputStr>>val;
-        	A[j + i * n] = val;
-        	A[i + j * n] = A[j + i*n];
+        	A[i*n + j] = val;
+       // 	A[i + j * n] = A[j + i*n];
     }
   }
   inputStr.close();

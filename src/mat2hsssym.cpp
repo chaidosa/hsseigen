@@ -14,12 +14,12 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 	int n0=n;
 	int lSize=0;
 	int aColWidth, aRowWidth = sqrt(aSize); // since A is a symmetric matrix, aRowWidth = aCols and (aRowWidth*aCols = aSize)
-	assert((aRowWidth * aRowWidth) == aSize);
+	//assert((aRowWidth * aRowWidth) == aSize);
 	aColWidth = aRowWidth;
 	int N = bt->GetNumNodes();
 	assert(bt->GetLeaves().size() == (N+1)/2);
 	int numLeaves = (N+1)/2;
-	assert(numLeaves == n);
+	//assert(numLeaves == n);
 
 	int* l = new int[mSize+1];
 	lSize = mSize+1;
@@ -75,7 +75,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 			{
 				memcpy(tmpT+(k*tRowWidth), A+j*aRowWidth, sizeof(double)*(cSI));
 				memcpy(tmpT+(k*tRowWidth)+cSI, A+j*aRowWidth+cEI, sizeof(double)*(aRowWidth-cEI));
-			}
+			}int aColWidth, aRowWidth = sqrt(aSize); 
 		}
 		else if(cEI == aRowWidth)
 		{
@@ -91,7 +91,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 	
 	/*double *Q1 = new double[100*100];
 	double *R1 = new double[100*3100];
-	int *P1 = new int[3100];
+	int *P1 = new inint aColWidth, aRowWidth = sqrt(aSize); t[3100];
 	memset(P1,0,sizeof(int)*3100);
 	qpr(Q1, R1, P1, T[0], 100, 3100);*/
 	
@@ -180,7 +180,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 				int cSI = l[i1+2]-m[i1]-1;			
 				int hColWidth = ch0ColWidth + ch1ColWidth;
 				int hRowWidth = ch0RowWidth - cSI; 
-				assert(hRowWidth == (ch1RowWidth-l[i1+2]+m[i2]+1));
+				//assert(hRowWidth == (ch1RowWidth-l[i1+2]+m[i2]+1));
 				hSize=std::make_pair(hColWidth, hRowWidth);
 				H = new double[hSize.first*hSize.second];
 
@@ -231,7 +231,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 					memcpy(H+(hRowIndex*hRowWidth)+(l[i1]-1),ch0Matrix+(ch0RowWidth*hRowIndex)+cSI,sizeof(double)*remainingRowWidth);
 				}
 			
-				assert(remainingRowWidth == ch1RowWidth-l[i1+2]+m[i2]+1);
+			//	assert(remainingRowWidth == ch1RowWidth-l[i1+2]+m[i2]+1);
 				for(int ch1RowIndex=0;ch1RowIndex<ch1ColWidth;hRowIndex++, ch1RowIndex++)
 				{
 					cSI=0;
@@ -351,6 +351,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 							for(int tmpRowIndex=0;tmpRowIndex<hSize.first;tmpRowIndex++)
 								memcpy(tmp+(tmpRowIndex*tmpRowWidth),H+(tmpRowIndex*hSize.second), sizeof(double)*tmpRowWidth);
 							T[j1-1]=tmp;
+							
 							tSizes[j1-1] = std::make_pair(hSize.first, tmpRowWidth);
 						}
 					}
@@ -362,6 +363,8 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 						for(int tmpRowIndex=0;tmpRowIndex<hSize.first;tmpRowIndex++)
 							memcpy(tmp+(tmpRowIndex*tmpRowWidth),H+(tmpRowIndex*hSize.second), sizeof(double)*tmpRowWidth);
 						T[j1-1]=tmp;
+						
+
 						tSizes[j1-1] = std::make_pair(hSize.first, tmpRowWidth);
 					}	
 				}
@@ -420,6 +423,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 				if(tmp1)
 					delete [] tmp1;
 				T[j1-1]=tmp;
+				
 				tSizes[j1-1] = std::make_pair(tmpColWidth, tmpRowWidth);
 
 
@@ -463,6 +467,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 					if(tmp1)
 						delete [] tmp1;
 					T[j1-1]=tmp;
+					
 					tSizes[j1-1] = std::make_pair(tmpColWidth, tmpRowWidth);
 				}
 				delete [] H;
@@ -562,8 +567,8 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 		ch = bt->GetChildren(i+1);   
 		if(ch.size() > 0) 
 		{
-			if(U[i])
-				delete [] U[i];
+			//if(U[i])
+			//	delete [] U[i];
 			U[i] = NULL;
 			uSizes[i]=std::make_pair(0,0);
 		}

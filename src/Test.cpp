@@ -1,9 +1,12 @@
+#include<iostream>
 #include<stdio.h>
 #include"makeband.h"
 #include"BinTree.h"
 #include"NPart.h"
+#include"test_mat2hsssym.h"
 #include"mat2hsssym.h"
 #include "QR.h"
+#include "Divide.h"
 
 int main()
 {
@@ -15,7 +18,9 @@ int main()
 	if(status) 
 		exit(-1);
 	
+	
 	int numNodes = 0;
+	
 #ifdef DEBUG
 	//Testing makeband
 	cout<<"========Input Matrix================"<<endl;
@@ -222,5 +227,8 @@ int main()
 	}*/
 
 	//Testing mat2hsssym
-	HSSMat* hss = mat2hsssym(A, n*n, bt, m, mSize);
+	tHSSMat* hss = t_mat2hsssym(A, n*n, bt, m, mSize);
+	//HSSMat* hss = mat2hsssym(A, n*n, bt, m, mSize);
+	//DivideOutParams* dd = Divide(hss,bt);
+	cout<<"Generators created successfully"<<endl;
 }

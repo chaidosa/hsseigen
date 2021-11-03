@@ -4,7 +4,11 @@
 #include<assert.h>
 #include<stdio.h>
 #include"QR.h"
-#include"lapacke.h"
+extern "C"
+{
+    #include<lapacke.h>
+    #include<lapack.h>
+}
 
 void qpr( double* const _Q, double* const _R, int* const _P, double* const _A, const size_t _m, const size_t _n) {
     // Maximal rank is used by Lapacke

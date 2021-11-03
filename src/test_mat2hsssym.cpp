@@ -7,6 +7,7 @@
 #include"test_mat2hsssym.h"
 #include "compr.h"
 #include "QR.h"
+#include "compr_new.h"
 
 using namespace std;
 //assuming the 16x16 matrix
@@ -126,7 +127,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
                 printf("LeafNode: Computing U%d\n",i+1);
-                compr(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+                compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
                 delete [] tempT;
                 T[i]      = R;
                 tSizes[i] = rSize;
@@ -141,25 +142,26 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 for(int k = 0; k < ns; k++)
                 {
                     rSI                = 0;
-                    rEI                = tSizes[St[k]].first-1;
+                    rEI                = tSizes[St[k]].first;
                     cSI                = tSizes[St[k]].second-(aRowWidth-l[i].first);
                     cEI                = tSizes[St[k]].second-(aRowWidth-l[i].second);
                     double *tempTT     = T[St[k]];
-                    double* temp_array = new double[(rEI+1)*(cEI-cSI+1)]; 
+                    double* temp_array = new double[(rEI)*(cEI-cSI+1)]; 
                     int index          = 0;
 
                     //copying elements into an temporary array
-                    for(int i = rSI; i <= rEI; i++){
-                        for(int j = 0; j <= cEI-cSI; j++){
-                            temp_array[index++]=tempTT[j+i*tSizes[St[k]].second];
+                    for(int i = rSI; i < rEI; i++){
+                        for(int j = cSI; j <= cEI; j++){
+                            temp_array[index++]=tempTT[j+i*(tSizes[St[k]].second)];
                         }
                     }
                     
-                    GetTransposeInPlace(temp_array,(rEI+1),(cEI-cSI+1));
-                    
-                    for(int i = 0, id = 0; i < tSizes[i].first; i++, id++){
-                        for(int j = current_pos_col; j < current_pos_col+rEI+1; j++){
-                            tempT[j+i*tRowWidth]=temp_array[id];                        
+                    GetTransposeInPlace(temp_array,(rEI),(cEI-cSI+1));
+                    index = 0;
+                    int tempRow = tSizes[i].first;
+                    for(int i = 0; i < tempRow; i++){
+                        for(int j = current_pos_col; j < current_pos_col+rEI; j++){
+                            tempT[j+i*tRowWidth]=temp_array[index++];                        
                         }
                     }
 
@@ -168,7 +170,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 }
 
                 //copying remaining element to tempT array from A
-                int cp = current_pos_col+1;
+                int cp = current_pos_col;
                 rSI    = l[i].first;
                 rEI    = l[i].second;
                 cSI    = l[i].second+1;
@@ -184,7 +186,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
                 printf("LeafNode: Computing U%d\n",i+1);
-                compr(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+                compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
                 delete [] tempT;
                 T[i]      = R;
                 tSizes[i] = rSize;
@@ -287,7 +289,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             std::pair<int,int>rSize = uSize;
 
             printf("Computing U%d\n",i+1);            
-            compr(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+            compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
 
             delete [] tempT;
             T[i]                    = R;
@@ -381,4 +383,5 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
 	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
+    return ret;
 }

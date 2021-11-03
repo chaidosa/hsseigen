@@ -1,9 +1,13 @@
 #include<string.h>
 #include<assert.h>
-#include "cblas.h"
+//#include "cblas.h"
 #include "QR.h"
 #include "Divide.h"
 
+extern "C"
+{
+	#include <cblas.h>
+}
 
 DivideOutParams* Divide(HSSMat* hssMat, BinTree* tr)
 {

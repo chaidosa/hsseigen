@@ -2,7 +2,7 @@
 #define RANDGEN_H
 #include<tr1/random>
 
-#define RANDOM_GEN 
+//#define RANDOM_GEN 
 using namespace std;
 
 typedef enum Distributions{UNIFORM_REAL, UNIFORM_INT}Distributions;

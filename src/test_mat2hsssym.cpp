@@ -383,4 +383,5 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
 	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
+    return ret;
 }

@@ -141,7 +141,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 for(int k = 0; k < ns; k++)
                 {
                     rSI                = 0;
-                    rEI                = tSizes[St[k]].first-1;
+                    rEI                = tSizes[St[k]].first;
                     cSI                = tSizes[St[k]].second-(aRowWidth-l[i].first);
                     cEI                = tSizes[St[k]].second-(aRowWidth-l[i].second);
                     double *tempTT     = T[St[k]];
@@ -149,18 +149,18 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                     int index          = 0;
 
                     //copying elements into an temporary array
-                    for(int i = rSI; i <= rEI; i++){
-                        for(int j = 0; j <= cEI-cSI; j++){
-                            temp_array[index++]=tempTT[j+i*tSizes[St[k]].second];
+                    for(int i = rSI; i < rEI; i++){
+                        for(int j = cSI; j <= cEI; j++){
+                            temp_array[index++]=tempTT[j+i*(tSizes[St[k]].second)];
                         }
                     }
                     
                     GetTransposeInPlace(temp_array,(rEI+1),(cEI-cSI+1));
-                    
+                    index = 0;
                     int tempRow = tSizes[i].first;
-                    for(int i = 0, id = 0; i < tempRow; i++, id++){
-                        for(int j = current_pos_col; j < current_pos_col+rEI+1; j++){
-                            tempT[j+i*tRowWidth]=temp_array[id];                        
+                    for(int i = 0; i < tempRow; i++){
+                        for(int j = current_pos_col; j < current_pos_col+rEI; j++){
+                            tempT[j+i*tRowWidth]=temp_array[index++];                        
                         }
                     }
 

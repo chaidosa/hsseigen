@@ -12,7 +12,7 @@ int main()
 {
 	BinTree* bt=NULL;
 	double * A=NULL;
-	int n=126, band_width=2;
+	int n=16, band_width=2;
 	//create a banded matrix
 	int status = MakeBand(n,band_width,&A);
 	if(status) 

@@ -7,6 +7,7 @@
 #include"test_mat2hsssym.h"
 #include "compr.h"
 #include "QR.h"
+#include "compr_new.h"
 
 using namespace std;
 //assuming the 16x16 matrix
@@ -126,7 +127,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
                 printf("LeafNode: Computing U%d\n",i+1);
-                compr(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+                compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
                 delete [] tempT;
                 T[i]      = R;
                 tSizes[i] = rSize;
@@ -185,7 +186,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
                 printf("LeafNode: Computing U%d\n",i+1);
-                compr(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+                compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
                 delete [] tempT;
                 T[i]      = R;
                 tSizes[i] = rSize;
@@ -288,7 +289,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             std::pair<int,int>rSize = uSize;
 
             printf("Computing U%d\n",i+1);            
-            compr(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+            compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
 
             delete [] tempT;
             T[i]                    = R;

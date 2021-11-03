@@ -165,12 +165,12 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                         }
                     }
 
-                    current_pos_col = current_pos_col+rEI-1;
+                    current_pos_col = current_pos_col+rEI;
                     delete [] temp_array;                    
                 }
 
                 //copying remaining element to tempT array from A
-                int cp = current_pos_col+1;
+                int cp = current_pos_col;
                 rSI    = l[i].first;
                 rEI    = l[i].second;
                 cSI    = l[i].second+1;

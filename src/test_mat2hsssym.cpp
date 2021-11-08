@@ -255,11 +255,11 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             double* tempR = T[right];
            
             //coloums to copy from the left child 
-            int cSI_L_1   = n1-(aRowWidth-1-l[left].second)-1;
+            int cSI_L_1   = n1-(aRowWidth-1-l[left].second);
             int cSI_L_2   = n1-(aRowWidth-1-l[i].second);
              
             //columns to copy from right child
-            int cSI_R_1   = n1-(aRowWidth-1-l[left].second)-1;
+            int cSI_R_1   = n1-(aRowWidth-1-l[left].second);
             int cSI_R_2   = n2-(aRowWidth-1-l[i].second);
             
             int limit     = 0;

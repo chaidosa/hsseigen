@@ -313,7 +313,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             int rEI        = tSizes[right].first;
             int cSI        = n1-(aRowWidth-1-l[left].second);
             int cEI        = n2-(aRowWidth-1-l[i].second);
-            int bRowWidth  = cEI;
+            int bRowWidth  = cEI-cSI;  
             int bColWidth  = rEI;
             bSizes[left]   = {bColWidth,bRowWidth};
             B[left]        = new double[bColWidth*bRowWidth];
@@ -366,7 +366,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int rEI             = tSizes[right].first;
     int cSI             = n1-(aRowWidth-1-l[left].second);
     int cEI             = n2-(aRowWidth-1-l[node-1].second);
-    int bRowWidth       = cEI;
+    int bRowWidth       = cEI-cSI;
     int bColWidth       = rEI;
     bSizes[left]        = {bColWidth,bRowWidth};
     B[left]             = new double[bColWidth*bRowWidth];
@@ -391,16 +391,24 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             int left         = ch[0]-1;
             int right        = ch[1]-1;
             int sz           = uSizes[left].second;
+
+            //for left 
             int rColWidth    = sz;
             int rRowWidth    = uSizes[i-1].second;
             R[left]          = new double[rRowWidth*rColWidth];
-            R[right]         = new double[rRowWidth*rColWidth];
             rSizes[left]     = {rColWidth,rRowWidth};
+
+            //for right
+            rColWidth        = uSizes[i-1].first-sz;            
+            R[right]         = new double[rRowWidth*rColWidth];            
             rSizes[right]    = {rColWidth,rRowWidth};
+
             double *tempR_L  = R[left];
             double *tempR_R  = R[right];
             double *tempU    = U[i-1];
+
             //copying R[left]
+            
             index            = 0;
             printf("computing R%d\n",left);
             for(int i = 0; i < sz; i++){
@@ -411,11 +419,13 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             }
            
            //copying R[right]
+           rColWidth    += sz;
            index = 0;
            printf("computing R%d\n",right);
            for(int i = sz; i < rColWidth; i++){
                for(int j = 0; j<rRowWidth;j++){
                    tempR_R[index] = tempU[j+i*rRowWidth];
+                   index++;
                }
            }
 

@@ -11,6 +11,6 @@ class DVD{
 
 };
 
-DVD* divide2(tHSSMat *A, BinTree *bt);
+DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize);
 
 #endif

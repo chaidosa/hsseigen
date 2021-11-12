@@ -5,8 +5,8 @@
 DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
 int n = bt->GetNumNodes();
-//int desc = bt->GetDescendents();
 
+//test
 
 
 }

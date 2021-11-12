@@ -7,6 +7,7 @@
 #include"mat2hsssym.h"
 #include "QR.h"
 #include "Divide.h"
+#include "superDC.h"
 
 int main()
 {
@@ -176,7 +177,7 @@ int main()
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.
 	 * Arguments of NPart: n is the number of rows/columns in an input matrix. r is the number of rows in a partition (horizontal) of the matrix 
 	 * Number of leaves = n/r. Num nodes in the tree = num leaves* 2 - 1*/
-	int r=4;
+	int r=2;
 	int *m=NULL;
 	int mSize;
 	NPart(n, r, &bt, &m, mSize, numNodes);
@@ -231,4 +232,10 @@ int main()
 	//HSSMat* hss = mat2hsssym(A, n*n, bt, m, mSize);
 	//DivideOutParams* dd = Divide(hss,bt);
 	cout<<"Generators created successfully"<<endl;
+
+	//calling superDC routine
+	SDC* res = superDC(hss, bt, m, mSize);
+
+
+
 }

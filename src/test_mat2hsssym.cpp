@@ -36,7 +36,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int N                 = bt->GetNumNodes();
     int aRowWidth         = sqrt(aSize);
     int aColWidth         = aRowWidth;    
-    //storing info about node starting and ending block  
+    //storing info about node starting and ending block 
+    //Index range of each node 
     std::pair<int,int>* l = new std::pair<int,int>[N];
 
     for(int i = 0; i < N; i++)

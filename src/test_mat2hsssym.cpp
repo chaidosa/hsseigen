@@ -136,10 +136,9 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             T[i]          = new double[tColWidth*tRowWidth];
             
             //temporary pointer to hold matrix data corresponding to index i.
-            double* tempT = T[i];
-            for(int itr = 0; itr<tColWidth*tRowWidth ; itr++)
-                tempT[itr] = 0;
-
+            double* tempT = T[i];   
+            memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth);
+            
             if (i == 0)
             {
                 for(int k = 0, j = rSI; j<= rEI; j++, k++)
@@ -249,8 +248,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             tSizes[i]     = {tColWidth,tRowWidth};
 
             double* tempT = T[i];
-            for(int itr = 0; itr<tColWidth*tRowWidth ; itr++)
-                tempT[itr] = 0;
+            memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth);
                 
             double* tempL = T[left];
             double* tempR = T[right];
@@ -441,4 +439,5 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
 	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
     return ret;
+    
 }

@@ -9,6 +9,8 @@
 #include "compr.h"
 #include "QR.h"
 #include "compr_new.h"
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 //assuming the 16x16 matrix
@@ -437,7 +439,25 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     }
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
-	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
+	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;
+    /*
+    //Output generator U to a file generator_U.txt 
+    ofstream txtOut;
+    txtOut.open("generator_U.txt");
+
+    for(int i=0;i<N;i++){
+        if(uSizes[i].first!=0){
+            for(int k=0;k<uSizes[i].first;k++){
+                for(int l=0;l<uSizes[i].second;l++){
+                    txtOut << std::setprecision(16)<< U[i][l+k*uSizes[i].second] <<"\t"; 
+                }
+                txtOut << endl;
+            }
+        txtOut<<"\n";
+        }
+       
+    }
+    */
     return ret;
     
 }

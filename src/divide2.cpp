@@ -9,6 +9,13 @@ extern "C"
     #include<lapack.h>
     #include<cblas.h>
 }
+double norm_svd(double * A, std::pair<int, int>aSize){
+
+    double *S = new double[aSize.first*aSize.first];
+    double *U,*V,*su;
+    LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'N','N',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,V,aSize.second,su);
+    return S[0];
+}
 
 DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
@@ -39,11 +46,13 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 int size       = (A->uSizes[left-1].first)*(A->uSizes[left-1].second);
                 double *tempUt = new double[size];
                 double *tempC  = new double[size];
+                //use memcopy here
                 for(int i = 0; i < size; i++)
                     tempUt[i] = tempU[i];
                 
                 GetTransposeInPlace(tempUt, A->uSizes[left-1].first, A->uSizes[left-1].second);
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->uSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempUt,A->uSizes[left-1].first,1,tempC,A->uSizes[left-1].second);
+                double B_c1_norm = norm_svd(tempB,A->bSizes[left-1]);
                 
             }
 

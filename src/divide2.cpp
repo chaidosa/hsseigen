@@ -1,3 +1,6 @@
+//divide2.cpp :: Pritesh Verma
+//following code is stable version divide process in SuperDC.
+
 #include "test_mat2hsssym.h"
 #include "BinTree.h"
 #include "divide2.h"
@@ -16,6 +19,7 @@ double norm_svd(double * A, std::pair<int, int>aSize){
     LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'N','N',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,V,aSize.second,su);
     return S[0];
 }
+
 
 DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
@@ -38,8 +42,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
         //updating B generators of left subtree
         std::vector<int> tch = bt->GetChildren(left);
         if(tch.size() == 0){
-            if(A->bSizes[left-1].first <= A->bSizes[left-1].second){
-                // D{c1} = D{c1} - norm(B{c1}) * (U{c1} * U{c1}');
+            if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
+            {                
                 double *tempD  = A->D[left-1];
                 double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];
@@ -52,7 +56,29 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 
                 GetTransposeInPlace(tempUt, A->uSizes[left-1].first, A->uSizes[left-1].second);
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->uSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempUt,A->uSizes[left-1].first,1,tempC,A->uSizes[left-1].second);
+                //norm(B{c1})
                 double B_c1_norm = norm_svd(tempB,A->bSizes[left-1]);
+
+                // D{c1} = D{c1} - norm(B{c1}) * (U{c1} * U{c1}');
+                for(int row = 0 ; row < A->dSizes[left-1].first; row++){
+                    for(int col = 0; col < A->dSizes[left-1].second; col++){
+                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - B_c1_norm *(tempC[col+row*(A->dSizes[left-1].second)]);
+                    }
+                }
+                delete [] tempC;
+                delete [] tempUt;
+            }
+
+            else
+            {
+                double *tempD  = A->D[left-1];
+                double *tempB  = A->B[left-1];
+                double *tempU  = A->U[left-1];
+                double *tempt  = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
+
+                //T = U{c1} * B{c1};
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->bSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempB,A->bSizes[left-1].second,1,tempt,A->bSizes[left-1].second);
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->uSizes[left-1].second,1,tempt,A->uSizes[left-1].first,tempt,A->uSizes[left-1].first,1,tempt,A->uSizes[left-1].first);
                 
             }
 

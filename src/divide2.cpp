@@ -1,6 +1,7 @@
 //divide2.cpp :: Pritesh Verma
 //following code is stable version divide process in SuperDC.
-
+#include<string.h>
+#include <cmath>
 #include "test_mat2hsssym.h"
 #include "BinTree.h"
 #include "divide2.h"
@@ -41,7 +42,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
         //updating B generators of left subtree
         std::vector<int> tch = bt->GetChildren(left);
-        if(tch.size() == 0){
+        if(tch.size() == 0)
+        {
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
             {                
                 double *tempD  = A->D[left-1];
@@ -88,6 +90,38 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 }
 
             }
+
+
+        }
+        else
+        {
+            if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
+            {
+               std::vector<int> child = bt->GetChildren(left);           
+               int eye_size           = A->rSizes[child[0]].second;
+               double sqrt_B_c1_norm  = sqrt(norm_svd(A->B[left-1],A->bSizes[left-1]));
+               double *Sp             = new double[eye_size*eye_size];
+               memset(Sp,0,sizeof(*Sp)*eye_size*eye_size);
+               for(int row_col = 0; row_col<eye_size; row_col++){
+                   Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
+               } 
+
+            }
+            else
+            {
+                double *Sp = new double[A->bSizes[left-1].first*A->bSizes[left-1].second];
+                double sqrt_B_c1_norm  = sqrt(norm_svd(A->B[left-1],A->bSizes[left-1]));
+                for(int row = 0; row < A->bSizes[left-1].first; row++)
+                {
+                    //memcpy(Sp+(row*A->bSizes[left-1].second), A->B[left-1]+row*A->bSizes[left-1].second, sizeof(double)*A->bSizes[left-1].second);
+                    for(int col=0; col < A->bSizes[left-1].second; col++)
+                    {
+                        Sp[col+row*A->bSizes[left-1].second] = A->B[left-1][col+row*A->bSizes[left-1].second] / sqrt_B_c1_norm;  
+                    }
+                }
+            }
+
+
 
 
         }

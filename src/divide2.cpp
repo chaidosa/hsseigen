@@ -48,25 +48,22 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];
                 int size       = (A->uSizes[left-1].first)*(A->uSizes[left-1].second);
-                double *tempUt = new double[size];
                 double *tempC  = new double[size];
-                //use memcopy here
-                for(int i = 0; i < size; i++)
-                    tempUt[i] = tempU[i];
-                
-                GetTransposeInPlace(tempUt, A->uSizes[left-1].first, A->uSizes[left-1].second);
-                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->uSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempUt,A->uSizes[left-1].first,1,tempC,A->uSizes[left-1].second);
-                //norm(B{c1})
+
+               //T = U{c1}*U{c1}'
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempU,A->uSizes[left-1].first,1,tempC,A->uSizes[left-1].second);
+
                 double B_c1_norm = norm_svd(tempB,A->bSizes[left-1]);
 
                 // D{c1} = D{c1} - norm(B{c1}) * (U{c1} * U{c1}');
-                for(int row = 0 ; row < A->dSizes[left-1].first; row++){
-                    for(int col = 0; col < A->dSizes[left-1].second; col++){
+                for(int row = 0 ; row < A->dSizes[left-1].first; row++)
+                {
+                    for(int col = 0; col < A->dSizes[left-1].second; col++)
+                    {
                         A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - B_c1_norm *(tempC[col+row*(A->dSizes[left-1].second)]);
                     }
                 }
                 delete [] tempC;
-                delete [] tempUt;
             }
 
             else
@@ -75,11 +72,21 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];
                 double *tempt  = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
-
+                double *temp  = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
                 //T = U{c1} * B{c1};
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->bSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempB,A->bSizes[left-1].second,1,tempt,A->bSizes[left-1].second);
-                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->uSizes[left-1].second,1,tempt,A->uSizes[left-1].first,tempt,A->uSizes[left-1].first,1,tempt,A->uSizes[left-1].first);
-                
+                //T*T'
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->uSizes[left-1].second,1,tempt,A->uSizes[left-1].first,tempt,A->uSizes[left-1].first,1,temp,A->uSizes[left-1].first);                
+                double B_c1_norm = norm_svd(tempB,A->bSizes[left-1]);
+
+                for(int row = 0 ; row < A->dSizes[left-1].first; row++)
+                {
+                    for(int col = 0; col < A->dSizes[left-1].second; col++)
+                    {
+                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - temp[col+row*(A->dSizes[left-1].second)]/B_c1_norm;
+                    }
+                }
+
             }
 
 

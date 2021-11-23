@@ -1,6 +1,8 @@
-//divide2.cpp :: Pritesh Verma
+//divide2.cpp
 //following code is stable version divide process in SuperDC.
 #include<string.h>
+#include<stack>
+#include<vector>
 #include <cmath>
 #include "test_mat2hsssym.h"
 #include "BinTree.h"
@@ -120,7 +122,9 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                     }
                 }
             }
-
+            //Push(S, Sp), Push and Pop functionality yet to be implemented
+            
+            
 
 
 

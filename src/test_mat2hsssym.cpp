@@ -9,6 +9,8 @@
 #include "compr.h"
 #include "QR.h"
 #include "compr_new.h"
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 //assuming the 16x16 matrix
@@ -36,7 +38,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int N                 = bt->GetNumNodes();
     int aRowWidth         = sqrt(aSize);
     int aColWidth         = aRowWidth;    
-    //storing info about node starting and ending block  
+    //storing info about node starting and ending block 
+    //Index range of each node 
     std::pair<int,int>* l = new std::pair<int,int>[N];
 
     for(int i = 0; i < N; i++)
@@ -135,10 +138,9 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             T[i]          = new double[tColWidth*tRowWidth];
             
             //temporary pointer to hold matrix data corresponding to index i.
-            double* tempT = T[i];
-            for(int itr = 0; itr<tColWidth*tRowWidth ; itr++)
-                tempT[itr] = 0;
-
+            double* tempT = T[i];   
+            memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth);
+            
             if (i == 0)
             {
                 for(int k = 0, j = rSI; j<= rEI; j++, k++)
@@ -248,8 +250,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             tSizes[i]     = {tColWidth,tRowWidth};
 
             double* tempT = T[i];
-            for(int itr = 0; itr<tColWidth*tRowWidth ; itr++)
-                tempT[itr] = 0;
+            memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth);
                 
             double* tempL = T[left];
             double* tempR = T[right];
@@ -438,6 +439,25 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     }
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
-	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes; 
+	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;
+    /*
+    //Output generator U to a file generator_U.txt 
+    ofstream txtOut;
+    txtOut.open("generator_U.txt");
+
+    for(int i=0;i<N;i++){
+        if(uSizes[i].first!=0){
+            for(int k=0;k<uSizes[i].first;k++){
+                for(int l=0;l<uSizes[i].second;l++){
+                    txtOut << std::setprecision(16)<< U[i][l+k*uSizes[i].second] <<"\t"; 
+                }
+                txtOut << endl;
+            }
+        txtOut<<"\n";
+        }
+       
+    }
+    */
     return ret;
+    
 }

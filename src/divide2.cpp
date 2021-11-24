@@ -15,12 +15,20 @@ extern "C"
     #include<lapack.h>
     #include<cblas.h>
 }
-double norm_svd(double * A, std::pair<int, int>aSize){
+using namespace std;
+//norm using svd
+void norm_svd(double * A, std::pair<int, int>aSize, double *norm){
 
-    double *S = new double[aSize.first*aSize.first];
-    double *U,*V,*su;
-    LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'N','N',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,V,aSize.second,su);
-    return S[0];
+    double *S  = new double[aSize.first*aSize.second];
+    double *su = new double[aSize.first*aSize.second];
+    double *U  = new double[aSize.first*aSize.first];
+    double *V  = new double[aSize.second*aSize.second];
+    int info = LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'N','N',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,V,aSize.second,su);
+    delete [] U;
+    delete [] V;
+    delete [] su;
+    *norm = S[0];
+    delete [] S;
 }
 
 
@@ -57,7 +65,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                //T = U{c1}*U{c1}'
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempU,A->uSizes[left-1].first,1,tempC,A->uSizes[left-1].second);
 
-                double B_c1_norm = norm_svd(tempB,A->bSizes[left-1]);
+                double B_c1_norm;
+                norm_svd(tempB,A->bSizes[left-1],&B_c1_norm);
 
                 // D{c1} = D{c1} - norm(B{c1}) * (U{c1} * U{c1}');
                 for(int row = 0 ; row < A->dSizes[left-1].first; row++)
@@ -81,7 +90,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->bSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempB,A->bSizes[left-1].second,1,tempt,A->bSizes[left-1].second);
                 //T*T'
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->uSizes[left-1].second,1,tempt,A->uSizes[left-1].first,tempt,A->uSizes[left-1].first,1,temp,A->uSizes[left-1].first);                
-                double B_c1_norm = norm_svd(tempB,A->bSizes[left-1]);
+                double B_c1_norm;
+                norm_svd(tempB,A->bSizes[left-1],&B_c1_norm);
 
                 for(int row = 0 ; row < A->dSizes[left-1].first; row++)
                 {
@@ -97,22 +107,31 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
         }
         else
         {
+            //temporary vector to push into the stack
+            std::vector<double>tempVec;
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
             {
                std::vector<int> child = bt->GetChildren(left);           
                int eye_size           = A->rSizes[child[0]].second;
-               double sqrt_B_c1_norm  = sqrt(norm_svd(A->B[left-1],A->bSizes[left-1]));
+               double sqrt_B_c1_norm;
+               norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
+               sqrt_B_c1_norm = std::sqrt(sqrt_B_c1_norm);
                double *Sp             = new double[eye_size*eye_size];
                memset(Sp,0,sizeof(*Sp)*eye_size*eye_size);
                for(int row_col = 0; row_col<eye_size; row_col++){
                    Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
-               } 
-
+               }
+               std::vector<double> tempV(Sp, Sp+eye_size*eye_size); 
+                tempVec = tempV;
+                tempV.clear();
+                tempV.shrink_to_fit();
             }
             else
             {
                 double *Sp             = new double[A->bSizes[left-1].first*A->bSizes[left-1].second];
-                double sqrt_B_c1_norm  = sqrt(norm_svd(A->B[left-1],A->bSizes[left-1]));
+                double sqrt_B_c1_norm;
+                norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
+                sqrt_B_c1_norm = std::sqrt(sqrt_B_c1_norm);
                 for(int row = 0; row < A->bSizes[left-1].first; row++)
                 {
                     //memcpy(Sp+(row*A->bSizes[left-1].second), A->B[left-1]+row*A->bSizes[left-1].second, sizeof(double)*A->bSizes[left-1].second);
@@ -121,9 +140,14 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                         Sp[col+row*A->bSizes[left-1].second] = A->B[left-1][col+row*A->bSizes[left-1].second] / sqrt_B_c1_norm;  
                     }
                 }
+                std::vector<double> tempV(Sp, Sp+A->bSizes[left-1].first*A->bSizes[left-1].second); 
+                tempVec = tempV;
+                tempV.clear();
+                tempV.shrink_to_fit();
             }
-            //Push(S, Sp), Push and Pop functionality yet to be implemented
-            
+           // std::vector<double>tempVec;
+            std:: stack<vector<double>>S;
+            S.push(tempVec);
             
 
 

@@ -12,5 +12,5 @@ class DVD{
 };
 
 DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize);
-
+void norm_svd(double * A, std::pair<int, int>aSize,double norm);
 #endif

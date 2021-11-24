@@ -18,6 +18,7 @@ class BinTree
 	int GetLeftMostChild(int ID);
 	int GetRightMostChild(int ID);
 	std::vector<int> GetDescendents(int ID);
+	std::vector<int> GetTreeDesc();
 	int GetNumNodes() { return numNodes;}
 	std::vector<int> GetLeaves() { return leaves;}
 #ifdef DEBUG

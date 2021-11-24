@@ -152,6 +152,16 @@ std::vector<int> BinTree::GetDescendents(int ID)
 	return ret;
 }
 
+std::vector<int> BinTree::GetTreeDesc()
+{
+	std::vector<int>ret(numNodes+1);
+	ret[0] = 0;
+	for(int i=1;i<=numNodes;i++){
+		ret[i] = GetLeftMostChild(i);
+	}
+	return ret;
+}
+
 #ifdef DEBUG
 void BinTree::Print() {
 	cout<<"numNodes: "<<numNodes<<" maxLevel: "<<maxLevel<<endl;

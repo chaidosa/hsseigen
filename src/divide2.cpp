@@ -27,8 +27,8 @@ double norm_svd(double * A, std::pair<int, int>aSize){
 DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
     int n                 = bt->GetNumNodes();
-
-    std::vector<int> desc = bt->GetDescendents(n);
+    //smallest desendent of each node
+    std::vector<int> desc = bt->GetTreeDesc();
 
     //Dividing process
     for(int i = n;i >= 1; i--){
@@ -76,7 +76,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];
                 double *tempt  = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
-                double *temp  = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
+                double *temp   = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
                 //T = U{c1} * B{c1};
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->bSizes[left-1].second,A->uSizes[left-1].second,1,tempU,A->uSizes[left-1].second,tempB,A->bSizes[left-1].second,1,tempt,A->bSizes[left-1].second);
                 //T*T'
@@ -111,7 +111,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
             }
             else
             {
-                double *Sp = new double[A->bSizes[left-1].first*A->bSizes[left-1].second];
+                double *Sp             = new double[A->bSizes[left-1].first*A->bSizes[left-1].second];
                 double sqrt_B_c1_norm  = sqrt(norm_svd(A->B[left-1],A->bSizes[left-1]));
                 for(int row = 0; row < A->bSizes[left-1].first; row++)
                 {

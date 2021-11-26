@@ -316,7 +316,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             int cEI        = n2-(aRowWidth-1-l[i].second);
             int bRowWidth  = cEI-cSI;  
             int bColWidth  = rEI;
-            bSizes[left]   = {bColWidth,bRowWidth};
+           // bSizes[left] = {bColWidth,bRowWidth};
+            bSizes[left]   = {bRowWidth,bColWidth};
             B[left]        = new double[bColWidth*bRowWidth];
             double* tempB  = B[left];
             double* tempTT = T[right];
@@ -369,7 +370,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int cEI             = n2-(aRowWidth-1-l[node-1].second);
     int bRowWidth       = cEI-cSI;
     int bColWidth       = rEI;
-    bSizes[left]        = {bColWidth,bRowWidth};
+    //bSizes[left]        = {bRowWidth,bColWidth};
+    bSizes[left]        = {bRowWidth,bColWidth};
     B[left]             = new double[bColWidth*bRowWidth];
     double* tempB       = B[left];
     double* tempTT      = T[right];

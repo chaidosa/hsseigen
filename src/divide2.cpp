@@ -145,9 +145,37 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 tempV.clear();
                 tempV.shrink_to_fit();
             }
-           // std::vector<double>tempVec;
+           //here think tempVec as Sp stored in the stack
             std:: stack<vector<double>>S;
             S.push(tempVec);
+
+            for(int j=left-1;j >= desc[left];j--){
+                tempVec = S.top();
+                double *Sp = &tempVec[0];
+                S.pop();
+                std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
+                if(j == temp_ch[1]){
+                    int sib = temp_ch[0];
+                    S.push(tempVec);
+                    //B{sib} = B{sib} - R{sib} * (Sp * Sp') * R{j}';
+                    double *tempR = new double[A->rSizes[j-1].first*A->rSizes[j-1].second]; 
+                    for(int row=0;row < A->rSizes[j-1].first; row++)
+                        memcpy(tempR+row*(A->rSizes[j-1].second),A->R[j-1]+row*(A->rSizes[j-1].second),sizeof(double)*(A->rSizes[j-1].second));
+
+                    GetTransposeInPlace(tempR,A->rSizes[j-1].first,A->rSizes[j-1].second);
+                    double *tempSST = new double[A->bSizes[left-1].first*A->bSizes[left-1].second];
+                    cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->bSizes[left-1].first,A->bSizes[left-1].second,A->bSizes[left-1].second,1,Sp,A->bSizes[left-1].second,Sp,A->bSizes[left-1].first,1,tempSST,A->bSizes[left-1].second);
+                    double *tempR_sib = A->R[sib-1];
+
+                    for(int row = 0 ;row < A->bSizes[sib-1].first; row++){
+                        for(int col = 0; col < A->bSizes[sib-1].second; col++){
+                           //Implement: subtraction of B{sib}  
+                        }
+                    }
+                }
+
+
+            }
             
 
 

@@ -16,7 +16,12 @@ using namespace std;
 //assuming the 16x16 matrix
 void merge_arr(std::pair<vector<double>,int>*tempSt,int ns, double *tempT,int tRowWidth,int row){
    // vector<double> current=tempSt[0].first;
-    
+    int test = 0;
+    for(int in = 0; in<ns; in++)
+        test+=tempSt[in].second;
+
+    assert(test<=tRowWidth);
+
     for(int itr=0;itr<row;itr++){
         int filled_upto=0;
     for(int i=0;i<ns;i++){
@@ -151,8 +156,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 std::pair<int,int>rSize = uSize;
                 printf("LeafNode: Computing U%d\n",i+1);
                 compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
-                delete [] tempT;
                 T[i]      = R;
+                delete [] tempT;                
                 tSizes[i] = rSize;
                 uSizes[i] = uSize;
             }
@@ -187,18 +192,10 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                         tempVec.push_back(temp_array[itr]);
                     }
                     tempSt[k]={tempVec,rEI};
-                /*
-                    index = 0;
-                    int tempRow = tSizes[i].first;
-                    for(int i = 0; i < tempRow; i++){
-                        for(int j = current_pos_col; j < current_pos_col+rEI; j++){
-                            tempT[j+i*tRowWidth]=temp_array[index++];                        
-                        }
-                    }
-
-                    current_pos_col = current_pos_col+rEI;
                     delete [] temp_array;
-                    */
+                    tempVec.clear();
+                    tempVec.shrink_to_fit();
+                
                 }
 
             
@@ -212,23 +209,25 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 rEI    = l[i].second;
                 cSI    = l[i].second+1;
                 cEI    = aRowWidth;
-
-                for(int itr=rSI, tp=0; itr<=rEI; itr++, tp++){
-                    for(int j = cSI, k = cp; j < cEI; j++, k++){
-                        tempT[k+tp*tRowWidth]=A[j+itr*aRowWidth];   
+                if(rEI<aRowWidth-1)
+                {                    
+                    for(int itr=rSI, tp=0; itr<=rEI; itr++, tp++){
+                        for(int j = cSI, k = cp; j < cEI; j++, k++){
+                            tempT[k+tp*tRowWidth]=A[j+itr*aRowWidth];   
+                        }
                     }
                 }
-
                 std::pair<int,int>uSize(0,0);
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
                 printf("LeafNode: Computing U%d\n",i+1);
-                compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
+                compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);                
                 delete [] tempT;
-                T[i]      = R;
+                T[i]      = NULL;
+                T[i]      = R;                
                 tSizes[i] = rSize;
                 uSizes[i] = uSize;
-
+               
             }   
         }
         //if the currrent node is non-leaf node
@@ -236,16 +235,16 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
         {
             St.pop_back();
             ns--;
-            int left      = ch[0]-1;
-            int right     = ch[1]-1;
+            int left      = (ch[0])-1;
+            int right     = (ch[1])-1;
              //sizes of left and right child
             int r1        = tSizes[left].first;
             int n1        = tSizes[left].second;
             int r2        = tSizes[right].first;
             int n2        = tSizes[right].second;
-            
+            int check     = (n1-(aRowWidth-(l[left].second+1)))+(n1-(n1-(aRowWidth-(l[i].second+1))));
             int tColWidth = r1+r2;
-            int tRowWidth = aRowWidth-tColWidth;
+            int tRowWidth = check;
             T[i]          = new double[tRowWidth*tColWidth];
             tSizes[i]     = {tColWidth,tRowWidth};
 
@@ -256,54 +255,48 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             double* tempR = T[right];
            
             //coloums to copy from the left child 
-            int cSI_L_1   = n1-(aRowWidth-1-l[left].second);
-            int cSI_L_2   = n1-(aRowWidth-1-l[i].second);
+            int cSI_L_1   = n1-(aRowWidth-(l[left].second+1))-1;
+            int cSI_L_2   = n1-(aRowWidth-(l[i].second+1));
              
             //columns to copy from right child
-            int cSI_R_1   = n1-(aRowWidth-1-l[left].second);
-            int cSI_R_2   = n2-(aRowWidth-1-l[i].second);
+            int cSI_R_1   = n1-(aRowWidth-(l[left].second+1))-1;
+            int cSI_R_2   = n2-(aRowWidth-(l[i].second+1));
             
-            int limit     = 0;
+            //int limit     = 0;
             //copying from the left child
             if(cSI_L_1 >= 0)
             {
-                for(int itr = 0; itr < r1; itr++){
-                    limit=0;
-                    for(int j = 0;j < cSI_L_1; j++){
-                     tempT[limit + itr*tRowWidth]=tempL[j+itr*tSizes[left].second];
-                     limit++;   
-                    }
-                    
+                for(int itr = 0; itr < r1; itr++){                   
+                    for(int j = 0;j <= cSI_L_1; j++){                      
+                        tempT[j + itr*tRowWidth]=tempL[j+itr*(tSizes[left].second)];                         
+                    }                    
                 }
             }
 
             if(cSI_L_2 >= 0)
             {
                 for(int  itr = 0; itr < r1; itr++){
-                    for(int j = cSI_L_2,k=limit;j < tSizes[left].second; j++,k++){
-                     tempT[k+itr*tRowWidth]=tempL[j+itr*tSizes[left].second];   
+                    for(int j = cSI_L_2,k=cSI_L_1+1;j < tSizes[left].second; j++,k++){                       
+                     tempT[k+itr*tRowWidth]=tempL[j+itr*(tSizes[left].second)];   
                     }
                 }
             }
 
-           //copying from right child
-           limit = 0;
+           //copying from right child           
             if(cSI_R_1 >= 0)
             {
-                for(int itr = 0,row=r1; itr < r2; itr++,row++){
-                    limit = 0;
-                    for(int j = 0; j < cSI_R_1; j++){
-                     tempT[limit+row*tRowWidth]=tempR[j+itr*tSizes[right].second];
-                     limit++;   
+                for(int itr = 0,row=r1; itr < r2,row < tColWidth; itr++,row++){                   
+                    for(int j = 0; j <= cSI_R_1; j++){                                                
+                        tempT[j+row*tRowWidth]=tempR[j+itr*(tSizes[right].second)];                        
                     }
                 }
             }
 
             if(cSI_R_2 >= 0)
             {
-                for(int itr = 0,row=r1; itr<r1; itr++,row++){
-                    for(int j = cSI_R_2,k=limit; j < tSizes[right].second; j++,k++){
-                     tempT[k+row*tRowWidth]=tempR[j+itr*tSizes[right].second];   
+                for(int itr = 0,row=r1; itr<r1,row < tColWidth; itr++,row++){
+                    for(int j = cSI_R_2,k=cSI_R_1+1; j < tSizes[right].second; j++,k++){                       
+                        tempT[k+row*tRowWidth]=tempR[j+itr*(tSizes[right].second)];   
                     }
                 }
             }
@@ -312,8 +305,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
            // int bColWidth = tSizes[right].first;
             int rSI        = 0;
             int rEI        = tSizes[right].first;
-            int cSI        = n1-(aRowWidth-1-l[left].second);
-            int cEI        = n2-(aRowWidth-1-l[i].second);
+            int cSI        = n1-(aRowWidth-l[left].second)-1;
+            int cEI        = n2-(aRowWidth-l[i].second)-1;
             int bRowWidth  = cEI-cSI;  
             int bColWidth  = rEI;
            // bSizes[left] = {bColWidth,bRowWidth};
@@ -339,11 +332,11 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             printf("Computing U%d\n",i+1);            
             compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
 
-            delete [] tempT;
+            
             T[i]                    = R;
             tSizes[i]               = rSize;
             uSizes[i]               = uSize;
-
+            delete [] tempT;
             //deallocating space as we won't need T[left] and T[right]
             T[left]                 = NULL;
             T[right]                = NULL;
@@ -357,8 +350,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     //Remaining B
     int node            = N;
     std::vector<int> ch = bt->GetChildren(node);
-    int left            = ch[0]-1;
-    int right           = ch[1]-1;
+    int left            = (ch[0])-1;
+    int right           = (ch[1])-1;
      //sizes of left and right child
     int r1              = tSizes[left].first;
     int n1              = tSizes[left].second;
@@ -366,8 +359,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int n2              = tSizes[right].second;
     int rSI             = 0;
     int rEI             = tSizes[right].first;
-    int cSI             = n1-(aRowWidth-1-l[left].second);
-    int cEI             = n2-(aRowWidth-1-l[node-1].second);
+    int cSI             = n1-(aRowWidth-l[left].second)-1;
+    int cEI             = n2-(aRowWidth-l[node-1].second)-1;
     int bRowWidth       = cEI-cSI;
     int bColWidth       = rEI;
     //bSizes[left]        = {bRowWidth,bColWidth};
@@ -456,6 +449,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 txtOut << endl;
             }
         txtOut<<"\n";
+        }
         }
        
     }

@@ -391,4 +391,5 @@ DivideOutParams* Divide(HSSMat* hssMat, BinTree* tr)
 	delete [] index;
 	delete [] m;
 	delete [] sib;
+	return NULL; //TODO
 }

@@ -4,9 +4,14 @@
 
 # Compiler settings - Can be customized.
 CC = g++ 
-CXXFLAGS = -std=c++11 -Wall -g
-LDFLAGS = -lcblas
+CXXFLAGS = -std=c++11 -Wall
+LDFLAGS = -lblas
 LDFLAGS+= -llapacke
+
+ifeq ($(DEBUG),1)
+	CXXFLAGS += -g
+endif
+
 
 # Makefile settings - Can be customized.
 APPNAME = Test
@@ -51,7 +56,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
 # Cleans complete project
 .PHONY: clean
 clean:
-	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
+	$(RM) -f $(DELOBJ) $(DEP) $(APPNAME)
 
 # Cleans only all files with the extension .d
 .PHONY: cleandep

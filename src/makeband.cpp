@@ -27,7 +27,7 @@ int MakeBand(int n, int r, double** bandMatrix)
 {
   int i;
   int j;
-  double b_j;
+  //double b_j;
   *bandMatrix = new double[n*n];
   double* A = *bandMatrix;
   memset(A, 0, sizeof(double)*n*n);

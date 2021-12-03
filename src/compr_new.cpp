@@ -15,7 +15,7 @@ extern "C"
 
 /*A is the input parameter initialized to T[i] for leaf i.
 Q is the output parameter computing Ui, R is the output parameter computing Ri */
-void compr_new(double* A, std::pair<int, int>aSize, double** Q, std::pair<int, int>& qSize, double** R, std::pair<int, int>& rSize, char* tol, double par)
+void compr_new(double* A, std::pair<int, int>aSize, double** Q, std::pair<int, int>& qSize, double** R, std::pair<int, int>& rSize, char const* tol, double par)
 {
     double *S    = new double[aSize.first*aSize.second];
     double *U    = new double[aSize.first*aSize.first];

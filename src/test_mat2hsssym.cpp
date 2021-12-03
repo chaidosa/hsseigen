@@ -32,9 +32,9 @@ void merge_arr(std::pair<vector<double>,int>*tempSt,int ns, double *tempT,int tR
 }
 
 
-tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* tol, double par){
+tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char const* tol, double par){
     tHSSMat* ret          = new tHSSMat();
-    int n                 = mSize; //number of leaf nodes
+    //int n                 = mSize; //number of leaf nodes
     int N                 = bt->GetNumNodes();
     int aRowWidth         = sqrt(aSize);
     int aColWidth         = aRowWidth;    
@@ -61,10 +61,9 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
         else
         {
             l[i] = {l[ch[0]-1].first,l[ch[1]-1].second};
-
         }
     }
-    //To store the diagonal blocks
+    //To store the diagonal blocks TODO
     double** D = new double*[N];
 
     //create a list to hold the matrix dimensions of the diagonal matrices 
@@ -72,15 +71,15 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     for(int i = 0; i < N; i++)
 		dSizes[i]=std::make_pair(0,0); 
 
-    //to store generator U
+    //to store generator U TODO
     double** U = new double*[N];
 
     //Pair to hold the matrix dimension of generator U
     std::pair<int, int>* uSizes = new std::pair<int, int>[N];
     for(int i = 0; i < N; i++)
 		uSizes[i]=std::make_pair(0,0); 
-    //to store the generator R
-    double** R = new double*[N];
+    //to store the generator R TODO
+    double** R = new double*[N]; 
 
     //Pair to hold the matrix dimension of generator R
     std::pair<int, int>* rSizes = new std::pair<int, int>[N];
@@ -95,7 +94,6 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     for(int i = 0;i < N; i++)
 		bSizes[i]=std::make_pair(0,0); 
 
-    std::stack<vector<double>>S;
     //creating temmporary array toa hold entire row-block except the diagonal block
     double** T = new double*[N];
    
@@ -130,8 +128,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 memcpy(temp+(k*dRowWidth),A+j*aRowWidth+cSI, sizeof(double)*dRowWidth);
             
             //dimension of row and column of temporary array 
-            int tRowWidth = aColWidth-dColWidth;
-            int tColWidth = dRowWidth;
+            int tRowWidth = aColWidth-dColWidth; //-m[0]
+            int tColWidth = dRowWidth; 
             
             tSizes[i]     = {tColWidth,tRowWidth}; 
             //size of the temporary matrix           
@@ -149,7 +147,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 std::pair<int,int>uSize(0,0);
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
-                printf("LeafNode: Computing U%d\n",i+1);
+                printf("LeafNode %d: Computing U\n",i+1);
                 compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
                 delete [] tempT;
                 T[i]      = R;
@@ -360,9 +358,9 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int left            = ch[0]-1;
     int right           = ch[1]-1;
      //sizes of left and right child
-    int r1              = tSizes[left].first;
+    //int r1              = tSizes[left].first;
     int n1              = tSizes[left].second;
-    int r2              = tSizes[right].first;
+    //int r2              = tSizes[right].first;
     int n2              = tSizes[right].second;
     int rSI             = 0;
     int rEI             = tSizes[right].first;

@@ -10,14 +10,14 @@
  * Leaf nodes have only U and R matrices computed (by a call to compr; dependent on T[i], where i is the leaf node) */
 HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* tol, double par)  {
 	HSSMat* ret = new HSSMat();
-	int n = mSize; //n is number of leaves
-	int n0=n;
+	assert(mSize >=0);
+	unsigned int n = mSize; //n is number of leaves
+	unsigned int n0=n;
 	int lSize=0;
-	int aColWidth, aRowWidth = sqrt(aSize); // since A is a symmetric matrix, aRowWidth = aCols and (aRowWidth*aCols = aSize)
+	int aRowWidth = sqrt(aSize); // since A is a symmetric matrix, aRowWidth = aCols and (aRowWidth*aCols = aSize)
 	//assert((aRowWidth * aRowWidth) == aSize);
-	aColWidth = aRowWidth;
 	int N = bt->GetNumNodes();
-	assert(bt->GetLeaves().size() == (N+1)/2);
+	assert(bt->GetLeaves().size() == (unsigned int)((N+1)/2));
 	int numLeaves = (N+1)/2;
 	//assert(numLeaves == n);
 
@@ -29,7 +29,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 	
 	//create a list to hold the matrix dimensions of the diagonal matrices 
 	std::pair<int, int>* dSizes = new std::pair<int, int>[numLeaves];
-	for(int i=0;i<bt->leaves.size();i++)
+	for(unsigned int i=0;i<bt->leaves.size();i++)
 		dSizes[i]=std::make_pair(0,0);
 
 	//create a temporary array to hold the entire row-block except the diagonal block of A.
@@ -40,9 +40,10 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 
 	//copy the diagonal block of A to D.
 	double** D=new double*[numLeaves];
-	for(int i=0;i<n0;i++)
+	for(unsigned int i=0;i<n0;i++)
 	{
-		int ii=bt->leaves[i];
+		assert(bt->leaves[i] >=0);
+		unsigned int ii=bt->leaves[i];
 		int dRowWidth = l[i+1]-l[i];
 		int dColWidth = l[i+1]-l[i];
 		assert(dRowWidth == dColWidth);
@@ -75,7 +76,8 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 			{
 				memcpy(tmpT+(k*tRowWidth), A+j*aRowWidth, sizeof(double)*(cSI));
 				memcpy(tmpT+(k*tRowWidth)+cSI, A+j*aRowWidth+cEI, sizeof(double)*(aRowWidth-cEI));
-			}int aColWidth, aRowWidth = sqrt(aSize); 
+			}
+			//int aRowWidth = sqrt(aSize); 
 		}
 		else if(cEI == aRowWidth)
 		{
@@ -97,7 +99,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 	
 	//create array bn.
 	std::vector<int> bn(n);
-	for(int i=0;i<n;i++)
+	for(unsigned int i=0;i<n;i++)
 		bn[i]=i;	
 
 	//Ceate temporary array for bn.
@@ -132,7 +134,8 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 		std::vector<int>::iterator iter = std::find(cl.begin(), cl.end(),i+1);
 		assert(iter != cl.end());
 		int ibn = iter - cl.begin();
-		int ii = bn[ibn];
+		assert(bn[ibn] >= 0);
+		unsigned int ii = bn[ibn];
 
 		memcpy(l0,l,sizeof(int)*tmpLSize);
 		memcpy(m0,m,sizeof(int)*tmpMSize);
@@ -163,7 +166,8 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 			iter = std::find(cl0.begin(), cl0.end(),ch[1]);
 			assert(iter != cl0.end());
 			ibn = iter - cl0.begin();
-			int i2 = bn0[ibn];
+			assert(bn0[ibn] >= 0);
+			unsigned int i2 = bn0[ibn];
 
 			double* H=NULL;
 			std::pair<int, int> hSize;
@@ -326,7 +330,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
  		*/ 	
 
 #if 1
-		for(int j=0;j<cl.size();j++)
+		for(unsigned int j=0;j<cl.size();j++)
 		{
 			if(j != ii)
 			{
@@ -504,7 +508,7 @@ HSSMat* mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char* t
 			
 			bn0=bn;
 			bn.erase(bn.begin()+ibn2);
-			for(int j=ibn2;j<bn.size();j++)
+			for(unsigned int j=ibn2;j<bn.size();j++)
 				bn[j] -=1;
 		}
 	}

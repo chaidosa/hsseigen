@@ -5,7 +5,7 @@
 SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize){
 
 //Dividing Stage
-DVD *resDvd = divide2(A,bt,m,mSize);
+//DVD *resDvd = divide2(A,bt,m,mSize);
 
 
 int N  = bt->GetNumNodes();
@@ -36,6 +36,6 @@ std::pair<int,int>* l = new std::pair<int,int>[N];
     }    
 
     
-
+	return NULL;
 
 } 

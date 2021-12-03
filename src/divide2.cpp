@@ -24,6 +24,10 @@ void norm_svd(double * A, std::pair<int, int>aSize, double *norm){
     double *U  = new double[aSize.first*aSize.first];
     double *V  = new double[aSize.second*aSize.second];
     int info = LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'N','N',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,V,aSize.second,su);
+    if( info > 0 ) {
+                printf("ERROR: LAPACKE_dgesvd failed to converge.\n" );
+                exit( 1 );
+    }
     delete [] U;
     delete [] V;
     delete [] su;
@@ -48,7 +52,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
         
         //divide at the non-leaf nodes
         int left  = ch[0];
-        int right = ch[1];
+        //int right = ch[1];
 
         //updating B generators of left subtree
         std::vector<int> tch = bt->GetChildren(left);
@@ -56,7 +60,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
         {
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
             {                
-                double *tempD  = A->D[left-1];
+                //double *tempD  = A->D[left-1];
                 double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];
                 int size       = (A->uSizes[left-1].first)*(A->uSizes[left-1].second);
@@ -81,7 +85,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
             else
             {
-                double *tempD  = A->D[left-1];
+                //double *tempD  = A->D[left-1];
                 double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];
                 double *tempt  = new double[A->uSizes[left-1].first * (A->bSizes[left-1].second)];
@@ -165,7 +169,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                     GetTransposeInPlace(tempR,A->rSizes[j-1].first,A->rSizes[j-1].second);
                     double *tempSST = new double[A->bSizes[left-1].first*A->bSizes[left-1].second];
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->bSizes[left-1].first,A->bSizes[left-1].second,A->bSizes[left-1].second,1,Sp,A->bSizes[left-1].second,Sp,A->bSizes[left-1].first,1,tempSST,A->bSizes[left-1].second);
-                    double *tempR_sib = A->R[sib-1];
+                    //double *tempR_sib = A->R[sib-1];
 
                     for(int row = 0 ;row < A->bSizes[sib-1].first; row++){
                         for(int col = 0; col < A->bSizes[sib-1].second; col++){
@@ -183,5 +187,5 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
         }
 
     }
-
+	return NULL;
 }

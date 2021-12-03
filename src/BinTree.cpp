@@ -146,7 +146,7 @@ std::vector<int> BinTree::GetDescendents(int ID)
 	std::vector<int> ret(totalNodesInSubtree-1);
 	int leftMostID = GetLeftMostChild(ID);
 	int numAdded=0;
-	assert(ID-leftMostID == ret.size());
+	assert((unsigned int)(ID-leftMostID) == ret.size());
 	for(int i=leftMostID;i<ID;i++)
 		ret[numAdded++]=i;
 	return ret;

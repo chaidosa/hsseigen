@@ -181,8 +181,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                     rEI                = tSizes[St[k]].first;
                     cSI                = tSizes[St[k]].second-(aRowWidth-l[i].first);
                     cEI                = tSizes[St[k]].second-(aRowWidth-l[i].second);
-                    double *tempTT     = T[St[k]];
-                    vector<double>tempVec;
+                    double *tempTT     = T[St[k]];                   
                     double* temp_array = new double[(rEI)*(cEI-cSI+1)]; 
                     int index          = 0;
 
@@ -194,10 +193,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                         }
                     }
                     
-                    GetTransposeInPlace(temp_array,(rEI),(cEI-cSI+1));
-                    for(int itr=0;itr<index;itr++){
-                        tempVec.push_back(temp_array[itr]);
-                    }
+                    GetTransposeInPlace(temp_array,(rEI),(cEI-cSI+1));                    
+                    vector<double>tempVec(temp_array,temp_array+index);
                     tempSt[k]={tempVec,rEI};
                     delete [] temp_array;
                     tempVec.clear();
@@ -450,7 +447,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
 	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;
-    /*
+    
     //Output generator U to a file generator_U.txt 
     ofstream txtOut;    
     txtOut.open("generator_U.txt");
@@ -491,7 +488,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
         }
         }
 
-        */
+        
        
     
     

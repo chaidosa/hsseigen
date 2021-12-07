@@ -66,9 +66,10 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
         else
         {
             l[i] = {l[ch[0]-1].first,l[ch[1]-1].second};
+
         }
     }
-    //To store the diagonal blocks TODO
+    //To store the diagonal blocks
     double** D = new double*[N];
 
     //create a list to hold the matrix dimensions of the diagonal matrices 
@@ -76,15 +77,15 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     for(int i = 0; i < N; i++)
 		dSizes[i]=std::make_pair(0,0); 
 
-    //to store generator U TODO
+    //to store generator U
     double** U = new double*[N];
 
     //Pair to hold the matrix dimension of generator U
     std::pair<int, int>* uSizes = new std::pair<int, int>[N];
     for(int i = 0; i < N; i++)
 		uSizes[i]=std::make_pair(0,0); 
-    //to store the generator R TODO
-    double** R = new double*[N]; 
+    //to store the generator R
+    double** R = new double*[N];
 
     //Pair to hold the matrix dimension of generator R
     std::pair<int, int>* rSizes = new std::pair<int, int>[N];
@@ -99,6 +100,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     for(int i = 0;i < N; i++)
 		bSizes[i]=std::make_pair(0,0); 
 
+    std::stack<vector<double>>S;
     //creating temmporary array toa hold entire row-block except the diagonal block
     double** T = new double*[N];
    
@@ -131,28 +133,29 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             //creating or copying diagonal blocks from original matrix
             for(int k = 0, j = rSI; j <= rEI; j++, k++)
                 memcpy(temp+(k*dRowWidth),A+j*aRowWidth+cSI, sizeof(double)*dRowWidth);
-            
-            //dimension of row and column of temporary array 
-            int tRowWidth = aColWidth-dColWidth; //-m[0]
-            int tColWidth = dRowWidth; 
-            
-            tSizes[i]     = {tColWidth,tRowWidth}; 
-            //size of the temporary matrix           
-            T[i]          = new double[tColWidth*tRowWidth];
-            
-            //temporary pointer to hold matrix data corresponding to index i.
-            double* tempT = T[i];   
-            memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth);
-            
+                
+           
             if (i == 0)
             {
+                //dimension of row and column of temporary array 
+                int tRowWidth = aColWidth-dColWidth;
+                int tColWidth = dRowWidth;
+            
+                tSizes[i]     = {tColWidth,tRowWidth}; 
+                //size of the temporary matrix           
+                T[i]          = new double[tColWidth*tRowWidth];
+            
+                //temporary pointer to hold matrix data corresponding to index i.
+                double* tempT = T[i];   
+                memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth);
+
                 for(int k = 0, j = rSI; j<= rEI; j++, k++)
                     memcpy(tempT+(k*tRowWidth),A+j*aRowWidth+cEI+1, sizeof(double)*tRowWidth);
 
                 std::pair<int,int>uSize(0,0);
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
-                printf("LeafNode %d: Computing U\n",i+1);
+                printf("LeafNode: Computing U%d\n",i+1);
                 compr_new(tempT, tSizes[i], &(U[i]),uSize, &R, rSize, tol, par);
                 T[i]      = R;
                 delete [] tempT;                
@@ -166,6 +169,12 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 ns++;
                 std::pair<vector<double>,int>tempSt[ns];
                 int current_pos_col = 0;//used to keep track of the columns filled.
+
+                //for size of of diagonal block
+                int tRowWidth=0;
+                int tColWidth = 0;
+
+                //this loop copies previously computed blocks               
                 for(int k = 0; k < ns; k++)
                 {
                     rSI                = 0;
@@ -193,20 +202,27 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                     delete [] temp_array;
                     tempVec.clear();
                     tempVec.shrink_to_fit();
-                
+                    tRowWidth +=rEI;
+                    tColWidth = (cEI-cSI+1);
                 }
 
-            
-                merge_arr(tempSt,ns,tempT,tRowWidth,tColWidth);
                 for(int itr =0;itr<ns;itr++)
-                    current_pos_col += tempSt[itr].second;     
+                    current_pos_col += tempSt[itr].second;
 
-                //copying remaining element to tempT array from A
                 int cp = current_pos_col;
                 rSI    = l[i].first;
                 rEI    = l[i].second;
                 cSI    = l[i].second+1;
                 cEI    = aRowWidth;
+                tRowWidth = tRowWidth + (cEI-l[i].second-1);   
+                
+                T[i] = new double[tColWidth*tRowWidth];         
+                double* tempT = T[i];   
+                memset(tempT,0,sizeof(*tempT)*tColWidth*tRowWidth); 
+                tSizes[i]     = {tColWidth,tRowWidth};   
+
+                merge_arr(tempSt,ns,tempT,tRowWidth,tColWidth);
+                //copying remaining element to tempT array from A              
                 if(rEI<aRowWidth-1)
                 {                    
                     for(int itr=rSI, tp=0; itr<=rEI; itr++, tp++){
@@ -215,6 +231,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                         }
                     }
                 }
+
                 std::pair<int,int>uSize(0,0);
                 double* R               = NULL;
                 std::pair<int,int>rSize = uSize;
@@ -303,8 +320,8 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
            // int bColWidth = tSizes[right].first;
             int rSI        = 0;
             int rEI        = tSizes[right].first;
-            int cSI        = n1-(aRowWidth-l[left].second)-1;
-            int cEI        = n2-(aRowWidth-l[i].second)-1;
+            int cSI        = n1-(aRowWidth-(l[left].second+1));
+            int cEI        = n2-(aRowWidth-(l[i].second+1));
             int bRowWidth  = cEI-cSI;  
             int bColWidth  = rEI;
            // bSizes[left] = {bColWidth,bRowWidth};
@@ -351,14 +368,14 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int left            = (ch[0])-1;
     int right           = (ch[1])-1;
      //sizes of left and right child
-    //int r1              = tSizes[left].first;
+    int r1              = tSizes[left].first;
     int n1              = tSizes[left].second;
-    //int r2              = tSizes[right].first;
+    int r2              = tSizes[right].first;
     int n2              = tSizes[right].second;
     int rSI             = 0;
     int rEI             = tSizes[right].first;
-    int cSI             = n1-(aRowWidth-l[left].second)-1;
-    int cEI             = n2-(aRowWidth-l[node-1].second)-1;
+    int cSI             = n1-(aRowWidth-(l[left].second+1));
+    int cEI             = n2-(aRowWidth-(l[node-1].second+1));
     int bRowWidth       = cEI-cSI;
     int bColWidth       = rEI;
     //bSizes[left]        = {bRowWidth,bColWidth};
@@ -435,8 +452,12 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
 	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;
     /*
     //Output generator U to a file generator_U.txt 
-    ofstream txtOut;
+    ofstream txtOut;    
     txtOut.open("generator_U.txt");
+    ofstream txtOut1;
+    txtOut1.open("generator_B.txt");
+    ofstream txtOut2;
+    txtOut2.open("generator_R.txt");
 
     for(int i=0;i<N;i++){
         if(uSizes[i].first!=0){
@@ -446,12 +467,35 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
                 }
                 txtOut << endl;
             }
-        txtOut<<"\n";
+        txtOut<<"\nU:"<<i<<endl;
+        }
+
+        if(bSizes[i].first!=0){
+            for(int k=0;k<bSizes[i].first;k++){
+                for(int l=0;l<bSizes[i].second;l++){
+                    txtOut1 << std::setprecision(16)<< B[i][l+k*bSizes[i].second] <<"\t"; 
+                }
+                txtOut1 << endl;
+            }
+        txtOut1<<"\nB:"<<i<<endl;
+        }
+
+         if(rSizes[i].first!=0){
+            for(int k=0;k<rSizes[i].first;k++){
+                for(int l=0;l<rSizes[i].second;l++){
+                    txtOut2 << std::setprecision(16)<< R[i][l+k*rSizes[i].second] <<"\t"; 
+                }
+                txtOut2<< endl;
+            }
+        txtOut2<<"\nR:"<<i<<endl;
         }
         }
+
+        */
        
-    }
-    */
+    
+    
     return ret;
+    
     
 }

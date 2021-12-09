@@ -143,7 +143,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 double sqrt_B_c1_norm;
                 norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
                 sqrt_B_c1_norm = std::sqrt(sqrt_B_c1_norm);
-
+                //check if it can be made more efficient
                 for(int row = 0; row < A->bSizes[left-1].first; row++)
                 {
                     //memcpy(Sp+(row*A->bSizes[left-1].second), A->B[left-1]+row*A->bSizes[left-1].second, sizeof(double)*A->bSizes[left-1].second);
@@ -231,11 +231,110 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
             }        
         } //end of update of left subtree
 
+        //Update B generators of right subtree
+        tch = bt->GetChildren(right);
+        if(tch.size()==0){
+            if(A->bSizes[left-1].first <= A->bSizes[left-1].second){
+                //U{c2}*B{c1}'
+                double *tempT = new double[(A->uSizes[right-1].first)*(A->bSizes[left-1].first)];
+                memset(tempT,0,sizeof(double)*(A->uSizes[right-1].first)*(A->bSizes[left-1].first));
+                double *tempU = A->U[right-1];
+                double *tempB = A->B[left-1];
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->uSizes[right-1].first),(A->bSizes[left-1].first),(A->bSizes[left-1].second),1,tempU,(A->uSizes[right-1].second),tempB,(A->bSizes[left-1].first),1,tempT,(A->bSizes[left-1].first));
+                //T*T'
+                double *tempTTt = new double[(A->uSizes[right-1].first)*(A->uSizes[right-1].first)];
+                memset(tempTTt,0,sizeof(double)*(A->uSizes[right-1].first)*(A->uSizes[right-1].first));
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->uSizes[right-1].first),(A->uSizes[right-1].first),(A->bSizes[left-1].first),1,tempT,(A->bSizes[left-1].first),tempT,(A->uSizes[right-1].first),1,tempTTt,(A->uSizes[right-1].first));
+                double B_c1_norm;
+                norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
+               
+               // D{c2} = D{c2} - (T * T') / norm(B{c1});
+               double *tempD = A->D[right-1];
+               for(int row = 0;row < A->dSizes[right-1].first; row++){
+                   for(int col = 0; col < A->dSizes[right-1].second;col++){
+                       tempD[col+(row*(A->dSizes[right-1].second))]-=(tempTTt[col+(row*(A->uSizes[right-1].first))]/B_c1_norm);
+                   }
+               }
+                delete[] tempTTt;
+                delete[] tempT;
+                tempU = NULL;
+                tempB = NULL;
+                tempD = NULL;
+            }
 
+            else{
+                double *tempU = A->U[right-1];
+                double *tempUUt = new double[(A->uSizes[right-1].first)*(A->uSizes[right-1].first)];
+                double B_c1_norm;
+                norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->uSizes[right-1].first),(A->uSizes[right-1].first),(A->uSizes[right-1].second),1,tempU,(A->uSizes[right-1].second),tempU,(A->uSizes[right-1].first),1,tempUUt,(A->uSizes[right-1].first));
+                double *tempD = A->D[right-1];
+                for(int row = 0;row < A->dSizes[right-1].first; row++){
+                   for(int col = 0; col < A->dSizes[right-1].second;col++){
+                        tempD[col+(row*(A->dSizes[right-1].second))]-=(tempUUt[col+(row*(A->uSizes[right-1].first))]*B_c1_norm);
+                   }
+                }                               
+                delete [] tempUUt;
+                tempU = NULL;
+                tempD = NULL;
+            }
+        }
+        else{
+             //temporary pair-vector-pair for pushing onto the stack
+             std::pair<vector<double>,pair<int,int>>tempVec;
+             if(A->bSizes[left-1].first <= A->bSizes[left-1].second){
+                double *Sp = new double[(A->bSizes[left-1].second)*(A->bSizes[left-1].first)];
+                double B_c1_norm;
+                norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
+                //check if it can be made more efficient
+                for(int row =0; row<A->bSizes[left-1].second;row++){
+                    for(int col=0;col<A->bSizes[left-1].first;col++){
+                        Sp[col+(row*(A->bSizes[left-1].first))] = (A->B[left-1][row+(col*(A->bSizes[left-1].first))])/B_c1_norm;
+                    }
+                }
+                std::vector<double> tempV(Sp, Sp+((A->bSizes[left-1].first)*(A->bSizes[left-1].second))); 
+                tempVec = {tempV,{(A->bSizes[left-1].second),(A->bSizes[left-1].first)}};
+                tempV.clear();
+                tempV.shrink_to_fit();
+                delete [] Sp;
 
+             }
+             else{
+                std::vector<int> child = bt->GetChildren(right);
+                int eye_size = A->rSizes[(child[0]-1)].second;
+                double *Sp   = new double[eye_size*eye_size];
+                memset(Sp,0,sizeof(double)*eye_size*eye_size);
+                double sqrt_B_c1_norm;
+                norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
+                std::sqrt(sqrt_B_c1_norm);
+                for(int row_col = 0;row_col < eye_size; row_col++){
+                    Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
+                }
+                std::vector<double> tempV(Sp, Sp+eye_size*eye_size); 
+                tempVec = {tempV,{eye_size,eye_size}};
+                tempV.clear();
+                tempV.shrink_to_fit();
+                delete [] Sp;
+             }
+
+            std:: stack<pair<vector<double>,pair<int,int>>> S;
+            S.push(tempVec);
+            for(int j=right-1;j >= desc[right];j--){
+                tempVec = S.top();
+                double *Sp = new double[(tempVec.first).size()];
+                memset(Sp,0,sizeof(double)*(tempVec.first).size());
+                std::copy((tempVec.first).begin(),(tempVec.first).end(),Sp);
+                int Sp_row = (tempVec.second).first;
+                int Sp_col = (tempVec.second).second;    
+                S.pop();
+                std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
+                
+            }
+        }
 
 
 
     }
+    
 	return NULL;
 }

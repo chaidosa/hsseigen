@@ -36,14 +36,16 @@ void norm_svd(double * A, std::pair<int, int>aSize, double *norm){
 }
 
 
-DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
+DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
+{
 
     int n                 = bt->GetNumNodes();
     //smallest desendent of each node
     std::vector<int> desc = bt->GetTreeDesc();   
 
     //Dividing process
-    for(int i = n;i >= 1; i--){
+    for(int i = n;i >= 1; i--)
+    {
     
         std::vector<int> ch = bt->GetChildren(i);
 
@@ -126,7 +128,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                double *Sp             = new double[eye_size*eye_size];
                memset(Sp,0,sizeof(*Sp)*eye_size*eye_size);
 
-               for(int row_col = 0; row_col<eye_size; row_col++){
+               for(int row_col = 0; row_col<eye_size; row_col++)
+               {
                    Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
                }
                std::vector<double> tempV(Sp, Sp+eye_size*eye_size); 
@@ -138,7 +141,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
             else
             {
-                double *Sp             = new double[(A->bSizes[left-1].first)*(A->bSizes[left-1].second)];
+                double *Sp = new double[(A->bSizes[left-1].first)*(A->bSizes[left-1].second)];
                 memset(Sp,0,sizeof(double)*(A->bSizes[left-1].first)*(A->bSizes[left-1].second));
                 double sqrt_B_c1_norm;
                 norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
@@ -162,7 +165,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
             std:: stack<pair<vector<double>,pair<int,int>>> S;
             S.push(tempVec);
 
-            for(int j=left-1;j >= desc[left];j--){
+            for(int j=left-1;j >= desc[left];j--)
+            {
                 tempVec = S.top();
                 double *Sp = new double[(tempVec.first).size()];
                 memset(Sp,0,sizeof(double)*(tempVec.first).size());
@@ -172,7 +176,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 S.pop();
                 std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
 
-                if(j== temp_ch[1]){
+                if(j== temp_ch[1])
+                {
                     int sib = temp_ch[0];    
                     std::pair<vector<double>,pair<int,int>>tempSp;
                     //std::copy(Sp + 0,Sp +(Sp_row*Sp_col),tempSp.first.begin());
@@ -198,43 +203,54 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                     //check this
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->rSizes[(sib-1)].first),(A->rSizes[(j-1)].first),(A->rSizes[(j-1)].second),1,tempRSST,Sp_row,Rj,(A->rSizes[(j-1)].first),1,tempRSST_Rjt,(A->rSizes[(j-1)].first));
 
-                    for(int row = 0; row<A->bSizes[sib-1].first;row++){
-                        for(int col=0; col<A->bSizes[sib-1].second;col++){
+                    for(int row = 0; row<A->bSizes[sib-1].first;row++)
+                    {
+                        for(int col=0; col<A->bSizes[sib-1].second;col++)
+                        {
                             A->B[sib-1][col+(row*(A->bSizes[sib-1].second))]=A->B[sib-1][col+(row*(A->bSizes[sib-1].second))]-tempRSST_Rjt[col+row*A->rSizes[j-1].first];
                         }
                     }
-                    
+                    delete[] tempSST;
+                    delete[] tempRSST;
+                    delete[] tempRSST_Rjt;
                 }
                 double *Sj = new double[A->rSizes[j-1].first*Sp_col];
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->rSizes[j-1].first,Sp_col,Sp_row,1,A->R[j-1],A->rSizes[j-1].second,Sp,Sp_col,1,Sj,Sp_col); 
 
                 std::vector<int> temp_ch2 = bt->GetChildren(j);
-                if(temp_ch2.size()==0){
+                if(temp_ch2.size()==0)
+                {
                     double *tempT = new double[A->uSizes[j-1].first*Sp_col];
                     memset(tempT,0,sizeof(double)*(A->uSizes[j-1].first)*Sp_col);
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[j-1].first,Sp_col,A->uSizes[j-1].second,1,A->U[j-1],A->uSizes[j-1].second,Sj,Sp_col,1,tempT,Sp_col);                 
                     double *tempTTt = new double[(A->uSizes[j-1].first)*(A->uSizes[j-1].first)]; 
                     memset(tempTTt,0,sizeof(double)*(A->uSizes[j-1].first)*(A->uSizes[j-1].first));  
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[j-1].first,A->uSizes[j-1].first,Sp_col,1,tempT,Sp_col,Sp,A->uSizes[j-1].first,1,tempTTt,A->uSizes[j-1].first);
-                    for(int row =0;row < (A->dSizes[j-1].first);row++){
-                        for(int col=0;col < (A->dSizes[j-1].second);col++){
+                    for(int row =0;row < (A->dSizes[j-1].first);row++)
+                    {
+                        for(int col=0;col < (A->dSizes[j-1].second);col++)
+                        {
                             A->D[j-1][col+(row*(A->dSizes[j-1].second))]-=tempTTt[col+(row*(A->uSizes[j-1].first))];
                         }
                     }
                     delete[] tempT;
                     delete[] tempTTt;
                 }
-                else{
+                else
+                {
                     std::vector<double>temp(Sj,Sj+(A->rSizes[j-1].first*Sp_col));
                     S.push({temp,{A->rSizes[j-1].first,Sp_col}});
                 }
+                delete[] Sj;
+                delete[] Sp;
             }        
         } //end of update of left subtree
 
         //Update B generators of right subtree
         tch = bt->GetChildren(right);
         if(tch.size()==0){
-            if(A->bSizes[left-1].first <= A->bSizes[left-1].second){
+            if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
+            {
                 //U{c2}*B{c1}'
                 double *tempT = new double[(A->uSizes[right-1].first)*(A->bSizes[left-1].first)];
                 memset(tempT,0,sizeof(double)*(A->uSizes[right-1].first)*(A->bSizes[left-1].first));
@@ -250,8 +266,10 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                
                // D{c2} = D{c2} - (T * T') / norm(B{c1});
                double *tempD = A->D[right-1];
-               for(int row = 0;row < A->dSizes[right-1].first; row++){
-                   for(int col = 0; col < A->dSizes[right-1].second;col++){
+               for(int row = 0;row < A->dSizes[right-1].first; row++)
+               {
+                   for(int col = 0; col < A->dSizes[right-1].second;col++)
+                   {
                        tempD[col+(row*(A->dSizes[right-1].second))]-=(tempTTt[col+(row*(A->uSizes[right-1].first))]/B_c1_norm);
                    }
                }
@@ -269,8 +287,10 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->uSizes[right-1].first),(A->uSizes[right-1].first),(A->uSizes[right-1].second),1,tempU,(A->uSizes[right-1].second),tempU,(A->uSizes[right-1].first),1,tempUUt,(A->uSizes[right-1].first));
                 double *tempD = A->D[right-1];
-                for(int row = 0;row < A->dSizes[right-1].first; row++){
-                   for(int col = 0; col < A->dSizes[right-1].second;col++){
+                for(int row = 0;row < A->dSizes[right-1].first; row++)
+                {
+                   for(int col = 0; col < A->dSizes[right-1].second;col++)
+                   {
                         tempD[col+(row*(A->dSizes[right-1].second))]-=(tempUUt[col+(row*(A->uSizes[right-1].first))]*B_c1_norm);
                    }
                 }                               
@@ -279,16 +299,20 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 tempD = NULL;
             }
         }
-        else{
+        else
+        {
              //temporary pair-vector-pair for pushing onto the stack
              std::pair<vector<double>,pair<int,int>>tempVec;
-             if(A->bSizes[left-1].first <= A->bSizes[left-1].second){
+             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
+             {
                 double *Sp = new double[(A->bSizes[left-1].second)*(A->bSizes[left-1].first)];
                 double B_c1_norm;
                 norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
                 //check if it can be made more efficient
-                for(int row =0; row<A->bSizes[left-1].second;row++){
-                    for(int col=0;col<A->bSizes[left-1].first;col++){
+                for(int row =0; row<A->bSizes[left-1].second;row++)
+                {
+                    for(int col=0;col<A->bSizes[left-1].first;col++)
+                    {
                         Sp[col+(row*(A->bSizes[left-1].first))] = (A->B[left-1][row+(col*(A->bSizes[left-1].first))])/B_c1_norm;
                     }
                 }
@@ -299,7 +323,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 delete [] Sp;
 
              }
-             else{
+             else
+             {
                 std::vector<int> child = bt->GetChildren(right);
                 int eye_size = A->rSizes[(child[0]-1)].second;
                 double *Sp   = new double[eye_size*eye_size];
@@ -319,7 +344,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
 
             std:: stack<pair<vector<double>,pair<int,int>>> S;
             S.push(tempVec);
-            for(int j=right-1;j >= desc[right];j--){
+            for(int j=right-1;j >= desc[right];j--)
+            {
                 tempVec = S.top();
                 double *Sp = new double[(tempVec.first).size()];
                 memset(Sp,0,sizeof(double)*(tempVec.first).size());
@@ -329,12 +355,82 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize){
                 S.pop();
                 std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
                 
+                if(j== temp_ch[1])
+                {
+                    int sib = temp_ch[0];
+                    std::pair<vector<double>,pair<int,int>>tempSp;
+                    //std::copy(Sp + 0,Sp +(Sp_row*Sp_col),tempSp.first.begin());
+                    vector<double> tempV(Sp,Sp+(Sp_row*Sp_col));
+                    tempSp.first = tempV;
+                    tempSp.second = {Sp_row,Sp_col};
+                    S.push(tempSp);
+
+                    //Sp*Sp'
+                    double *tempSST = new double[Sp_row*Sp_row];
+                    memset(tempSST,0,sizeof(double)*Sp_row*Sp_row);                    
+                    cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,Sp_row,Sp_row,Sp_col,1,Sp,Sp_col,Sp,Sp_row,1,tempSST,Sp_row);
+
+                    //R{sib}*(Sp*Sp')
+                    double *R_sib = A->R[(sib-1)]; 
+                    double *tempRSST = new double[(A->rSizes[(sib-1)].first)*Sp_row];
+                    memset(tempRSST,0,sizeof(double)*(A->rSizes[(sib-1)].first)*Sp_row);
+                    cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,(A->rSizes[(sib-1)].first),Sp_row,Sp_row,1,R_sib,(A->rSizes[(sib-1)].second),tempSST,Sp_row,1,tempRSST,Sp_row);
+
+                    double *tempRSST_Rjt = new double[(A->rSizes[(sib-1)].first)*(A->rSizes[(j-1)].first)];
+                    memset(tempRSST_Rjt,0,sizeof(double)*(A->rSizes[(sib-1)].first)*(A->rSizes[(j-1)].first));
+                    double *Rj = A->R[j-1];
+                    //check this
+                    cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->rSizes[(sib-1)].first),(A->rSizes[(j-1)].first),(A->rSizes[(j-1)].second),1,tempRSST,Sp_row,Rj,(A->rSizes[(j-1)].first),1,tempRSST_Rjt,(A->rSizes[(j-1)].first));
+
+                    for(int row = 0; row<A->bSizes[sib-1].first;row++)
+                    {
+                        for(int col=0; col<A->bSizes[sib-1].second;col++)
+                        {
+                            A->B[sib-1][col+(row*(A->bSizes[sib-1].second))]=A->B[sib-1][col+(row*(A->bSizes[sib-1].second))]-tempRSST_Rjt[col+row*A->rSizes[j-1].first];
+                        }
+                    }
+
+                    delete[] tempSST;
+                    delete[] tempRSST;
+                    delete[] tempRSST_Rjt;
+                }
+
+                double *Sj = new double[A->rSizes[j-1].first*Sp_col];
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->rSizes[j-1].first,Sp_col,Sp_row,1,A->R[j-1],A->rSizes[j-1].second,Sp,Sp_col,1,Sj,Sp_col); 
+                std::vector<int> temp_ch2 = bt->GetChildren(j);
+                if(temp_ch2.size()==0)
+                {
+                    double *tempT = new double[A->uSizes[j-1].first*Sp_col];
+                    memset(tempT,0,sizeof(double)*(A->uSizes[j-1].first)*Sp_col);
+                    cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[j-1].first,Sp_col,A->uSizes[j-1].second,1,A->U[j-1],A->uSizes[j-1].second,Sj,Sp_col,1,tempT,Sp_col);                 
+                    double *tempTTt = new double[(A->uSizes[j-1].first)*(A->uSizes[j-1].first)]; 
+                    memset(tempTTt,0,sizeof(double)*(A->uSizes[j-1].first)*(A->uSizes[j-1].first));  
+                    cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[j-1].first,A->uSizes[j-1].first,Sp_col,1,tempT,Sp_col,Sp,A->uSizes[j-1].first,1,tempTTt,A->uSizes[j-1].first);
+                    for(int row =0;row < (A->dSizes[j-1].first);row++)
+                    {
+                        for(int col=0;col < (A->dSizes[j-1].second);col++)
+                        {
+                            A->D[j-1][col+(row*(A->dSizes[j-1].second))]-=tempTTt[col+(row*(A->uSizes[j-1].first))];
+                        }
+                    }
+                    delete[] tempT;
+                    delete[] tempTTt;
+                }
+                else
+                {
+                    std::vector<double>temp(Sj,Sj+(A->rSizes[j-1].first*Sp_col));
+                    S.push({temp,{A->rSizes[j-1].first,Sp_col}});
+                }
+
+                delete[] Sj;
+                delete[] Sp;
             }
         }
 
-
-
     }
+
+    //Rank r-updates at non-leaf nodes
+    
     
 	return NULL;
 }

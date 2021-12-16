@@ -67,12 +67,11 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
             {                
                 //double *tempD  = A->D[left-1];
                 double *tempB  = A->B[left-1];
-                double *tempU  = A->U[left-1];
-                int size       = (A->uSizes[left-1].first)*(A->uSizes[left-1].second);
-                double *tempC  = new double[size];
-                memset(tempC,0,sizeof(double)*size);
+                double *tempU  = A->U[left-1];                
+                double *tempUUt  = new double[A->uSizes[left-1].first*(A->uSizes[left-1].first)];
+                memset(tempUUt,0,sizeof(double)*(A->uSizes[left-1].first*(A->uSizes[left-1].first)));
                //T = U{c1}*U{c1}'
-                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->uSizes[left-1].second,alpha,tempU,A->uSizes[left-1].second,tempU,A->uSizes[left-1].second,beta,tempC,A->uSizes[left-1].first);
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->uSizes[left-1].second,alpha,tempU,A->uSizes[left-1].second,tempU,A->uSizes[left-1].second,beta,tempUUt,A->uSizes[left-1].first);
                 
                 double B_c1_norm;
                 norm_svd(tempB,A->bSizes[left-1],&B_c1_norm);
@@ -82,25 +81,25 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 {
                     for(int col = 0; col < A->dSizes[left-1].second; col++)
                     {
-                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - (B_c1_norm *(tempC[col+row*(A->dSizes[left-1].second)]));
+                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - (B_c1_norm *(tempUUt[col+row*(A->dSizes[left-1].second)]));
                     }
                 }
-                delete [] tempC;
+                delete [] tempUUt;
             }
 
             else
             {
                 //double *tempD  = A->D[left-1];
-                double *tempB  = A->B[left-1];
-                double *tempU  = A->U[left-1];
+                double *tempB  = A->B[(left-1)];
+                double *tempU  = A->U[(left-1)];
                 double *tempT  = new double[(A->uSizes[left-1].first)*(A->bSizes[left-1].second)];
-                double *tempTTt   = new double[(A->uSizes[left-1].first)*(A->bSizes[left-1].second)];
+                double *tempTTt   = new double[(A->uSizes[left-1].first)*(A->uSizes[left-1].first)];
                 memset(tempT,0,sizeof(double)*(A->uSizes[left-1].first)*(A->bSizes[left-1].second));
-                memset(tempTTt,0,sizeof(double)*(A->uSizes[left-1].first)*(A->bSizes[left-1].second));
+                memset(tempTTt,0,sizeof(double)*(A->uSizes[left-1].first)*(A->uSizes[left-1].first));
                 //T = U{c1} * B{c1};
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[left-1].first,A->bSizes[left-1].second,A->uSizes[left-1].second,alpha,tempU,A->uSizes[left-1].second,tempB,A->bSizes[left-1].second,beta,tempT,A->bSizes[left-1].second);
                 //T*T'
-                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->bSizes[left-1].second,alpha,tempT,A->bSizes[left-1].second,tempT,A->uSizes[left-1].second,beta,tempTTt,A->uSizes[left-1].first);                
+                cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[left-1].first,A->uSizes[left-1].first,A->bSizes[left-1].second,alpha,tempT,A->bSizes[left-1].second,tempT,A->bSizes[left-1].second,beta,tempTTt,A->uSizes[left-1].first);                
                 
                 double B_c1_norm;
                 norm_svd(tempB,A->bSizes[left-1],&B_c1_norm);
@@ -119,8 +118,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
 
         else
         {
-            //temporary vector to push into the stack
-            //std::pair<vector<double>,pair<int,int>>tempVec;
+            //temporary vector to push into the stack            
             double *tempV;
             std::pair<int,int>tempP;
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
@@ -137,11 +135,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                {
                    Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
                }
-                // std::vector<double> tempV(Sp, Sp+eye_size*eye_size); 
-                //  tempVec = {tempV,{eye_size,eye_size}};
-                //  tempV.clear();
-                //  tempV.shrink_to_fit();
-                //   delete [] Sp;
+               
                 tempV = Sp;
                 tempP = {eye_size,eye_size};
 
@@ -163,13 +157,9 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                         Sp[col+row*(A->bSizes[left-1].second)] = A->B[left-1][col+row*(A->bSizes[left-1].second)] / sqrt_B_c1_norm;  
                     }
                 }
-               // std::vector<double> tempV(Sp, Sp+((A->bSizes[left-1].first)*(A->bSizes[left-1].second))); 
-                //tempVec = {tempV,{(A->bSizes[left-1].first),(A->bSizes[left-1].second)}};
-              //  tempV.clear();
-              //  tempV.shrink_to_fit();
-              //  delete [] Sp;
-              tempV = Sp;
-              tempP = {(A->bSizes[left-1].first),(A->bSizes[left-1].second)};
+
+                tempV = Sp;
+                tempP = {(A->bSizes[left-1].first),(A->bSizes[left-1].second)};
             }
            //here think tempVec as Sp stored in the stack
             std:: stack<pair<double*,pair<int,int>>> S;
@@ -179,22 +169,15 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
             {
                 //tempVec = S.top();
 
-                double *Sp = S.top().first;
-               // memset(Sp,0,sizeof(double)*(tempVec.first).size());
-               // std::copy((tempVec.first).begin(),(tempVec.first).end(),Sp);
+                double *Sp = S.top().first;               
                 int Sp_row = (S.top().second).first;
                 int Sp_col = (S.top().second).second;
                 S.pop();
-                std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
 
+                std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
                 if(j== temp_ch[1])
                 {
-                    int sib = temp_ch[0];    
-                    //std::pair<vector<double>,pair<int,int>>tempSp;
-                    //std::copy(Sp + 0,Sp +(Sp_row*Sp_col),tempSp.first.begin());
-                    //vector<double> tempV(Sp,Sp+(Sp_row*Sp_col));
-                    //tempSp.first = tempV;
-                    //tempSp.second = {Sp_row,Sp_col};
+                    int sib = temp_ch[0];                    
                     S.push({Sp,{Sp_row,Sp_col}});
 
                     //Sp*Sp'
@@ -225,6 +208,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     delete [] tempRSST;
                     delete [] tempRSST_Rjt;
                 }
+                //Sj = R{j} * Sp;
                 double *Sj = new double[A->rSizes[j-1].first*Sp_col];
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->rSizes[j-1].first,Sp_col,Sp_row,alpha,A->R[j-1],A->rSizes[j-1].second,Sp,Sp_col,beta,Sj,Sp_col); 
 
@@ -294,7 +278,8 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 tempD = NULL;
             }
 
-            else{
+            else
+            {
                 double *tempU = A->U[right-1];
                 double *tempUUt = new double[(A->uSizes[right-1].first)*(A->uSizes[right-1].first)];
                 double B_c1_norm;
@@ -315,27 +300,26 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         }
         else
         {
-             //temporary pair-vector-pair for pushing onto the stack
-             std::pair<vector<double>,pair<int,int>>tempVec;
+             //temporary pointer and pair for pushing onto the stack
+             double *tempV;
+             std::pair<int,int>tempP;
              if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
              {
                 double *Sp = new double[(A->bSizes[left-1].second)*(A->bSizes[left-1].first)];
-                double B_c1_norm;
-                norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
+                double sqrt_B_c1_norm;
+                norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
+                sqrt_B_c1_norm = std::sqrt(sqrt_B_c1_norm);
                 //check if it can be made more efficient
                 for(int row =0; row<A->bSizes[left-1].second;row++)
                 {
                     for(int col=0;col<A->bSizes[left-1].first;col++)
                     {
-                        Sp[col+(row*(A->bSizes[left-1].first))] = (A->B[left-1][row+(col*(A->bSizes[left-1].first))])/B_c1_norm;
+                        Sp[col+(row*(A->bSizes[left-1].first))] = (A->B[left-1][row+(col*(A->bSizes[left-1].first))])/sqrt_B_c1_norm;
                     }
                 }
-                std::vector<double> tempV(Sp, Sp+((A->bSizes[left-1].first)*(A->bSizes[left-1].second))); 
-                tempVec = {tempV,{(A->bSizes[left-1].second),(A->bSizes[left-1].first)}};
-                tempV.clear();
-                tempV.shrink_to_fit();
-                delete [] Sp;
-
+                
+                tempV = Sp;                
+                tempP = {(A->bSizes[left-1].second),(A->bSizes[left-1].first)};         
              }
              else
              {
@@ -345,39 +329,31 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 memset(Sp,0,sizeof(double)*eye_size*eye_size);
                 double sqrt_B_c1_norm;
                 norm_svd(A->B[left-1],A->bSizes[left-1],&sqrt_B_c1_norm);
-                std::sqrt(sqrt_B_c1_norm);
+                sqrt_B_c1_norm=std::sqrt(sqrt_B_c1_norm);
                 for(int row_col = 0;row_col < eye_size; row_col++){
                     Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
                 }
-                std::vector<double> tempV(Sp, Sp+eye_size*eye_size); 
-                tempVec = {tempV,{eye_size,eye_size}};
-                tempV.clear();
-                tempV.shrink_to_fit();
-                delete [] Sp;
+                
+                tempV = Sp;
+                tempP = {eye_size,eye_size};
+                
              }
 
-            std:: stack<pair<vector<double>,pair<int,int>>> S;
-            S.push(tempVec);
+            std:: stack<pair<double*,pair<int,int>>> S;
+            S.push({tempV,tempP});
             for(int j=right-1;j >= desc[right];j--)
-            {
-                tempVec = S.top();
-                double *Sp = new double[(tempVec.first).size()];
-                memset(Sp,0,sizeof(double)*(tempVec.first).size());
-                std::copy((tempVec.first).begin(),(tempVec.first).end(),Sp);
-                int Sp_row = (tempVec.second).first;
-                int Sp_col = (tempVec.second).second;    
+            {               
+                double *Sp = S.top().first;
+                int Sp_row = (S.top().second).first;
+                int Sp_col = (S.top().second).second;    
                 S.pop();
                 std::vector<int> temp_ch = bt->GetChildren(bt->tr[j-1]);
                 
                 if(j== temp_ch[1])
                 {
                     int sib = temp_ch[0];
-                    std::pair<vector<double>,pair<int,int>>tempSp;
-                    //std::copy(Sp + 0,Sp +(Sp_row*Sp_col),tempSp.first.begin());
-                    vector<double> tempV(Sp,Sp+(Sp_row*Sp_col));
-                    tempSp.first = tempV;
-                    tempSp.second = {Sp_row,Sp_col};
-                    S.push(tempSp);
+                   
+                    S.push({Sp,{Sp_row,Sp_col}});
 
                     //Sp*Sp'
                     double *tempSST = new double[Sp_row*Sp_row];
@@ -393,7 +369,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     double *tempRSST_Rjt = new double[(A->rSizes[(sib-1)].first)*(A->rSizes[(j-1)].first)];
                     memset(tempRSST_Rjt,0,sizeof(double)*(A->rSizes[(sib-1)].first)*(A->rSizes[(j-1)].first));
                     double *Rj = A->R[j-1];
-                    //check this
+                   
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(A->rSizes[(sib-1)].first),(A->rSizes[(j-1)].first),(A->rSizes[(j-1)].second),alpha,tempRSST,Sp_row,Rj,(A->rSizes[(j-1)].second),beta,tempRSST_Rjt,(A->rSizes[(j-1)].first));
 
                     for(int row = 0; row<A->bSizes[sib-1].first;row++)
@@ -408,18 +384,21 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     delete[] tempRSST;
                     delete[] tempRSST_Rjt;
                 }
-
+                //Sj = R{j} * Sp;
                 double *Sj = new double[A->rSizes[j-1].first*Sp_col];
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->rSizes[j-1].first,Sp_col,Sp_row,alpha,A->R[j-1],A->rSizes[j-1].second,Sp,Sp_col,beta,Sj,Sp_col); 
                 std::vector<int> temp_ch2 = bt->GetChildren(j);
                 if(temp_ch2.size()==0)
                 {
+                    //T = U{j}*Sj
                     double *tempT = new double[A->uSizes[j-1].first*Sp_col];
                     memset(tempT,0,sizeof(double)*(A->uSizes[j-1].first)*Sp_col);
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->uSizes[j-1].first,Sp_col,A->uSizes[j-1].second,alpha,A->U[j-1],A->uSizes[j-1].second,Sj,Sp_col,beta,tempT,Sp_col);                 
+                    //T*T'
                     double *tempTTt = new double[(A->uSizes[j-1].first)*(A->uSizes[j-1].first)]; 
                     memset(tempTTt,0,sizeof(double)*(A->uSizes[j-1].first)*(A->uSizes[j-1].first));  
                     cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,A->uSizes[j-1].first,A->uSizes[j-1].first,Sp_col,alpha,tempT,Sp_col,tempT,Sp_col,beta,tempTTt,A->uSizes[j-1].first);
+                    //D{j} = D{j}-T*T' 
                     for(int row =0;row < (A->dSizes[j-1].first);row++)
                     {
                         for(int col=0;col < (A->dSizes[j-1].second);col++)
@@ -433,11 +412,11 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 else
                 {
                     std::vector<double>temp(Sj,Sj+(A->rSizes[j-1].first*Sp_col));
-                    S.push({temp,{A->rSizes[j-1].first,Sp_col}});
+                    S.push({Sj,{A->rSizes[j-1].first,Sp_col}});
                 }
 
-                delete[] Sj;
-                delete[] Sp;
+              //  delete[] Sj;
+              //  delete[] Sp;
             }
         }
 

@@ -3,6 +3,8 @@
 #include "test_mat2hsssym.h"
 #include "superDC.h"
 #include "divide2.h"
+#include "superdcmv_desc.h"
+#include "secualr"
 extern "C"
 {
     #include<lapacke.h>
@@ -93,6 +95,7 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
             int left  = ch[0];
             int right = ch[1];
 
+            superdcmv_desc(Q0,q0Sizes,resDvd->Z[i],resDvd->zSizes[i],bt,i,1,l);
             //[Z{i}, nflops1] =  superdcmv_desc(Q0, Z{i}, tr, i, 1, rg, desc, N);
             /*
             Lam{i} = [Lam{c1}; Lam{c2}];
@@ -121,7 +124,7 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
 
             for(int j = 0; j < r; j++)
             {
-                
+             //secular(Lam{i}, Z{i}(:, j), tol, N)   
             } 
 
         }

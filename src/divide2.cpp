@@ -536,6 +536,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         delete [] Uc2;
     }
 
-    
+    desc.clear();
+    desc.shrink_to_fit();
 	return NULL;
 }

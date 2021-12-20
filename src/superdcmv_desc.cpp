@@ -28,6 +28,8 @@ void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<in
     double alpha,beta;
     alpha = 1.0;
     beta  = 0.0;
+
+    //smallest desendent of each node
     std::vector<int> desc = bt->GetTreeDesc();  
     int k = desc[index];
 
@@ -35,7 +37,7 @@ void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<in
         //X = Q*X;
     }
     else{
-        for(int j = k; k <= index-1; ++k){
+        for(int j = k-1; j <= index-1; ++j){
             double *req_X = X;
             int K = indexRange[j-1].second-indexRange[j-1].first+1;
             int N = xSize.second;

@@ -4,7 +4,7 @@
 #include "superDC.h"
 #include "divide2.h"
 #include "superdcmv_desc.h"
-#include "secualr"
+//#include "secualr"
 extern "C"
 {
     #include<lapacke.h>

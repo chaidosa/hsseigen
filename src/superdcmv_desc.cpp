@@ -18,8 +18,8 @@ void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<in
 %%% t = 0: not transpose
 %%% t = 1: transpose
 %%% BinTree *bt: hss tree
-%%% rg: indices range of each hss leaf block 
-%%% desc: smallest descendant of node i in the hss tree tr
+%%% indexrange: indices range of each hss leaf block 
+
 
 %%% Output
 %%% t = 0: X = Q * X 
@@ -41,7 +41,7 @@ void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<in
             int N = xSize.second;
             double *tempX  = new double[K*N];
             memset(tempX,0,sizeof(double)*K*N);
-
+            //check
             double *tempX0;
             if(indexRange[j-1].first!=0)
                 tempX0=X+((indexRange[j-1].first+1)*N);

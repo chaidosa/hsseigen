@@ -1,6 +1,7 @@
 #include "superDC.h"
 #include "BinTree.h"
 #include "superdcmv_desc.h"
+#include "superdcmv_node.h"
 #include<string.h>
 extern "C"
 {
@@ -15,15 +16,15 @@ void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<in
 %%% Input:
 %%% Q: hss structured cauchylike eigenmatrix of descendants of i
 %%% X: vectors to be multiplied
-%%% t = 0: not transpose
-%%% t = 1: transpose
+%%% ifTrans = 0: not transpose
+%%% ifTranst = 1: transpose
 %%% BinTree *bt: hss tree
 %%% indexrange: indices range of each hss leaf block 
 
 
 %%% Output
-%%% t = 0: X = Q * X 
-%%% t = 1: X = Q^T * X;
+%%% ifTrans = 0: X = Q * X 
+%%% ifTrans = 1: X = Q^T * X;
 */
     double alpha,beta;
     alpha = 1.0;

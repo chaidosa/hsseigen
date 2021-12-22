@@ -38,7 +38,7 @@ void norm_svd(double * A, std::pair<int, int>aSize, double *norm){
 
 DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
 {
-
+    DVD* ret = new DVD();
     double alpha,beta;
     alpha = 1.0;
     beta  = 0.0;
@@ -72,8 +72,6 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         {
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
             {                
-                //double *tempD  = A->D[left-1];
-                double *tempB  = A->B[left-1];
                 double *tempU  = A->U[left-1];                
                 double *tempUUt  = new double[A->uSizes[left-1].first*(A->uSizes[left-1].first)];
                 memset(tempUUt,0,sizeof(double)*(A->uSizes[left-1].first*(A->uSizes[left-1].first)));
@@ -231,7 +229,14 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                // delete[] Sj;
                // delete[] Sp;
             }
-            //here implement: Delete if any of the element is in stack and its allocated memory.
+            //If stack is not empty
+            while (!S.empty())
+            {
+                double *temp = S.top().first;
+                S.pop();
+                delete [] temp;
+                temp=NULL;
+            }          
 
         } //end of update of left subtree
 
@@ -405,6 +410,14 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
               //  delete[] Sj;
               //  delete[] Sp;
             }
+            //If stack is not empty
+            while (!S.empty())
+            {
+                double *temp = S.top().first;
+                S.pop();
+                delete [] temp;
+                temp=NULL;
+            }       
         }
 
     }
@@ -425,7 +438,6 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
     {
         std::vector<int> ch = bt->GetChildren(i+1);
         if(ch.size()==0){
-            double *tempU = A->U[i];
             SU.push({A->U[i],{A->uSizes[i].first,A->uSizes[i].second}});            
             continue;
         }
@@ -527,8 +539,19 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         delete [] Uc1;
         delete [] Uc2;
     }
-
+    
     desc.clear();
     desc.shrink_to_fit();
-	return NULL;
+
+    delete [] A->B;
+    delete [] A->bSizes;
+    delete [] A->R;
+    delete [] A->rSizes;
+    delete [] A->U;
+    delete [] A->uSizes;
+    ret->Z = Z;
+    ret->zSizes = zSizes;
+    ret->D = A->D;
+    ret->dSizes = A->dSizes;
+	return ret;
 }

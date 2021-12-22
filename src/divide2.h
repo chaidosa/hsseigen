@@ -6,8 +6,8 @@
 
 class DVD{
     public:
-        double **D, **B, **Z;
-        std::pair<int,int> *dSizes, *bSizes, *zSizes;
+        double **D, **Z;
+        std::pair<int,int> *dSizes, *zSizes;
 
 };
 

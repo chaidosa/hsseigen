@@ -60,42 +60,44 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
     int *LamSizes = new int[N];
     
 
-    double **rho = new double*[N]; 
-    std::pair<int, int>* rhoSizes = new std::pair<int, int>[N];
-    for(int k = 0; k < N; k++)
-		rhoSizes[k]=std::make_pair(0,0);
+    //double **rho = new double*[N]; 
+    //std::pair<int, int>* rhoSizes = new std::pair<int, int>[N];
+    //for(int k = 0; k < N; k++)
+	//	rhoSizes[k]=std::make_pair(0,0);
 
 
     for(int i = 0; i < N; i++)
     {
         std::vector<int> ch = bt->GetChildren(i+1);
         //if ch is a leaf node
-        if(ch.size() == 0){
-            double *lam = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
+        if(ch.size() == 0){           
             Q0[i]       = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
             double *wi  = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
             double *wr  = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
-            double *vl;
-            LAPACKE_dgeev(CblasRowMajor,'N','V',(resDvd->dSizes[i].first),resDvd->D[i],(resDvd->dSizes[i].first),wr,wi,vl,(resDvd->dSizes[i].first),Q0[i],(resDvd->dSizes[i].first));
+            double *D   = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
+            memcpy(D,resDvd->D[i],sizeof(double)*(resDvd->dSizes[i].first)*(resDvd->dSizes[i].second));
+            //double *vl;
+            LAPACKE_dgeev(CblasRowMajor,'N','V',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),wr,wi,NULL,(resDvd->dSizes[i].first),Q0[i],(resDvd->dSizes[i].first));
             delete [] wi;
             delete [] wr;
+           
 
             Lam[i]      = new double[(resDvd->dSizes[i].first)];
             LamSizes[i] = (resDvd->dSizes[i].first);
 
             for(int row_col = 0; row_col < (resDvd->dSizes[i].first); row_col++)
             {
-                Lam[i][row_col] = lam[i+i*(resDvd->dSizes[i].first)];
+                Lam[i][row_col] = D[i+i*(resDvd->dSizes[i].first)];
             }
 
-            delete [] lam;
+            delete [] D;
         }
         else
         {
             int left  = ch[0];
             int right = ch[1];
 
-            superdcmv_desc(Q0,q0Sizes,resDvd->Z[i],resDvd->zSizes[i],bt,i,1,l);
+           // superdcmv_desc(Q0,q0Sizes,resDvd->Z[i],resDvd->zSizes[i],bt,i,1,l);
             //[Z{i}, nflops1] =  superdcmv_desc(Q0, Z{i}, tr, i, 1, rg, desc, N);
             /*
             Lam{i} = [Lam{c1}; Lam{c2}];

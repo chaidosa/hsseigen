@@ -61,9 +61,11 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
 
         double sqrt_B_c1_norm=0;
         double B_c1_norm = 0;
-        norm_svd(A->B[left-1],A->bSizes[left-1],&B_c1_norm);
+        double *Temp_BC1 = new double[(A->bSizes[left-1].first)*(A->bSizes[left-1].second)];
+        memcpy(Temp_BC1,A->B[left-1],sizeof(double)*(A->bSizes[left-1].first)*(A->bSizes[left-1].second));
+        norm_svd(Temp_BC1,A->bSizes[left-1],&B_c1_norm);
         sqrt_B_c1_norm=std::sqrt(B_c1_norm);
-
+        delete [] Temp_BC1;
         //updating B generators of left subtree
         std::vector<int> tch = bt->GetChildren(left);
         if(tch.size() == 0)
@@ -117,28 +119,27 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         else
         {
             //temporary vector to push into the stack            
-            double *tempV;
+            double *Sp;
             std::pair<int,int>tempP;
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
             {
-               std::vector<int> child = bt->GetChildren(left);           
-               int eye_size           = A->rSizes[(child[0]-1)].second;               
-               double *Sp             = new double[eye_size*eye_size];
-               memset(Sp,0,sizeof(*Sp)*eye_size*eye_size);
+                std::vector<int> child = bt->GetChildren(left);           
+                int eye_size           = A->rSizes[(child[0]-1)].second;               
+                Sp                    = new double[eye_size*eye_size];
+                memset(Sp,0,sizeof(*Sp)*eye_size*eye_size);
 
-               for(int row_col = 0; row_col<eye_size; row_col++)
-               {
+                for(int row_col = 0; row_col<eye_size; row_col++)
+                {
                    Sp[row_col+row_col*eye_size] = sqrt_B_c1_norm;
-               }
-               
-                tempV = Sp;
+                }             
+                
                 tempP = {eye_size,eye_size};
 
             }
 
             else
             {
-                double *Sp = new double[(A->bSizes[left-1].first)*(A->bSizes[left-1].second)];
+                Sp = new double[(A->bSizes[left-1].first)*(A->bSizes[left-1].second)];
                 memset(Sp,0,sizeof(double)*(A->bSizes[left-1].first)*(A->bSizes[left-1].second));
                
                 for(int row = 0; row < A->bSizes[left-1].first; row++)
@@ -149,16 +150,15 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     }
                 }
 
-                tempV = Sp;
                 tempP = {(A->bSizes[left-1].first),(A->bSizes[left-1].second)};
             }
            
             std:: stack<pair<double*,pair<int,int>>> S;
-            S.push({tempV,tempP});
+            S.push({Sp,tempP});
 
             for(int j=left-1;j >= desc[left];j--)
             {
-                double *Sp = S.top().first;               
+                Sp         = S.top().first;               
                 int Sp_row = (S.top().second).first;
                 int Sp_col = (S.top().second).second;
                 S.pop();
@@ -439,17 +439,27 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         double *Uc1   = SU.top().first;
         std::pair<int,int>index_Uc1 = SU.top().second;   
         SU.pop();
-        double sqrt_norm_B_left;
-        norm_svd(A->B[left],A->bSizes[left],&sqrt_norm_B_left);
-        std::sqrt(sqrt_norm_B_left);
+        
+        double sqrt_B_c1_norm=0;
+        double B_c1_norm = 0;
+        double *Temp_BC1 = new double[(A->bSizes[left].first)*(A->bSizes[left].second)];
+        memcpy(Temp_BC1,A->B[left],sizeof(double)*(A->bSizes[left].first)*(A->bSizes[left].second));
+        norm_svd(Temp_BC1,A->bSizes[left],&B_c1_norm);
+        sqrt_B_c1_norm=std::sqrt(B_c1_norm);
+        delete [] Temp_BC1;
+
         if(A->bSizes[left].first <= A->bSizes[left].second)
         {
             Z[i] = new double[(index_Uc1.first + index_Uc2.first)*(A->bSizes[left].first)];
+            zSizes[i] = {(index_Uc1.first + index_Uc2.first),(A->bSizes[left].first)};
             memset(Z[i],0,sizeof(double)*(index_Uc1.first + index_Uc2.first)*(A->bSizes[left].first));
+            /*Z{i} = [Uc1*sqrt(norm(B{c1}));
+                        Uc2*B{c1}' / sqrt(norm(B{c1}))]; */ 
+
             //Z{i} = [Uc1*sqrt(norm(B{c1}))
             for(int row = 0; row < index_Uc1.first; row++){
                 for(int col=0; col<index_Uc1.second; col++){
-                    Z[i][col+row*index_Uc1.second] = Uc1[col+row*index_Uc1.second]*sqrt_norm_B_left;
+                    Z[i][col+row*index_Uc1.second] = Uc1[col+row*index_Uc1.second]*sqrt_B_c1_norm;
                 }
             }
 
@@ -457,19 +467,19 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
             double *temp_Uc2_Bc1 = new double[index_Uc2.first*(A->bSizes[left].first)];
             memset(temp_Uc2_Bc1,0,sizeof(double)*index_Uc2.first*(A->bSizes[left].first));
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,index_Uc2.first,(A->bSizes[left].first),index_Uc2.second,alpha,Uc2,index_Uc2.second,A->B[left],A->bSizes[left].second,beta,temp_Uc2_Bc1,A->bSizes[left].first);
-            /*Z{i} = [Uc1*sqrt(norm(B{c1}));
-                        Uc2*B{c1}' / sqrt(norm(B{c1}))]; */            
+                       
             for(int row = index_Uc1.first; row < (index_Uc1.first+index_Uc2.first);row++){
                 for(int col = 0;col<(A->bSizes[left].first);col++){
-                    Z[i][col+(row*(A->bSizes[left].first))] = temp_Uc2_Bc1[col+(row-index_Uc1.first)*(index_Uc1.first)] / sqrt_norm_B_left;
+                    Z[i][col+(row*(A->bSizes[left].first))] = temp_Uc2_Bc1[col+(row-index_Uc1.first)*((A->bSizes[left].first))] / sqrt_B_c1_norm;
                 }
             }
             delete [] temp_Uc2_Bc1;
         }
         else
         {
-            Z[i] = new double[(index_Uc1.first+index_Uc2.first)*(A->bSizes[left].first)];
-            memset(Z[i],0,sizeof(double)*(index_Uc1.first+index_Uc2.first)*(A->bSizes[left].first));
+            Z[i] = new double[(index_Uc1.first+index_Uc2.first)*(A->bSizes[left].second)];
+            zSizes[i] = {(index_Uc1.first+index_Uc2.first),(A->bSizes[left].second)};
+            memset(Z[i],0,sizeof(double)*(index_Uc1.first+index_Uc2.first)*(A->bSizes[left].second));
 
             double *temp_Uc1_Bc1 = new double[index_Uc1.first*(A->bSizes[left].second)];
             memset(temp_Uc1_Bc1,0,sizeof(double)*index_Uc1.first*(A->bSizes[left].second));
@@ -479,7 +489,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
             {
                 for(int col=0; col < A->bSizes[left].second; col++)
                 {
-                    Z[i][col+row*(A->bSizes[left].second)] = temp_Uc1_Bc1[col+row*(A->bSizes[left].second)] / sqrt_norm_B_left;
+                    Z[i][col+row*(A->bSizes[left].second)] = temp_Uc1_Bc1[col+row*(A->bSizes[left].second)] / sqrt_B_c1_norm;
                 }
             }
 
@@ -487,7 +497,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
             {
                 for(int col = 0; col < index_Uc2.second; col++)
                 {
-                    Z[i][col+row*index_Uc2.second] = Uc2[col+(row-index_Uc1.first)*index_Uc2.second]*sqrt_norm_B_left;
+                    Z[i][col+row*index_Uc2.second] = Uc2[col+(row-index_Uc1.first)*index_Uc2.second]*sqrt_B_c1_norm;
                 }
             }
             delete [] temp_Uc1_Bc1;      
@@ -506,11 +516,6 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,index_Uc2.first,(A->rSizes[right].second),index_Uc2.second,alpha,Uc2,index_Uc2.second,A->R[right],A->rSizes[right].second,beta,Uc2_Rc2,A->rSizes[right].second);
 
             // Ui = [Uc1 * R{c1}; Uc2 * R{c2}];
-
-            //  for(int k = 0, j = rSI; j<= rEI; j++, k++)
-            //          memcpy(tempT+(k*tRowWidth),A+j*aRowWidth+cEI+1, sizeof(double)*tRowWidth);
-            //for(int k=0;k < index_Uc1.first;k++)          
-             //   memcpy(Ui+(k*(A->rSizes[left].second)),Uc1_Rc1+k*((A->rSizes[left].second)),sizeof(double)*(A->rSizes[left].second));
             memcpy(Ui,Uc1_Rc1,sizeof(double)*(index_Uc1.first*(A->rSizes[left].second)));
             memcpy(Ui+(index_Uc1.first*(A->rSizes[left].second)),Uc2_Rc2,sizeof(double)*index_Uc2.first*(A->rSizes[right].second));
             

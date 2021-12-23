@@ -71,33 +71,44 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
         std::vector<int> ch = bt->GetChildren(i+1);
         //if ch is a leaf node
         if(ch.size() == 0){           
-            Q0[i]       = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
-            double *wi  = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
-            double *wr  = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
+            //on exit of LAPACKE_dsyevd, it will have eigenvalues          
+            double *w  = new double[resDvd->dSizes[i].first];
+
+            //on exit of LAPACKE_dsyevd, it contains eigenvectors
             double *D   = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
             memcpy(D,resDvd->D[i],sizeof(double)*(resDvd->dSizes[i].first)*(resDvd->dSizes[i].second));
-            //double *vl;
-            LAPACKE_dgeev(CblasRowMajor,'N','V',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),wr,wi,NULL,(resDvd->dSizes[i].first),Q0[i],(resDvd->dSizes[i].first));
-            delete [] wi;
-            delete [] wr;
-           
-
-            Lam[i]      = new double[(resDvd->dSizes[i].first)];
-            LamSizes[i] = (resDvd->dSizes[i].first);
-
-            for(int row_col = 0; row_col < (resDvd->dSizes[i].first); row_col++)
+          /*  for (int row = 0; row < resDvd->dSizes[i].first; row++)
             {
-                Lam[i][row_col] = D[i+i*(resDvd->dSizes[i].first)];
+                for (int col = 0; col < resDvd->dSizes[i].first; col++)
+                {
+                    if (row > col)
+                    {
+                       D[col + row * resDvd->dSizes[i].first] = 0;
+                    }
+                }
             }
-
-            delete [] D;
-        }
+            */
+            //computes all eigenvalues and eigenvectors of a real symmetric matrix D using divide and conquer algorithm       
+            int info = LAPACKE_dsyevd(CblasRowMajor,'V','L',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),w);        
+            //check for convergence
+            if( info > 0 ) {
+                printf( "The algorithm failed to compute eigenvalues.\n" );
+                exit( 1 );
+            }
+            
+            Lam[i]      = w;
+            LamSizes[i] = (resDvd->dSizes[i].first);
+            Q0[i]       = D;            
+            q0Sizes[i]  ={(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
+            w = NULL;
+            D = NULL;
+        }        
         else
         {
             int left  = ch[0];
             int right = ch[1];
 
-           // superdcmv_desc(Q0,q0Sizes,resDvd->Z[i],resDvd->zSizes[i],bt,i,1,l);
+            superdcmv_desc(Q0,q0Sizes,resDvd->Z[i],resDvd->zSizes[i],bt,i,1,l,1024);
             //[Z{i}, nflops1] =  superdcmv_desc(Q0, Z{i}, tr, i, 1, rg, desc, N);
             /*
             Lam{i} = [Lam{c1}; Lam{c2}];

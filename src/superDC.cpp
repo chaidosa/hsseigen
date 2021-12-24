@@ -72,36 +72,42 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
         //if ch is a leaf node
         if(ch.size() == 0){           
             //on exit of LAPACKE_dsyevd, it will have eigenvalues          
-            double *w  = new double[resDvd->dSizes[i].first];
-
+            double *d  = new double[resDvd->dSizes[i].first];
+            double *e  = new double[resDvd->dSizes[i].first-1];
+            double *t   = new double[resDvd->dSizes[i].first-1];
             //on exit of LAPACKE_dsyevd, it contains eigenvectors
             double *D   = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
             memcpy(D,resDvd->D[i],sizeof(double)*(resDvd->dSizes[i].first)*(resDvd->dSizes[i].second));
-          /*  for (int row = 0; row < resDvd->dSizes[i].first; row++)
-            {
-                for (int col = 0; col < resDvd->dSizes[i].first; col++)
-                {
-                    if (row > col)
-                    {
-                       D[col + row * resDvd->dSizes[i].first] = 0;
-                    }
-                }
-            }
-            */
+
             //computes all eigenvalues and eigenvectors of a real symmetric matrix D using divide and conquer algorithm       
-            int info = LAPACKE_dsyevd(CblasRowMajor,'V','L',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),w);        
+            //by first converting matrix to tridiagonal form  
+            int info = LAPACKE_dsytrd(LAPACK_ROW_MAJOR,'U',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),d,e,t);
+            if(info > 0){
+                cout<<"Error at converting";
+                exit(1);
+            }
+
+            info = LAPACKE_dorgtr(LAPACK_ROW_MAJOR,'U',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),t);
+            if(info > 0){
+                cout<<"Error at converting";
+                exit(1);
+            } 
+
+            info=LAPACKE_dstedc(LAPACK_ROW_MAJOR,'V',(resDvd->dSizes[i].first),d,e,D,(resDvd->dSizes[i].first));              
             //check for convergence
             if( info > 0 ) {
                 printf( "The algorithm failed to compute eigenvalues.\n" );
                 exit( 1 );
-            }
+            }            
             
-            Lam[i]      = w;
+            Lam[i]      = d;
             LamSizes[i] = (resDvd->dSizes[i].first);
             Q0[i]       = D;            
             q0Sizes[i]  ={(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
-            w = NULL;
+            d = NULL;
             D = NULL;
+            delete [] e;
+            delete [] t;
         }        
         else
         {

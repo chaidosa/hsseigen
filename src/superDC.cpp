@@ -4,6 +4,7 @@
 #include "superDC.h"
 #include "divide2.h"
 #include "superdcmv_desc.h"
+#include "eigenmatrix.h"
 //#include "secualr"
 extern "C"
 {
@@ -51,7 +52,8 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
         Lam = cell(k,1);
         rho = cell(k,1);
     */
-    double **Q0 = new double*[N];    
+    EIG_MAT **Q0 = new EIG_MAT*[N];
+    //double **Q0 = new double*[N];    
     std::pair<int, int>* q0Sizes = new std::pair<int, int>[N];
     for(int k = 0; k < N; k++)
 		q0Sizes[k]=std::make_pair(0,0);    
@@ -100,10 +102,10 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
                 exit( 1 );
             }            
             
-            Lam[i]      = d;
-            LamSizes[i] = (resDvd->dSizes[i].first);
-            Q0[i]       = D;            
-            q0Sizes[i]  ={(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
+            Lam[i]          = d;
+            LamSizes[i]     = (resDvd->dSizes[i].first);
+            Q0[i]->Q0_leaf  = D;            
+            q0Sizes[i]      ={(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
             d = NULL;
             D = NULL;
             delete [] e;

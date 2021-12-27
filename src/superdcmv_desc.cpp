@@ -3,6 +3,7 @@
 #include "superdcmv_desc.h"
 #include "superdcmv_node.h"
 #include<string.h>
+#include "eigenmatrix.h"
 extern "C"
 {
     #include<lapacke.h>
@@ -11,7 +12,7 @@ extern "C"
 }
 using namespace std;
 
-void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,std::pair<int,int>* indexRange,double N){
+void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double *X,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,std::pair<int,int>* indexRange,double N){
 /*
 %%% Input:
 %%% Q: hss structured cauchylike eigenmatrix of descendants of i
@@ -43,7 +44,7 @@ void superdcmv_desc(double **Q,std::pair<int, int>*qSize, double *X,std::pair<in
             memcpy(tempX,X+indexRange[j].first,sizeof(double)*K*columns);
             std::pair<int,int>tempXSize = {K,columns};
             superdcmv_node(Q[j],qSize[j],tempX,tempXSize,bt,j,1,N);
-                        
+            memcpy(X+indexRange[j].first,tempX,sizeof(double)*K*columns);            
         }
     }
     desc.clear();

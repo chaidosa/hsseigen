@@ -52,9 +52,9 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
         Lam = cell(k,1);
         rho = cell(k,1);
     */
-    EIG_MAT **Q0 = new EIG_MAT*[N];
+    EIG_MAT **Q0 = new EIG_MAT*[N]; //Nikhil: [] not necessary (multiple places).
     //double **Q0 = new double*[N];    
-    std::pair<int, int>* q0Sizes = new std::pair<int, int>[N];
+    std::pair<int, int>* q0Sizes = new std::pair<int, int>[N]; 
     for(int k = 0; k < N; k++)
 		q0Sizes[k]=std::make_pair(0,0);    
     

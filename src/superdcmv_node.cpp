@@ -35,7 +35,7 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double *X,std::pair<int
             }
 
             double *tempQX = new double[qSize.first*xSize.second];
-            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qSize.first,xSize.second,qSize.second,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second);
+            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qSize.first,xSize.second,qSize.second,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second); //Nikhil: memory for Q0_leaf seems to have not been allocated (multiple places). Confirm.
             delete [] X;
             X = tempQX;
             tempQX = NULL;

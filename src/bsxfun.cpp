@@ -3,7 +3,9 @@
 #include <assert.h>
 using namespace std;
 /*  Bsxfun similar to matlab,
-*   character 'T' for times   
+*   character 'T' for times
+*   character 'P' for plus
+*   character 'M' for minus   
 */
 void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pair<int,int>ySize){
 
@@ -20,8 +22,32 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
             }
         }
         break;
-    
+
+    case 'P':
+        if(xSize.first != ySize.first){
+            cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
+            assert(false);
+        }
+        for(int row = 0 ; row < xSize.first; row++){
+            for(int col = 0; col<xSize.second; col++){
+                X[col+row*xSize.second] = X[col+row*xSize.second]+Y[row];
+            }
+        }
+        break;
+    case 'M':
+        if(xSize.first != ySize.first){
+            cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
+            assert(false);
+        }
+        for(int row = 0 ; row < xSize.first; row++){
+            for(int col = 0; col<xSize.second; col++){
+                X[col+row*xSize.second] = X[col+row*xSize.second]-Y[row];
+            }
+        }
+        break;
     default:
+        cout<<"Enter valid Parameters";
+        assert(false);
         break;
     }
 

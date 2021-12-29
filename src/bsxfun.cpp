@@ -53,3 +53,13 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
         break;
     }
 }
+void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std::pair<int,int>indSize,double *result){
+    if(arrSize.first != indSize.first){
+        cout<<"Enter valid arguments";
+        assert(false);
+    }
+
+    for(int i = 0;i < arrSize.first; i++){
+        result[i] = Arr[(int)Indices[i]];
+    }
+}

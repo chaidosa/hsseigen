@@ -11,6 +11,7 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
 
     switch (method)
     {
+    //@times
     case 'T':
         if(xSize.first != ySize.first){
             cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
@@ -22,7 +23,7 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
             }
         }
         break;
-
+    //@plus
     case 'P':
         if(xSize.first != ySize.first){
             cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
@@ -34,6 +35,7 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
             }
         }
         break;
+    //@minus
     case 'M':
         if(xSize.first != ySize.first){
             cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
@@ -50,12 +52,4 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
         assert(false);
         break;
     }
-
-
-
-
-
-
-
-
 }

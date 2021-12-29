@@ -61,18 +61,8 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double *X,std::pair<int
         }
         else{
             for(int j = 0; j <r; j++){
-              //superdcmv_cauchy()  
+             // superdcmv_cauchy(Q->Q0_nonleaf[j],Q->q0_nonleaf_Sizes[j],X,xSize,1,1024);  
             }
-
-
-
         }
-
-
-
-
     }
-
-
-
 }

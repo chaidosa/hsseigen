@@ -234,7 +234,7 @@ int main()
 	cout<<"Generators created successfully. HSS matrix is located at:"<<hss<<endl;
 
 	//calling superDC routine
-	//SDC* res = superDC(hss, bt, m, mSize);
+	SDC* res = superDC(hss, bt, m, mSize);
 
 
 

@@ -36,7 +36,7 @@ void merge_arr(std::pair<vector<double>,int>*tempSt,int ns, double *tempT,int tR
     }
 }
 
-
+//Todo:: Add the edge case in the routine
 tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char const* tol, double par){
     tHSSMat* ret          = new tHSSMat();
     //int n                 = mSize; //number of leaf nodes

@@ -1,7 +1,9 @@
 #include "bsxfun.h"
 #include <iostream>
 #include <assert.h>
-using namespace std;
+#include <string.h>
+#include <cstring>
+
 /*  Bsxfun similar to matlab,
 *   character 'T' for times
 *   character 'P' for plus
@@ -14,7 +16,7 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
     //@times
     case 'T':
         if(xSize.first != ySize.first){
-            cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
+            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(int row = 0 ; row < xSize.first; row++){
@@ -26,7 +28,7 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
     //@plus
     case 'P':
         if(xSize.first != ySize.first){
-            cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
+            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(int row = 0 ; row < xSize.first; row++){
@@ -38,7 +40,7 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
     //@minus
     case 'M':
         if(xSize.first != ySize.first){
-            cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other"<<endl;
+            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(int row = 0 ; row < xSize.first; row++){
@@ -48,18 +50,31 @@ void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pai
         }
         break;
     default:
-        cout<<"Enter valid Parameters";
+        std::cout<<"Enter valid Parameters";
         assert(false);
         break;
     }
 }
+
+//used for arranging vector
 void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std::pair<int,int>indSize,double *result){
     if(arrSize.first != indSize.first){
-        cout<<"Enter valid arguments";
+        std::cout<<"Enter valid arguments";
         assert(false);
     }
 
     for(int i = 0;i < arrSize.first; i++){
         result[i] = Arr[(int)Indices[i]];
     }
+}
+
+//used for arranging  arrays
+void arrange_elements2(double *X, std::pair<int,int>XSize,double *T, std::pair<int,int>tSize,double *result){
+    double *temp = new double[(tSize.second * XSize.second)];
+
+    for(int row = 0; row < tSize.second; row++){
+        memcpy(temp+row*(XSize.second),X+((int)T[row])*(XSize.second),sizeof(double)*(XSize.second));
+    }
+    result = temp;
+    temp = NULL;
 }

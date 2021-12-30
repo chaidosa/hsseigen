@@ -3,6 +3,7 @@
 #include <utility>
 #include "eigenmatrix.h"
 #include "bsxfun.h"
+#include "cauchylikematvec.h"
 void superdcmv_cauchy(nonleaf *Q,std::pair<int, int>qSize, double *X,std::pair<int, int>xSize,int ifTrans,double N){
 /*
 %%% Input:
@@ -21,7 +22,12 @@ void superdcmv_cauchy(nonleaf *Q,std::pair<int, int>qSize, double *X,std::pair<i
     }
     else{
         // 1st deflation permutation
-
+        double *temp;
+        arrange_elements2(X,xSize,Q->T,Q->TSize,temp);
+        delete [] X;
+        X = temp;
+        temp = NULL;
+        xSize = {Q->TSize.second,xSize.second};
         //conjugate normalizer
         double *tempX = X + (Q->n1)*xSize.second;
         bsxfun('T',tempX,{xSize.first + Q->n1,xSize.second},Q->v2c,Q->v2cSize);

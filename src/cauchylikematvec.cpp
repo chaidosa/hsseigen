@@ -7,7 +7,7 @@ extern "C"
     #include<lapack.h>
     #include<cblas.h>
 }
-void cauchylikematvec(double **Qc, std::pair<int,int>*qcSizes,double *X, std::pair<int,int>xSize,int ifTrans, double N=1024){
+void cauchylikematvec(double **Qc, std::pair<int,int>*qcSizes,double *X, std::pair<int,int>xSize,int ifTrans, double N){
 /*
     %%% Input:
     %%% Qc: {v,s,d,lam} stores the cauchylike matrix  v_i * s_j / (d_i - lam_j) 

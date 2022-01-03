@@ -1,6 +1,7 @@
 #include "superdcmv_cauchy.h"
 #include <iostream>
 #include <utility>
+#include <string.h>
 #include "eigenmatrix.h"
 #include "bsxfun.h"
 #include "cauchylikematvec.h"
@@ -33,12 +34,17 @@ void superdcmv_cauchy(nonleaf *Q,std::pair<int, int>qSize, double *X,std::pair<i
         bsxfun('T',tempX,{xSize.first + Q->n1,xSize.second},Q->v2c,Q->v2cSize);
 
         //eigenvalue sorting permutation
-
-
+        double *tempI = Q->I+(Q->n1)*Q->ISize.second;
+        double *result_eigen_permutation;
+        arrange_elements2(tempX,{xSize.first + Q->n1,xSize.second},tempI,{(Q->n1),Q->ISize.second},result_eigen_permutation);
+        memcpy(tempX,result_eigen_permutation,sizeof(double)*((xSize.first + Q->n1)*xSize.second));
         //Givens rotation
 
         //2nd deflation permutation
-
+        double *res_2_deflation;
+        double *tempJ = Q->J+(Q->n1)*Q->JSize.second;
+        arrange_elements2(tempX,{xSize.first + Q->n1,xSize.second},tempJ,{Q->n1, Q->JSize.second},res_2_deflation);
+        memcpy(tempX,res_2_deflation,sizeof(double)*((xSize.first + Q->n1)*xSize.second));
         //orthogonal Cauchy eigenmatrix
         
 

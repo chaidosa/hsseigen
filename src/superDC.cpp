@@ -5,6 +5,7 @@
 #include "divide2.h"
 #include "superdcmv_desc.h"
 #include "eigenmatrix.h"
+#include "secular.h"
 //#include "secualr"
 extern "C"
 {
@@ -102,10 +103,12 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
                 exit( 1 );
             }            
             
-            Lam[i]          = d;
-            LamSizes[i]     = (resDvd->dSizes[i].first);
-            Q0[i]->Q0_leaf  = D;            
-            q0Sizes[i]      ={(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
+            Lam[i]            = d;
+            LamSizes[i]       = (resDvd->dSizes[i].first);
+            Q0[i]             = new EIG_MAT();
+            Q0[i]->Q0_leaf    = D;
+            Q0[i]->Q0_nonleaf = NULL;            
+            q0Sizes[i]        = {(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
             d = NULL;
             D = NULL;
             delete [] e;
@@ -137,15 +140,19 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
             Lam[i] = new double[(LamSizes[left-1])+(LamSizes[right-1])];
             memcpy(Lam[i],Lam[left-1],sizeof(double)*(LamSizes[left-1]));
             memcpy(Lam[i]+(LamSizes[left-1]),Lam[right-1],sizeof(double)*(LamSizes[right-1]));
+            LamSizes[i] = (LamSizes[left-1])+(LamSizes[right-1]);
             delete [] Lam[left-1];
             delete [] Lam[right-1];
             LamSizes[left-1]  = 0;
             LamSizes[right-1] = 0;
             int r             = resDvd->zSizes[i].second;
-
-            for(int j = 0; j < r; j++)
-            {
-             //secular(Lam{i}, Z{i}(:, j), tol, N)   
+            Q0[i] = new EIG_MAT();
+            Q0[i]->Q0_leaf = NULL;
+            nonleaf **temp = new nonleaf*[r];
+            Q0[i]->Q0_nonleaf = temp;
+            for(int j = 0; j < r; j++){
+                Q0[i]->Q0_nonleaf[j] = new nonleaf();
+             //   Q0[i]->Q0_nonleaf[j] = secular(Lam[i],LamSizes[i],);   
             } 
 
         }

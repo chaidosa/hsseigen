@@ -10,7 +10,7 @@ extern "C"
     #include<cblas.h>
 }
 
-void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double *X,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
+void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double **tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
 /*
 %%% Input:
 %%% Q: hss sturctured cauchylike eigenmatrix of descendants of i
@@ -24,6 +24,7 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double *X,std::pair<int
 %%% ifTrans = 0: X = Qi * X 
 %%% ifTrans = 1: X = Qi^T * X;
 */
+    double *X = *tempX;
     double alpha = 1;
     double beta  = 0;
     std::vector<int> ch = bt->GetChildren(index+1);
@@ -37,7 +38,7 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double *X,std::pair<int
             double *tempQX = new double[qSize.first*xSize.second];
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qSize.first,xSize.second,qSize.second,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second); //Nikhil: memory for Q0_leaf seems to have not been allocated (multiple places). Confirm.
             delete [] X;
-            X = tempQX;
+            *tempX = tempQX;
             tempQX = NULL;
         }
         else{
@@ -49,7 +50,7 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double *X,std::pair<int
             double *tempQX = new double[qSize.second*xSize.second];
             cblas_dgemm(CblasRowMajor,CblasTrans,CblasNoTrans,qSize.second,xSize.second,qSize.first,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second);
             delete [] X;
-            X = tempQX;
+            *tempX = tempQX;
             tempQX = NULL;
         }
     }

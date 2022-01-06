@@ -9,8 +9,8 @@
 *   character 'P' for plus
 *   character 'M' for minus   
 */
-void bsxfun(char method, double *X, std::pair<int,int>xSize, double *Y, std::pair<int,int>ySize){
-
+void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std::pair<int,int>ySize){
+    double *X = *tempX;
     switch (method)
     {
     //@times

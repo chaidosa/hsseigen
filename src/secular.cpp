@@ -29,99 +29,6 @@ vector<double> diff(vector<double> V){
 return result;
 }
 
-
-void rootfinder(vector<double> d,vector<double>v){
-/*
-%%% Input:
-%%% d, v: as in secular equation
-%%% N: size threshold to use fmm
-
-%%% Ouput:
-%%% x: roots of secular equation 
-%%% tau: gaps
-%%% org: shifts for each root
-*/
-    double N = 1024;
-    vector<double>x;
-    vector<double>tau;
-    vector<double>org;
-
-    int n = v.size();
-    if(d.size()!=v.size()){
-        cout << "not computable";
-        assert(false);
-    }
-    //edge case
-    if(n == 1){
-        double temp = (v[0]*v[0]) + d[0];
-        x.push_back(temp);
-        temp = temp - d[0];
-        tau.push_back(temp);
-        org.push_back(1);
-        return;
-    }
-   
-    int C = 64;
-    int record = 1;
-    int alpha = 0;
-    int r = 50;
-    long double N0 = 1048576;
-    double percent = 1;
-    double FMM_ITER = ceil(log(n)/log(2))-6 > 5?ceil(log(n)/log(2))-6:5;
-    int Flag = 1;
-    int MAX_ITER = 100;
-   
-    if(record){
-        vector<double> iter(n);
-        vector<double> residual(n);
-        vector<double> erretms(n);
-    }
-    double v_norm = vec_norm(v);
-    double rho    = 1 / (v_norm*v_norm);
-
-    for(int i = 0; i < v.size(); ++i){
-        v[i] = v[i] / v_norm;
-    }
-    vector<double> d0 = diff(d);
-
-    vector<double> x;
-    for(int i = 0; i < n-1; ++i){
-        double temp = (d[i] + d[i+1]) / 2;
-        x.push_back(temp);
-    }
-
-    vector<double> org;
-    for(int i=0; i < n-1; ++i){
-        org.push_back(i);
-    }
-
-    /*
-    if n >= N
-    [fl, fu, nflops1] = trifmm1d_local_shift(r, x, d, v.^2, d0/2, org, 1);
-    f0 = rho - fl - fu;
-
-else
-    K = d(org) - d.';
-    K = bsxfun(@plus, K, d0/2);
-    K = 1 ./ K;
-    f0 = rho - K * v.^2;
-    nflops = nflops + flops('prod', K, 'n', v, 'n');
-end
-h = 2 * diff(v.^2) ./ d0;
-g = f0 - h;
-org = [1:n-1]' + (f0<0);
-
-    */
-   if(n >= N){
-        //[fl, fu, nflops1] = trifmm1d_local_shift(r, x, d, v.^2, d0/2, org, 1);
-        //f0 = rho - fl - fu;
-   }
-   else{    
-
-   }
-
-}
-
 nonleaf* secular(double *d, int dSize, double *v, int vSize,double N=1024){
 /*    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,7 +179,7 @@ nonleaf* secular(double *d, int dSize, double *v, int vSize,double N=1024){
         }
 
         if(n3){
-            rootfinder(d3,v3);
+            //rootfinder(d3,v3);
             /*
                 [Lam3, tau, org, nflops1, percent] = rootfinder(d3, v3, N);
         

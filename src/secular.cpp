@@ -6,28 +6,8 @@
 #include<algorithm>
 #include<iostream>
 #include "eigenmatrix.h"
-
+#include "bsxfun.h"
 using namespace std;
-
-//norm of a vector using eucledian method
-double vec_norm(vector<double> v){
-    double result = 0;
-    for(int i = 0; i < v.size(); ++i){
-        result +=v[i]*v[i];
-    }
-
-return sqrt(result);    
-}
-
-//Function similar to matlab: calculates diff of next and current element and form a vector
-vector<double> diff(vector<double> V){
-    vector<double> result;
-    for(int i = 0; i < V.size()-1; ++i){
-        double temp = V[i+1]-V[i];
-        result.push_back(temp);
-    }
-return result;
-}
 
 nonleaf* secular(double *d, int dSize, double *v, int vSize,double N=1024){
 /*    

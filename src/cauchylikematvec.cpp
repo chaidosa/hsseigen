@@ -48,15 +48,15 @@ void cauchylikematvec(double **Qc, std::pair<int,int>*qcSizes,double *X, std::pa
                 }
             }
 
-            bsxfun('P',S,{qcSizes[2].first,qcSizes[2].first},tau,qcSizes[5]);
+            bsxfun('P',&S,{qcSizes[2].first,qcSizes[2].first},tau,qcSizes[5]);
             //S = -1 ./S;
             for(int row = 0;row < qcSizes[2].first; row++){
                 for(int col=0; col < qcSizes[2].first; col++){
                     S[col + row*(qcSizes[2].first)] = -1 / S[col + row*(qcSizes[2].first)];
                 }
             }
-            bsxfun('T',S,{qcSizes[2].first,qcSizes[2].first},s,qcSizes[1]);
-            bsxfun('T',S,{qcSizes[2].first,qcSizes[2].first},v,{qcSizes[0].second,qcSizes[0].first}); 
+            bsxfun('T',&S,{qcSizes[2].first,qcSizes[2].first},s,qcSizes[1]);
+            bsxfun('T',&S,{qcSizes[2].first,qcSizes[2].first},v,{qcSizes[0].second,qcSizes[0].first}); 
             //Y = S*X
             double *Y = new double[qcSizes[2].first*xSize.second];
             memset(Y,0,sizeof(double)*(qcSizes[2].first*xSize.second));

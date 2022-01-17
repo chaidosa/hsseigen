@@ -21,6 +21,7 @@ void superdcmv_cauchy(nonleaf *Q,std::pair<int, int>qSize, double *X,std::pair<i
     if(ifTrans == 0){
 
     }
+/*    
     else{
         // 1st deflation permutation
         double *temp;
@@ -31,7 +32,7 @@ void superdcmv_cauchy(nonleaf *Q,std::pair<int, int>qSize, double *X,std::pair<i
         xSize = {Q->TSize.second,xSize.second};
         //conjugate normalizer
         double *tempX = X + (Q->n1)*xSize.second;
-        bsxfun('T',tempX,{xSize.first + Q->n1,xSize.second},Q->v2c,Q->v2cSize);
+        bsxfun('T',&tempX,{xSize.first + Q->n1,xSize.second},Q->v2c,Q->v2cSize);
 
         //eigenvalue sorting permutation
         double *tempI = Q->I+(Q->n1)*Q->ISize.second;
@@ -50,7 +51,8 @@ void superdcmv_cauchy(nonleaf *Q,std::pair<int, int>qSize, double *X,std::pair<i
 
 
     }
-
+    Todo:: modify non-working method
+*/
 
 }
 

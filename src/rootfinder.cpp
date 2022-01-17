@@ -11,23 +11,7 @@ extern "C"
 
 using namespace std;
 
-double vec_norm(vector<double> v){
-    double result = 0;
-    for(int i = 0; i < v.size(); ++i){
-        result +=v[i]*v[i];
-    }
 
-return sqrt(result);    
-}
-
-vector<double> diff(vector<double> V){
-    vector<double> result;
-    for(int i = 0; i < V.size()-1; ++i){
-        double temp = V[i+1]-V[i];
-        result.push_back(temp);
-    }
-return result;
-}
 
 void rootfinder(vector<double> d,vector<double>v){
 /*
@@ -82,7 +66,7 @@ void rootfinder(vector<double> d,vector<double>v){
     for(int i = 0; i < v.size(); ++i){
         v[i] = v[i] / v_norm;
     }
-    vector<double> d0 = diff(d);
+    vector<double> d0 = diff_vec(d);
 
     vector<double> x;
     for(int i = 0; i < n-1; ++i){
@@ -151,7 +135,7 @@ void rootfinder(vector<double> d,vector<double>v){
 
     // h = 2 * diff(v.^2) ./ d0;
     vector<double>tempvSqr(v2_arr,v2_arr+v.size());
-    vector<double> h = diff(tempvSqr);
+    vector<double> h = diff_vec(tempvSqr);
 
     for(int i = 0; i < h.size(); ++i){
         h[i] = 2*h[i] / d0[i];

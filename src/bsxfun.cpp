@@ -3,7 +3,8 @@
 #include <assert.h>
 #include <string.h>
 #include <cstring>
-
+#include <bits/stdc++.h>
+using namespace std;
 /*  Bsxfun similar to matlab,
 *   character 'T' for times
 *   character 'P' for plus
@@ -77,4 +78,23 @@ void arrange_elements2(double *X, std::pair<int,int>XSize,double *T, std::pair<i
     }
     result = temp;
     temp = NULL;
+}
+
+
+double vec_norm(vector<double> v){
+    double result = 0;
+    for(int i = 0; i < v.size(); ++i){
+        result +=v[i]*v[i];
+    }
+
+return sqrt(result);    
+}
+
+vector<double> diff_vec(vector<double> V){
+    std::vector<double> result;
+    for(int i = 0; i < V.size()-1; ++i){
+        double temp = V[i+1]-V[i];
+        result.push_back(temp);
+    }
+return result;
 }

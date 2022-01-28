@@ -134,7 +134,7 @@ void printArray(double **Arr, int row, int col){
 }
 
 
-void rootfinder(vector<double> d,vector<double>v){
+void rootfinder(vector<double>& d,vector<double>& v){
 /*
 %%% Input:
 %%% d, v: as in secular equation
@@ -145,6 +145,8 @@ void rootfinder(vector<double> d,vector<double>v){
 %%% tau: gaps
 %%% org: shifts for each root
 */
+
+
     double N = 1024;
     
 
@@ -155,14 +157,14 @@ void rootfinder(vector<double> d,vector<double>v){
     }
     //edge case
     if(n == 1){
-        vector<double>x;
-        vector<double>tau;
-        vector<double>org;
+        std::vector<double>x;
+        std::vector<double>tau;
+        std::vector<double>org;
         double temp = (v[0]*v[0]) + d[0];
         x.push_back(temp);
         temp = temp - d[0];
         tau.push_back(temp);
-        org.push_back(1);
+        org.push_back(0);
         return;
     }
    
@@ -179,9 +181,9 @@ void rootfinder(vector<double> d,vector<double>v){
     int stop_criteria = 1;
     int display_warning =1;
    // if(record){
-        vector<double> iter(n);
-        vector<double> residual(n);
-        vector<double> erretms(n);
+        std::vector<double> iter(n);
+        std::vector<double> residual(n);
+        std::vector<double> erretms(n);
   //  }
     double v_norm = vec_norm(v);
     double rho    = 1 / (v_norm*v_norm);
@@ -189,15 +191,15 @@ void rootfinder(vector<double> d,vector<double>v){
     for(int i = 0; i < v.size(); ++i){
         v[i] = v[i] / v_norm;
     }
-    vector<double> d0 = diff_vec(d);
+    std::vector<double> d0 = diff_vec(d);
 
-    vector<double> x;
+    std::vector<double> x;
     for(int i = 0; i < n-1; ++i){
         double temp = (d[i] + d[i+1]) / 2;
         x.push_back(temp);
     }
 
-    vector<double> org;
+    std::vector<double> org;
     for(int i=0; i < n-1; ++i){
         org.push_back(i);
     }
@@ -218,7 +220,7 @@ void rootfinder(vector<double> d,vector<double>v){
    else{
        //  K = d(org) - d.';
        //  K = bsxfun(@plus, K, d0/2);
-       //  K = 1 ./ K;
+       
         int kRows = org.size();
         int kCols  = d.size(); 
         
@@ -230,16 +232,18 @@ void rootfinder(vector<double> d,vector<double>v){
             }
         }
 
-        //printArray(&K,kRows,kCols);
+        //printArray(&K, kRows, kCols);
         
+        //it used to hold d0/2
         double *tempD = new double[d0.size()];
 
         for(int i = 0; i < d0.size(); ++i){
             tempD[i] = d0[i] / 2;
         }
 
-        bsxfun('P',&K,{kRows,kCols},tempD,{d0.size(),1});
+        bsxfun('P', &K, {kRows,kCols}, tempD, {d0.size(), 1});
         
+        //  K = 1 ./ K;
         for(int row_col = 0; row_col < (kRows*kCols); ++row_col){
             K[row_col] = 1 / K[row_col];
         }
@@ -247,8 +251,7 @@ void rootfinder(vector<double> d,vector<double>v){
         // f0 = rho - K * v.^2;
         f0 = new double[kRows]; 
         f0_size = kRows;
-        memset(f0, 0, sizeof(double)*kRows); 
-
+        memset(f0, 0, sizeof(double)*kRows);
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1.0, K, kCols, v2_arr, 1, 0.0, f0, 1);
 
         for(int i = 0; i < kRows; ++i){
@@ -256,19 +259,19 @@ void rootfinder(vector<double> d,vector<double>v){
         }
 
         delete[] K;
+        delete[] tempD;
         K = NULL;
     }
 
     // h = 2 * diff(v.^2) ./ d0;
-    vector<double>tempvSqr(v2_arr,v2_arr+v.size());
-    vector<double> h = diff_vec(tempvSqr);
-
+    std::vector<double>tempvSqr(v2_arr, v2_arr+v.size());
+    std::vector<double> h = diff_vec(tempvSqr);
     for(int i = 0; i < h.size(); ++i){
         h[i] = 2*h[i] / d0[i];
     }
-    //g = f0 - h;
 
-    vector<double>g;
+    //g = f0 - h;
+    std::vector<double>g;
     for(int i = 0; i < f0_size; ++i){
         double temp = (f0[i]-h[i]);
         g.push_back(temp);
@@ -279,18 +282,22 @@ void rootfinder(vector<double> d,vector<double>v){
         if(f0[i] < 0){
             org[i] = org[i] + 1;
         }
-    }    
+    }
 
-    //Upper bound and lower bound
-    vector<double> d1(d.begin(),d.end()-1);
-    vector<double> d2(d.begin()+1,d.end());
-    vector<double> v1(v.begin(),v.end()-1);
-    vector<double> v2(v.begin()+1, v.end());
-    vector<double> xub(n-1,0);
-    vector<double> xlb(n-1,0);
-    vector<int> I1;
-    vector<int> I2;
 
+
+
+    // **Upper bound and lower bound**
+    std::vector<double> d1(d.begin(), d.end()-1);
+    std::vector<double> d2(d.begin()+1, d.end());
+    std::vector<double> v1(v.begin(), v.end()-1);
+    std::vector<double> v2(v.begin()+1, v.end());
+    std::vector<double> xub(n-1,0);
+    std::vector<double> xlb(n-1,0);
+    std::vector<int> I1;
+    std::vector<int> I2;
+
+    //find (f0 >= 0) and find(f0 < 0)
     for(int i = 0; i < f0_size; i++){
         if(f0[i]>=0)
             I1.push_back(i);
@@ -306,12 +313,14 @@ void rootfinder(vector<double> d,vector<double>v){
         xlb[I2[i]] = (d1[I2[i]] - d2[I2[i]]) / 2;  
     }
 
-    vector<double>xlb0(xlb.begin(),xlb.end());
-    vector<double>xub0(xub.begin(),xub.end());
+    std::vector<double>xlb0(xlb.begin(), xlb.end());
+    std::vector<double>xub0(xub.begin(), xub.end());
 
-    //inital guess
-    //a = (2*(f0>=0) - 1) .* d0 .* g + v(1:n-1).^2 + v(2:n).^2;    
-    vector<double>a;
+
+
+
+    // **inital guess**      
+    std::vector<double>a; //a = (2*(f0>=0) - 1) .* d0 .* g + v(1:n-1).^2 + v(2:n).^2;
     for(int i = 0; i < n-1; ++i){
         double temp_first_part = 0;
         double temp_second_part = 0;
@@ -330,9 +339,8 @@ void rootfinder(vector<double> d,vector<double>v){
         a.push_back(temp_first_part);
 
     }
-
     //b = ((f0>=0) .* v(1:n-1).^2 - (f0<0) .* v(2:n).^2) .* d0;
-    vector<double>b;
+    std::vector<double>b;
     for(int i = 0; i < n-1; ++i){
         double temp_first_part = 0;
         double temp_second_part = 0; 
@@ -346,12 +354,9 @@ void rootfinder(vector<double> d,vector<double>v){
         b.push_back(temp_first_part);
     }
 
-    vector<double>tau(n-1);    
-    
-    I1.resize(0);
-    I1.shrink_to_fit();
-    I2.resize(0);
-    I2.shrink_to_fit();
+    std::vector<double>tau(n-1, 0);    
+    //clearnig previous allocations
+    I1.resize(0); I1.shrink_to_fit(); I2.resize(0); I2.shrink_to_fit();
 
     for(int i = 0; i < a.size(); ++i){
 
@@ -372,7 +377,10 @@ void rootfinder(vector<double> d,vector<double>v){
         tau[I2[i]] = (a[I2[i]] - std::sqrt(std::abs( (a[I2[i]]* a[I2[i]]) - (4 * b[I2[i]]*g[I2[i]])))) / (2* g[I2[i]]);
     }
 
-    //bound check
+
+
+
+    // **bound check**
     //this vector is same as I in matlab version
     std::vector<int>I_B;
     for(int i = 0; i < tau.size(); ++i){
@@ -382,54 +390,54 @@ void rootfinder(vector<double> d,vector<double>v){
 
     }
 
-    if(I_B.size() != 0){
-
-        for(int i = 0; i < I_B.size(); ++i){
-            tau[I_B[i]] = (xub[I_B[i]] + xlb[I_B[i]])/2;
-        }
-
-    }
+    if(I_B.size() != 0)
+        for(int i = 0; i < I_B.size(); ++i)
+            tau[I_B[i]] = (xub[I_B[i]] + xlb[I_B[i]])/2;      
     
-    for(int i = 0; i < tau.size(); ++i){
-        x[i] = tau[i] + d[(int)org[i]];
-    }
 
-// iterate n-1 roots simultaneously
+    for(int i = 0; i < tau.size(); ++i)
+        x[i] = tau[i] + d[(int)org[i]];
+
+
+
+
+    
+    /*
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%  iterate n-1 roots simultaneously  %%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
     int iter_ct = 0; //iteration count
-    vector<double> swtch(n-1,1);
-    vector<double> pref;
-    vector<double> f_prev;
+    std::vector<double> swtch(n-1, 1);
+    std::vector<double> pref;
+    std::vector<double> f_prev;
     std::vector<double> J2;
-    long double *f;
+    double *f;
     double  *psi, *phi, *dpsi, *dphi, *df;     
         int pd_size = 0;
-    while (iter_ct < FMM_ITER && Flag){
-    
+
+    while (iter_ct < FMM_ITER && Flag){    
         if(iter_ct > 0)
             pref = f_prev;
-    
-        //bound check with bisection safeguard
-        I_B.clear();
-        I_B.resize(0);
-        I_B.shrink_to_fit();
 
+    
+        // **bound check with bisection safeguard**
+        I_B.clear(); I_B.resize(0); I_B.shrink_to_fit();
         for(int i = 0; i < tau.size(); i++){
             if(tau[i] == 0 | (tau[i]*xub[i]) < 0 | (tau[i]*xlb[i])<0 | isnan(tau[i]) | tau[i] < xlb0[i] | tau[i] > xub0[i])
                 I_B.push_back(i);
         }
 
         if(~I_B.empty()){
-
             for(int i = 0; i < I_B.size(); ++i){
                 tau[I_B[i]] = (xub[I_B[i]] + xlb[I_B[i]])/2;
                 x[I_B[i]] = tau[I_B[i]] + d[(int)org[I_B[i]]];
             }
-
         }
 
-        //secular function evaluation
-        
-        
+
+
+
+        // **secular function evaluation**     
         if(n >= N){
             //fmm
         }
@@ -445,12 +453,8 @@ void rootfinder(vector<double> d,vector<double>v){
                     K[col+row*(kCols)] = d[(int)org[row]] - d[col];
                 }
             }
-
-            //double* temp_tau = &tau[0];
-
-            //double* temp_org;
-            //memcpy(temp_org,temp_o,sizeof(int)*org.size());
-            bsxfun('P',&K,{kRows,kCols},&tau[0],{tau.size(),1});
+            
+            bsxfun('P', &K, {kRows,kCols}, &tau[0], {tau.size(), 1});
 
             for(int i = 0; i < (kRows*kCols); ++i)
                 K[i] = 1/K[i];
@@ -458,8 +462,8 @@ void rootfinder(vector<double> d,vector<double>v){
             double *K1 = new double[kRows*kCols];
             double *K2 = new double[kRows*kCols];
 
-            memcpy(K1,K,sizeof(double)*kRows*kCols);
-            memcpy(K2,K,sizeof(double)*kRows*kCols);
+            memcpy(K1, K, sizeof(double)*kRows*kCols);
+            memcpy(K2, K, sizeof(double)*kRows*kCols);
 
             //K1 = tril(K), K2 = triu(K,1)
             for(int row = 0; row < kRows; row++){
@@ -470,24 +474,20 @@ void rootfinder(vector<double> d,vector<double>v){
                         K2[col + row*(kCols)] = 0;
                 }
             }
-           // printArray(&K1,kRows,kCols);            
-           // printArray(&K2,kRows,kCols);
+           // printArray(&K1, kRows, kCols);            
+           // printArray(&K2, kRows, kCols);
 
             psi = new double[kRows];
             phi = new double[kRows];
 
-            memset(psi,0,sizeof(double)*kRows);
-            memset(phi,0,sizeof(double)*kRows);
-
-            double *temp = new double[v.size()];
-            for(int i = 0; i < v.size(); ++i)
-                temp[i] = v[i]*v[i];
+            memset(psi, 0, sizeof(double)*kRows);
+            memset(phi, 0, sizeof(double)*kRows);            
 
             //psi = K1*v^2; phi = K2*v^2;
-            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K1,kCols,temp,1,0,psi,1);
-            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K2,kCols,temp,1,0,phi,1);
+            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, K1, kCols, v2_arr, 1, 0, psi, 1);
+            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, K2, kCols, v2_arr, 1, 0, phi, 1);
             
-            f = new long double[kRows];
+            f = new double[kRows];
 
             for(int i = 0; i < kRows; i++)
                 f[i] = rho-psi[i]-phi[i];
@@ -508,11 +508,11 @@ void rootfinder(vector<double> d,vector<double>v){
             dpsi = new double[kRows];
             dphi = new double[kRows];
 
-            memset(dpsi,0,sizeof(double)*kRows);
-            memset(dphi,0,sizeof(double)*kRows);
+            memset(dpsi, 0, sizeof(double)*kRows);
+            memset(dphi, 0, sizeof(double)*kRows);
 
-            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,dK1,kCols,temp,1,0,dpsi,1);
-            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,dK2,kCols,temp,1,0,dphi,1);
+            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, dK1, kCols, v2_arr, 1, 0, dpsi, 1);
+            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, dK2, kCols, v2_arr, 1, 0, dphi, 1);
 
             df = new double[kRows];
             for(int i = 0; i < kRows; ++i){
@@ -523,13 +523,15 @@ void rootfinder(vector<double> d,vector<double>v){
 
             delete[] dK1;
             delete[] dK2;
-            delete[] K;
-
+            delete[] K;            
+            
         // end of else statement
         }
 
-        //adaptive FMM iterations        
-        double *res = new double[pd_size];
+
+
+        // **adaptive FMM iterations**        
+        std::vector<double> res(pd_size);
 
         for(int i = 0 ; i < pd_size; ++i)
             res[i] = rho + std::abs(psi[i]) + std::abs(phi[i]);
@@ -549,11 +551,11 @@ void rootfinder(vector<double> d,vector<double>v){
         if(iter_ct == 5 || iter_ct < 5 && Flag == 0)
             percent = J2.size() / (n-1);
         
-        //update  upper and lower bounds
-        I_B.clear();
-        I_B.resize(0);
-        I_B.shrink_to_fit();        
-        vector<int> II;
+
+
+        // **update  upper and lower bounds**
+        I_B.clear(); I_B.resize(0); I_B.shrink_to_fit();        
+        std::vector<int> II;
         for(int i = 0; i < pd_size; ++i){            
             if(f[i] < 0)
                 I_B.push_back(i);
@@ -567,12 +569,14 @@ void rootfinder(vector<double> d,vector<double>v){
         for(int i = 0; i < II.size(); ++i)
             xub[II[i]] = std::min(tau[II[i]],xub[II[i]]);
 
-        //swtch = 1 : fixed weight method
-        //swtch = 0 : middle way method
-        vector<int> Iswtch;
+
+
+        // **swtch = 1 : fixed weight method**
+        // **swtch = 0 : middle way method**
+        std::vector<int> Iswtch;
         if(iter_ct > 0){
             for(int i = 0; i < pd_size; ++i){
-                if(pref[i]*f[i] > 0 & (std::abs(pref[i]) > abs(f[i]) / 10))
+                if((pref[i]*f[i] > 0) & (std::abs(pref[i]) > abs(f[i]) / 10))
                     Iswtch.push_back(i);
             }
             for(int i = 0; i < Iswtch.size(); ++i){
@@ -580,13 +584,13 @@ void rootfinder(vector<double> d,vector<double>v){
             }
         }
 
-        //quadratic equation coefficients
-        a.clear();
-        a.resize(0);
-        a.shrink_to_fit();
-        b.clear();
-        b.resize(0);
-        b.shrink_to_fit();
+
+
+        // **quadratic equation coefficients**
+        a.clear(); a.resize(0); a.shrink_to_fit();
+        b.clear(); b.resize(0); b.shrink_to_fit();
+        // a = ((d1 - x) + (d2 - x)) .* f - (d1 - x) .* (d2 - x) .* df;
+        // b = (d1 - x) .* (d2 - x) .* f;
         for(int i = 0; i < pd_size; ++i){
             double temp_a = ( (d[i]-x[i]) + (d2[i]-x[i]) ) * f[i] - (d1[i]-x[i]) * (d2[i]-x[i]) * df[i];
             a.push_back(temp_a);
@@ -594,13 +598,16 @@ void rootfinder(vector<double> d,vector<double>v){
             double temp_b = (d1[i]-x[i]) * (d2[i]-x[i]) * f[i];
             b.push_back(temp_b);
         }
-        vector<double>c(n-1);
+
+        std::vector<double>c(n-1, 0);
         if(iter_ct > 0){
-            vector<double> c0;
-            vector<double> c1;
+            std::vector<double> c0;
+            std::vector<double> c1;
             for(int i = 0; i < pd_size; ++i){
+
                 double temp = -(d1[i]-x[i]) * dpsi[i] - (d2[i]-x[i]) * dphi[i] + f[i];
                 c0.push_back(temp);
+
                 temp = 0;
                 if(f0[i]>=0)
                     temp = -1*( (d2[i] - x[i]) * df[i] + (v1[i]*v1[i]) * (d1[i]- d2[i]) / ((d1[i]-x[i])*(d1[i]-x[i])));
@@ -609,6 +616,7 @@ void rootfinder(vector<double> d,vector<double>v){
 
                 temp = temp + f[i];
                 c1.push_back(temp);
+
             }
             
             for(int i = 0; i < swtch.size(); ++i){
@@ -633,8 +641,10 @@ void rootfinder(vector<double> d,vector<double>v){
             }
         }
 
-        //eta : update root
-        vector<double>eta(n-1);
+
+
+        // **eta : update root**
+        std::vector<double>eta(n-1);
         I1.clear();I1.resize(0);I1.shrink_to_fit();
         I2.clear();I2.resize(0);I2.shrink_to_fit();
 
@@ -653,35 +663,36 @@ void rootfinder(vector<double> d,vector<double>v){
             eta[I2[i]] = (a[I2[i]] - std::sqrt(std::abs((a[I2[i]] * a[I2[i]]) - 4*b[I2[i]]*c[I2[i]]))) / (2*c[I2[i]]);            
         }
 
-        vector<double> Ic;
+        std::vector<double> Ic; //handle corner case ?
         for(int i = 0 ; i < c.size(); i++){
             if(std::abs(c[i]) == 0)
                 Ic.push_back(i);
         }
 
         if(Ic.size() != 0){
-            vector<double> Ia;
+
+            std::vector<double> Ia;
             for(int i = 0; i < Ic.size(); i++){
                 if(std::abs(a[Ic[i]]) == 0)
                     Ia.push_back(i);
             }
 
             if(Ia.size() != 0){
-                I_B.clear();I_B.resize(0);I_B.shrink_to_fit();
+                I_B.clear(); I_B.resize(0); I_B.shrink_to_fit();
                 for(int i = 0; i < Ia.size(); ++i){
-                    double temp = Ic[Ia[i]];
+                    double temp = Ic[(int)Ia[i]];
                     I_B.push_back(temp);
                 }
 
                 for(int i = 0; i< I_B.size(); i++){
                     double temp;
                     if(f0[(int)I_B[i]] >= 0){
-                        temp = tempvSqr[(int)I_B[i]] + ((d[(int)I_B[i]+1] - x[(int)I_B[i]])*(d[(int)I_B[i]+1] - x[(int)I_B[i]])) * ((df[(int)I_B[i]] - tempvSqr[(int)I_B[i]]) / ((d[(int)I_B[i]] - x[(int)I_B[i]])*(d[(int)I_B[i]] - x[(int)I_B[i]])));                         
+                        temp = tempvSqr[I_B[i]] + ((d[I_B[i]+1] - x[I_B[i]])*(d[I_B[i]+1] - x[I_B[i]])) * ((df[I_B[i]] - tempvSqr[I_B[i]]) / ((d[(int)I_B[i]] - x[(int)I_B[i]])*(d[(int)I_B[i]] - x[(int)I_B[i]])));                         
                     }
                     else{
-                        temp = tempvSqr[(int)I_B[i]+1] + std::pow((d[(int)I_B[i]] - x[(int)I_B[i]]), 2.0) * (df[(int)I_B[i]] - tempvSqr[(int)I_B[i]+1] / std::pow((d[(int)I_B[i]+1] - x[(int)I_B[i]]),2.0));
+                        temp = tempvSqr[I_B[i]+1] + std::pow((d[(int)I_B[i]] - x[(int)I_B[i]]), 2.0) * (df[(int)I_B[i]] - tempvSqr[(int)I_B[i]+1] / std::pow((d[(int)I_B[i]+1] - x[(int)I_B[i]]),2.0));
                     }
-                    a[(int)I_B[i]] = temp;
+                    a[I_B[i]] = temp;
                 }             
             }
 
@@ -690,7 +701,9 @@ void rootfinder(vector<double> d,vector<double>v){
             }
         }
 
-        // f*eta should be negative, otherwise run a newton step
+
+
+        // **f*eta should be negative, otherwise run a newton step**
         I_B.clear(); I_B.resize(0); I_B.shrink_to_fit();
 
         for(int i = 0; i < (n-1); i++){
@@ -704,8 +717,10 @@ void rootfinder(vector<double> d,vector<double>v){
             }
         }
 
-        //bound check with bisection safeguard
-        vector<double> tmp;
+
+
+        //**bound check with bisection safeguard**
+        std::vector<double> tmp;
         for(int i = 0; i < tau.size(); ++i){
             double temp = tau[i] + eta[i];
             tmp.push_back(temp);
@@ -732,7 +747,8 @@ void rootfinder(vector<double> d,vector<double>v){
         }                   
 
 
-        //update root 
+
+        // **update root** 
         for(int i = 0; i < tau.size(); ++i)
             tau[i] = tau[i] + eta[i];
         
@@ -743,11 +759,14 @@ void rootfinder(vector<double> d,vector<double>v){
         iter_ct = iter_ct + 1;
         f_prev.insert(f_prev.begin(),f,f+pd_size);
     //end of while loop
+        delete[] psi, phi, dpsi, dphi, f;
     }
    //TODO: handle the memory allocation/deallocation for f, psi, phi etc.
 
-    // check residual after MAX_ITER iterations
-    
+
+
+
+    // **check residual after MAX_ITER iterations**    
     if(FMM_ITER){
         if(n >=N){
             //trifmm1dlocal shift
@@ -800,18 +819,22 @@ void rootfinder(vector<double> d,vector<double>v){
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K1,kCols,temp,1,0,psi,1);
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K2,kCols,temp,1,0,phi,1);
             
-            f = new long double[kRows];
+            f = new double[kRows];
 
             for(int i = 0; i < kRows; i++)
                 f[i] = rho-psi[i]-phi[i];
 
             pd_size = kRows;
+
+            delete[] K, K1, K2;
+            delete[] psi, phi;
          //end of inner else block   
         }
         
-        vector<double> res;
+        std::vector<double> res;
         for(int i = 0; i < pd_size; ++i)
             res.push_back(rho + std::abs(psi[i]) + std::abs(phi[i]));
+
         residual.clear(); residual.resize(0); residual.shrink_to_fit();
         J2.clear(); J2.resize(0); J2.shrink_to_fit();
         for(int i = 0; i < pd_size; i++){
@@ -830,27 +853,37 @@ void rootfinder(vector<double> d,vector<double>v){
         if(n > N0);
             //add print statements for continuing iterations
         J2.clear(); J2.resize(0); J2.shrink_to_fit();
+
         for(int i = 0; i < (n-1); ++i)
             J2.push_back(i);
 
-    //end of outer else block    
+    //end of outer else block  
+    
     }
+
+
+
 
 /*
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%% find roots x(J2) %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
-    vector<double> QJ(n);
+    std::vector<double> QJ(n, 0);
     
     for(int k = 0; k < J2.size(); k++){
         int i = J2[k];
-        double y0 = (d[i] + d[i+1]) / 2;
-        double w  = rho + PSI_1(v, y0, i, d) + PHI_1(v, y0, i, n, d);
+        //double y0 = (d[i] + d[i+1]) / 2;        
+        //double w  = rho + PSI_1(v, y0, i, d) + PHI_1(v, y0, i, n, d);
+        double y0, w;
         double org0;
-        vector<double>delta;
-        double ub,lb = 0;
-        double x0,dw, erretm;
+
+        vector<double>delta;        
+
+        double ub,lb = 0;       
+        double dw, erretm;
+        double x0;
+    /*    
         if(w >= 0){
             org0 = i; //origin
             for(int iter = 0; iter < d.size(); iter++) //shift
@@ -878,12 +911,59 @@ void rootfinder(vector<double> d,vector<double>v){
             else
                 x0 = (ub + lb) / 2;
         }
+    */    
+        //** shift origin according to the newly created w0 **       
 
-        //initial lower and upper bound
+        double x0 = d[i] / 2;
+
+        for(int j = 0; j < d.size(); j++)
+            delta.push_back(d[j] - d[i]);
+        double w0 = rho + PSI_1(v, x0, i, delta);
+
+        if(w0 >= 0){
+            org0 = i;
+            org[i] = org0;
+            ub = delta[i+1] / 2;
+            lb = 0;
+            if((lb < tau[i]) && (tau[i] <= ub))
+                x0 = tau[i];
+            else
+                x0 = (ub + lb) / 2;
+
+        }
+        else if(w0 < 0){
+            org0 = i + 1;
+            org[i] = org0;
+            delta.clear(); delta.resize(0); delta.shrink_to_fit();
+            for(int iter = 0; iter < d.size(); iter++) 
+                delta.push_back(d[iter] - d[i+1]);
+            ub = 0;
+            lb = delta[i] / 2;
+            if((lb < tau[i]) && (tau[i] < ub))
+                x0 = tau[i];
+            else
+                x0 = (ub + lb) / 2;
+        }
+
+
+
+        //** shift origin according to the newly created f0(i) **
+        /*
+        %     org0 = org(i);      
+        %     delta = d - d(org0);
+        %     x0 = tau(i);
+        %     ub = xub(i);
+        %     lb = xlb(i);
+        */
+
+
+        //**initial lower and upper bound**
         double ub0 = ub;
         double lb0 = lb;
 
-        //rational inerpolation
+
+
+        //**rational inerpolation**
         double psi0 = PSI_1(v, x0, i, delta);
         double phi0 = PHI_1(v, x0, i, v.size(), delta);
         double dpsi0 = DPSI_1(v, x0, i, delta);
@@ -899,9 +979,11 @@ void rootfinder(vector<double> d,vector<double>v){
 
         iter_ct = 0;
         double swtch_2 = 1;
+
         while(std::abs(w) > erretm * eps){
             double prew;
-            // maximal iterations
+
+            // **maximal iterations**
             if (iter_ct >= MAX_ITER){
                 if(display_warning){
                     printf("root does not converge");
@@ -909,17 +991,22 @@ void rootfinder(vector<double> d,vector<double>v){
                 }
             }
 
-            //update upper and lower bounds
+
+            //**update upper and lower bounds**
             if (w >= 0)
                 ub = std::min(ub, x0);
             else
                 lb = std::max(lb, x0);
+
+
             
             //swtch_2 = 1 : fixed weight method
             //swtch_2 = 0 : middle way method
             if (iter_ct > 0)
                 if((prew * w > 0) && (std::abs(prew) > std::abs(w) / 10))
                     swtch_2 = -swtch_2 + 1;
+
+
             
             //Quadratic equation coefficients
             double A = (delta[i] - x0 + delta[i+1] -x0) * w - (delta[i] - x0)*(delta[i+1] - x0)*dw;
@@ -935,7 +1022,7 @@ void rootfinder(vector<double> d,vector<double>v){
                     c = -(delta[i] - x0) * dw - (v[i+1]*v[i+1]) * (delta[i+1] - delta[i]) / ((delta[i+1] - x0)*(delta[i+1] - x0)) + w;    
             }
 
-            //eta :: root update
+            //eta :: **root update**
             if (abs(c) == 0){  // handle corner case : c==0
                 if(abs(A) == 0){
                     if(f0[i] >= 0)
@@ -952,11 +1039,11 @@ void rootfinder(vector<double> d,vector<double>v){
                     eta = 2*B / (A + std::sqrt(std::abs(A*A - 4*B*c)));
             }
 
-            // f * eta should be negative, otherwise run a newton step
+            // ** f*eta should be negative, otherwise run a newton step **
             if(w*eta >= 0)
                 eta = -w / dw;
             
-            //check if updated root lies in the [lb, ub]
+            // **check if updated root lies in the [lb, ub]**
             if(((x0 + eta) < lb) || ((x0 + eta) > ub) || ((x0 + eta) <= lb0) || ((x0 + eta) >= ub0)){
                 if(w >= 0)
                     eta = (lb - x0) / 2;
@@ -964,10 +1051,12 @@ void rootfinder(vector<double> d,vector<double>v){
                     eta = (ub - x0) / 2;
             }
 
-            //update root
+            //**update root**
             x0 = x0 + eta;
 
-            //for next iteration
+
+
+            //**for next iteration**
             iter_ct = iter_ct + 1;
             prew  = w;
             psi0  = PSI_1(v, x0, i, delta);
@@ -991,6 +1080,7 @@ void rootfinder(vector<double> d,vector<double>v){
             iter[i]     = iter_ct;
         }
 
+
         // i^th root and eigenvector
         if(org0 == i){
             tau[i] = x0;
@@ -1001,6 +1091,9 @@ void rootfinder(vector<double> d,vector<double>v){
             x[i]   = x0 + d[i+1];
         }        
     }
+
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%% find n^th root %%%%%%%%%%%%%%%%
@@ -1013,6 +1106,8 @@ void rootfinder(vector<double> d,vector<double>v){
         double temp = d[iter] - d[d.size()-1];
         delta.push_back(temp);
     }
+
+
     //initial guess
     double x0 = 1 / (2 * rho);
     double lb0  = 0;
@@ -1048,7 +1143,9 @@ void rootfinder(vector<double> d,vector<double>v){
         ub = 1 / (2*rho);
     }
 
-    //rational interpolation
+
+
+    //**rational interpolation**
     double psi0 = PSI_2(v, x0, delta);
     double phi0 = PHI_2(v, x0, delta);
     double dpsi0 = DPSI_2(v,x0,delta);
@@ -1065,19 +1162,22 @@ void rootfinder(vector<double> d,vector<double>v){
     iter_ct = 0;
     while (std::abs(w) > erretm*eps)
     {
-        //maximum iterations
+        //**maximum iterations**
         if(iter_ct >= MAX_ITER){
             if(display_warning)
                 printf("root doesn't converge");
             break;
         }
 
-        //update upper and lower bounds
+
+        //**update upper and lower bounds**
         if(w >= 0)
             ub = std::min(ub, x0);
         else
             lb = std::max(lb, x0);
         
+
+
         //calculate new root 
         A = (delta[n-2] - x0 + delta[n-1] - x0) * w - (delta[n-2] - x0) * (delta[n-1] - x0)* dw;
         B = (delta[n-2] - x0) * (delta[n-1]-x0) *w;
@@ -1092,22 +1192,28 @@ void rootfinder(vector<double> d,vector<double>v){
                 eta = 2*B / (A - std::sqrt(std::abs(A*A - 4*B*C)));
         }
 
-        // f*eta should be negative, otherwise run a Newton step
+
+
+        // ** f*eta should be negative, otherwise run a Newton step**
         if(w*eta >= 0)
             eta = -w / dw;
+
+
         
-        // check if updated root lies in the [lb, ub]
+        // **check if updated root lies in the [lb, ub]**
         if((x0 + eta) < lb || ((x0 + eta) > ub) || ((x0 + eta) <= lb0)){
              if(w >= 0)
                 eta = (lb-x0) / 2;
             else
                 eta = (ub-x0) / 2;
         }
+        
 
-        //update root
+        //**update root**
         x0 = x0 + eta;
 
-        // for next iteration
+
+        // **for next iteration**
         psi0 = PSI_2(v, x0, delta);
         phi0 = PHI_2(v, x0, delta);
         dpsi0 = DPSI_2(v, x0, delta);
@@ -1124,13 +1230,15 @@ void rootfinder(vector<double> d,vector<double>v){
         iter_ct = iter_ct + 1;
     }
 
+
     if(record){
         residual[n-1] = std::abs(w);
         erretms[n-1]  = std::abs(erretm);
         iter[n-1] = iter_ct;
     }
     
-    //n^th root and eigenvector
+
+    //**n^th root and eigenvector**
     tau.push_back(x0);
     org.push_back(n-1);
     x.push_back(x0 + d[n-1]);

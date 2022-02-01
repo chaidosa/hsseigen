@@ -2,6 +2,7 @@
 #include <iostream>
 #include "eigenmatrix.h"
 #include "bsxfun.h"
+#include "rootfinder.h"
 extern "C"
 {
     #include<lapacke.h>
@@ -134,7 +135,7 @@ void printArray(double **Arr, int row, int col){
 }
 
 
-void rootfinder(vector<double>& d,vector<double>& v){
+Root *rootfinder(vector<double>& d,vector<double>& v){
 /*
 %%% Input:
 %%% d, v: as in secular equation
@@ -145,7 +146,7 @@ void rootfinder(vector<double>& d,vector<double>& v){
 %%% tau: gaps
 %%% org: shifts for each root
 */
-
+    Root * results = new Root();
 
     double N = 1024;
     
@@ -165,7 +166,11 @@ void rootfinder(vector<double>& d,vector<double>& v){
         temp = temp - d[0];
         tau.push_back(temp);
         org.push_back(0);
-        return;
+        results->org = org;
+        results->tau = tau;
+        results->x   = x;
+        results->percent = 1;
+        return results;
     }
    
     int C = 64;
@@ -914,7 +919,7 @@ void rootfinder(vector<double>& d,vector<double>& v){
     */    
         //** shift origin according to the newly created w0 **       
 
-        double x0 = d[i] / 2;
+        x0 = d[i] / 2;
 
         for(int j = 0; j < d.size(); j++)
             delta.push_back(d[j] - d[i]);
@@ -1242,5 +1247,9 @@ void rootfinder(vector<double>& d,vector<double>& v){
     tau.push_back(x0);
     org.push_back(n-1);
     x.push_back(x0 + d[n-1]);
-
+    results->org = org;
+    results->tau = tau;
+    results->x   = x;
+    results->percent = percent;
+    return results;
 }

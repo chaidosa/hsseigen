@@ -423,9 +423,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
         int pd_size = 0;
 
     while (iter_ct < FMM_ITER && Flag){    
-        if(iter_ct > 0)
-            pref = f_prev;
-
+        if(iter_ct > 0){
+            pref = f_prev;            
+        }
     
         // **bound check with bisection safeguard**
         I_B.clear(); I_B.resize(0); I_B.shrink_to_fit();
@@ -530,7 +530,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
 
             delete[] dK1;
             delete[] dK2;
-            delete[] K;            
+            delete[] K; 
+                    
             
         // end of else statement
         }
@@ -764,7 +765,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
         iter_ct = iter_ct + 1;
         f_prev.insert(f_prev.begin(),f,f+pd_size);
     //end of while loop
-        delete[] psi, phi, dpsi, dphi, f;
+        delete[] psi, phi, dpsi, dphi, f, df;
     }
    //TODO: handle the memory allocation/deallocation for f, psi, phi etc.
 
@@ -1248,7 +1249,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
         iter[n-1] = iter_ct;
     }
     
-
+    delete [] v2_arr;
+    delete [] f0, f;
     //**n^th root and eigenvector**
     tau.push_back(x0);
     org.push_back(n-1);

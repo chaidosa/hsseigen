@@ -419,7 +419,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
     std::vector<double> f_prev;
     std::vector<double> J2;
     double *f;
-    double  *psi, *phi, *dpsi, *dphi, *df;     
+    double  *psi=NULL, *phi=NULL, *dpsi=NULL, *dphi=NULL, *df=NULL;     
         int pd_size = 0;
 
     while (iter_ct < FMM_ITER && Flag){    
@@ -765,7 +765,18 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
         iter_ct = iter_ct + 1;
         f_prev.insert(f_prev.begin(),f,f+pd_size);
     //end of while loop
-        delete[] psi, phi, dpsi, dphi, f, df;
+        delete[] psi;
+	delete [] phi;
+	delete[] dpsi;
+        delete[] dphi;
+       	delete[] f;
+        delete[] df;
+	psi=NULL;
+	phi=NULL;
+	dpsi=NULL;
+	dphi=NULL;
+	f=NULL;
+	df=NULL;
     }
    //TODO: handle the memory allocation/deallocation for f, psi, phi etc.
 
@@ -818,8 +829,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
             memset(psi,0,sizeof(double)*kRows);
             memset(phi,0,sizeof(double)*kRows);
 
-            double *temp = new double[v.size()];            
-
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K1,kCols,v2_arr,1,0,psi,1);
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K2,kCols,v2_arr,1,0,phi,1);
             
@@ -830,8 +839,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
 
             pd_size = kRows;
 
-            delete[] K, K1, K2;
-            delete[] psi, phi;
+            delete[] K;
+	    delete[] K1;
+	    delete[] K2;
          //end of inner else block   
         }
         
@@ -854,6 +864,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
             printf("Roofinder: continue to iterate");
           
             
+            delete[] psi;
+	    delete[] phi;
     //end of outer if block    
     }
 
@@ -1250,7 +1262,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v){
     }
     
     delete [] v2_arr;
-    delete [] f0, f;
+    delete [] f0;
+    delete [] f;
     //**n^th root and eigenvector**
     tau.push_back(x0);
     org.push_back(n-1);

@@ -20,8 +20,8 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
             std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
-        for(int row = 0 ; row < xSize.first; row++){
-            for(int col = 0; col<xSize.second; col++){
+        for(unsigned int row = 0 ; row < xSize.first; row++){
+            for(unsigned int col = 0; col<xSize.second; col++){
                 X[col+row*xSize.second] = X[col+row*xSize.second]*Y[row];
             }
         }
@@ -32,8 +32,8 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
             std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
-        for(int row = 0 ; row < xSize.first; row++){
-            for(int col = 0; col<xSize.second; col++){
+        for(unsigned int row = 0 ; row < xSize.first; row++){
+            for(unsigned int col = 0; col<xSize.second; col++){
                 X[col+row*xSize.second] = X[col+row*xSize.second]+Y[row];
             }
         }
@@ -44,7 +44,7 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
             std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
-        for(int row = 0 ; row < xSize.first; row++){
+        for(unsigned int row = 0 ; row < xSize.first; row++){
             for(int col = 0; col<xSize.second; col++){
                 X[col+row*xSize.second] = X[col+row*xSize.second]-Y[row];
             }
@@ -64,7 +64,7 @@ void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std
         assert(false);
     }
 
-    for(int i = 0;i < arrSize.first; i++){
+    for(unsigned int i = 0;i < arrSize.first; i++){
         result[i] = Arr[(int)Indices[i]];
     }
 }
@@ -73,7 +73,7 @@ void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std
 void arrange_elements2(double *X, std::pair<int,int>XSize,double *T, std::pair<int,int>tSize,double *result){
     double *temp = new double[(tSize.second * XSize.second)];
 
-    for(int row = 0; row < tSize.second; row++){
+    for(unsigned int row = 0; row < tSize.second; row++){
         memcpy(temp+row*(XSize.second),X+((int)T[row])*(XSize.second),sizeof(double)*(XSize.second));
     }
     result = temp;
@@ -81,18 +81,18 @@ void arrange_elements2(double *X, std::pair<int,int>XSize,double *T, std::pair<i
 }
 
 
-double vec_norm(vector<double> v){
+double vec_norm(std::vector<double> v){
     double result = 0;
-    for(int i = 0; i < v.size(); ++i){
+    for(unsigned int i = 0; i <(int)v.size(); ++i){
         result +=v[i]*v[i];
     }
 
 return sqrt(result);    
 }
 
-vector<double> diff_vec(vector<double> V){
+std::vector<double> diff_vec(std::vector<double> V){
     std::vector<double> result;
-    for(int i = 0; i < V.size()-1; ++i){
+    for(unsigned int i = 0; i <(int)V.size()-1; ++i){
         double temp = V[i+1]-V[i];
         result.push_back(temp);
     }

@@ -15,13 +15,13 @@ int main(){
     std::cin >> n;
     std::vector<double>d,v;
     
-    for(int i = 0; i < n; i++){
+    for(unsigned int i = 0; i < n; i++){
         double temp;
         std::cin >> temp;
         d.push_back(temp);
     }    
 
-    for(int i = 0; i < n; i++){
+    for(unsigned int i = 0; i < n; i++){
         double temp;
         std::cin >> temp;
         v.push_back(temp);
@@ -31,17 +31,19 @@ int main(){
     std::ofstream txtOut;
     txtOut.open("output.txt", std::ofstream::out);
     txtOut<<"x:\n";
-    for(int i = 0; i < r->x.size(); i++)
+    for(unsigned int i = 0; i < r->x.size(); i++)
         txtOut<<r->x[i]<<std::endl;
 
     txtOut<<"tau:\n";
-    for(int i = 0; i < r->tau.size(); i++)
+    for(unsigned int i = 0; i < r->tau.size(); i++)
         txtOut<<r->tau[i]<<std::endl;
 
     txtOut<<"org:\n";
-    for(int i = 0; i < r->org.size(); i++)
+    for(unsigned int i = 0; i < r->org.size(); i++)
         txtOut<<r->org[i]<<std::endl; 
 
     txtOut<<"Percent :"<<r->percent;
+
+   
     return 0;
 }

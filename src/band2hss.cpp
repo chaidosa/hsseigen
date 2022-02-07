@@ -1,0 +1,230 @@
+#include<string.h>
+#include<math.h>
+#include<algorithm>
+#include<assert.h>
+#include "BinTree.h"
+#include "band2hss.h"
+
+B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
+    
+    B2HSS * result = new B2HSS();
+    double *A = *AA;
+    int n = bt->GetNumNodes();
+
+    int aRowWidth         = sqrt(aSize);
+    int aColWidth         = aRowWidth;
+
+     //To store the diagonal blocks
+    double** D = new double*[n];
+
+    //create a list to hold the matrix dimensions of the diagonal matrices 
+	std::pair<int, int>* dSizes = new std::pair<int, int>[n];
+    for(int i = 0; i < n; i++)
+		dSizes[i]=std::make_pair(0,0); 
+
+     //To store the Generator U
+    double** U = new double*[n];
+
+    //create a list to hold the matrix dimensions of the generator U
+	std::pair<int, int>* uSizes = new std::pair<int, int>[n];
+    for(int i = 0; i < n; i++)
+		uSizes[i]=std::make_pair(0,0);   
+
+    //to store generator R
+    double** R = new double*[n];
+
+    //create a list to hold the matrix dimensions of the generator R
+	std::pair<int, int>* rSizes = new std::pair<int, int>[n];
+    for(int i = 0; i < n; i++)
+		rSizes[i]=std::make_pair(0,0);
+
+    //to store generator B
+    double** B = new double*[n];
+
+    //create a list to hold the matrix dimensions of the generator B
+	std::pair<int, int>* bSizes = new std::pair<int, int>[n];
+
+    for(unsigned int i = 0; i < n; i++)
+		bSizes[i]=std::make_pair(0,0);                      
+
+    if(n == 1){
+        // Return type to be defined here
+        return NULL;
+    }
+
+    vector<double> cl;
+    for(unsigned int i = 1; i<=n; i++){
+        std::vector<int> ch = bt->GetChildren(i);
+        
+        // if the node is child node
+        if(ch.size() == 0)
+            cl.push_back(i);      
+
+    }
+
+    vector<double> l;
+    l.push_back(0);
+    for(unsigned int i = 0; i < mSize; ++i){
+        double temp = l[i] + m[i];
+        l.push_back(temp);
+    }
+
+    //Zeros
+    double *O = new double[w*w];
+    memset(O, 0, sizeof(double)*(w*w));
+    std::pair<int, int> OSize = {w, w};
+    
+    //identity matrix
+    double *I = new double[w];
+    memset(I, 0, sizeof(double)*w);
+
+    int k = -1;
+
+    for(unsigned int i = 1; i < n; i++)
+    {
+        std::vector<int> ch = bt->GetChildren(i);
+        //if the node in child node
+        if(ch.size() == 0)
+        {
+            k += 1;
+            int dRow = l[k+1]-l[k];
+            int dCol = dRow;
+
+            dSizes[i-1] = {dRow, dCol};
+            D[i-1] = new double[dRow*dCol];
+            double *tempD = D[i-1];
+            // copying the diagonal elements from A
+            int D_filled = 0;
+            for(unsigned int j = l[k]; j < (l[k+1]); j++)
+            {
+                memcpy(tempD + D_filled, A+((int)l[k] +j*aRowWidth), sizeof(double)*dCol);
+                D_filled += dCol;
+            }
+
+            int uRow = m[k];
+            int uCol = 2*w;
+            uSizes[i-1] = {uRow, uCol};
+
+            U[i-1] = new double[uRow*uCol];
+            memset(U[i-1], 0, sizeof(double)*(uRow*uCol));
+
+            for(unsigned int j = 0; j < w; j++)
+                U[i-1][j + j*uCol] = 1;
+
+            int startROw = uRow - w; //for our case indexing starts from 0;
+            int startCol = w;
+        
+            for(unsigned int row = startROw,col = startCol; row < uRow, col < 2*w; row++, col++)
+            {                                    
+                    U[i-1][col + row*uCol] = 1;
+                    col++;
+            }          
+        }        
+
+        int parentID = bt->tr[i];
+        int rc = 0;
+        int ii;
+        ch.clear();
+        ch = bt->GetChildren(parentID);
+        if(ch[0] == i){
+            rc = i;
+
+            while(bt->GetChildren(rc).size() != 0)
+            {
+                rc = bt->GetChildren(rc)[1];
+            } 
+
+            for(unsigned int iter = 0; iter < cl.size(); iter++)
+            {
+                if((int)cl[iter] == rc)
+                {
+                    ii = iter;
+                    break;
+                }
+            }
+
+            int bRow = 2*w;
+            int bCol = bRow;
+            bSizes[i-1] = {bRow, bCol};
+            B[i-1] = new double[bRow*bCol];
+            memset(B[i-1], 0, sizeof(double)*(bRow*bCol));
+        
+            int aRowStart = l[ii+1]-w;            
+            int aRowEnd   = l[ii+1];
+            int aColStart = l[ii+1];
+            int aColEnd   = l[ii+1]+w-1; 
+        
+            for(unsigned int row = aRowStart, t = w; row < aRowEnd; row++,t++)
+                memcpy(B[i-1]+(t*bCol), A+aColStart+(row*aRowWidth), sizeof(double)*(w));
+        
+            int rCol = 2*w;
+            int rRow = rCol;
+            R[i-1] = new double[(rRow*rCol)];
+            rSizes[i-1] = {rRow, rCol};
+
+            memset(R[i-1], 0, sizeof(double)*(rCol*rRow));
+
+            for(unsigned int row = 0; row < w; row++)
+            {
+                R[i-1][row + row*rCol] = 1;
+            }
+
+        }
+        else
+        {
+            rc = (bt->GetChildren(bt->tr[i-1]))[0];
+            while(bt->GetChildren(rc).size() != 0)
+            {
+                rc = bt->GetChildren(rc)[1];
+            }
+
+            for(unsigned int iter = 0; iter < cl.size(); iter++)
+            {
+                if((int)cl[iter] == rc)
+                {
+                    ii = iter;
+                    break;
+                }
+            }
+
+            int bRow = 2*w;
+            int bCol = bRow;
+            bSizes[i-1] = {bRow, bCol};
+            B[i-1] = new double[bRow*bCol];
+            memset(B[i-1], 0, sizeof(double)*(bRow*bCol));
+
+            int aRowStart = l[ii+1];
+            int aRowEnd   = l[ii+1]+w;
+            int aColStart = l[ii+1]-w;            
+            int aColEnd   = l[ii+1]; 
+
+            for(unsigned int row = 0; row < w; row++)
+            {
+                mempcpy(B[i-1]+w+(row*bCol), A+aColStart+(aRowStart*aRowWidth), sizeof(double)*w);
+                aRowStart++;
+            }
+            int rRow = 2*w;
+            int rCol = rRow;
+            R[i-1]   = new double[rRow*rCol];
+            rSizes[i-1] = {rRow, rCol};
+            memset(R[i-1], 0, sizeof(double)*(rRow*rCol));
+            double *temp = R[i-1] + (w*rCol) + w;
+            for(int row = 0; row < w; row++){
+                *temp = 1;
+                temp++;
+                temp + w;
+            }           
+            
+        }
+    }
+    result->D = D;
+    result->U = U;
+    result->R = R;
+    result->B = B;
+    result->bSizes = bSizes;
+    result->rSizes = rSizes;
+    result->uSizes = uSizes;
+    result->dSizes = dSizes;
+
+    return result;    
+}

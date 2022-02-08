@@ -6,6 +6,15 @@
 #include "band2hss.h"
 
 B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
+    /**
+     * @brief Computes HSS form of a banded matrix A
+     * @param    AA: banded form
+     *           w:  half bandwidth, total bandwidth = 2*w+1
+     *           bt: postordered binary tree
+     *           m:  partition, e.g., m = [100 100 100 100] when n = 400
+     * 
+     * @return  D, U, R, B Generators:HSS of the banded form of Class B2HSS
+     */
     
     B2HSS * result = new B2HSS();
     double *A = *AA;
@@ -121,7 +130,7 @@ B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
             }          
         }        
 
-        int parentID = bt->tr[i];
+        int parentID = bt->tr[i-1];
         int rc = 0;
         int ii;
         ch.clear();
@@ -200,7 +209,7 @@ B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
 
             for(unsigned int row = 0; row < w; row++)
             {
-                mempcpy(B[i-1]+w+(row*bCol), A+aColStart+(aRowStart*aRowWidth), sizeof(double)*w);
+                mempcpy(B[i-1]+(w)+(row*bCol), A+aColStart+(aRowStart*aRowWidth), sizeof(double)*w);
                 aRowStart++;
             }
             int rRow = 2*w;
@@ -208,13 +217,11 @@ B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
             R[i-1]   = new double[rRow*rCol];
             rSizes[i-1] = {rRow, rCol};
             memset(R[i-1], 0, sizeof(double)*(rRow*rCol));
-            double *temp = R[i-1] + (w*rCol) + w;
-            for(int row = 0; row < w; row++){
-                *temp = 1;
-                temp++;
-                temp + w;
-            }           
-            
+            int col = w;
+            for(int row = w; row < 2*w; row++){
+                R[i-1][col + row*rCol] = 1;
+                ++col;
+            }              
         }
     }
     result->D = D;

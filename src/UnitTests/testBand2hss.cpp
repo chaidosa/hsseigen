@@ -4,7 +4,7 @@
 #include "../BinTree.h"
 using namespace std;
 
-int main(){
+int main(int argc, char* argv[]){
     #ifndef INPUT_OUT
 	    freopen("test_band_matrix.txt","r",stdin);	
     #endif
@@ -29,15 +29,32 @@ int main(){
 
     cout<<"Generator creted successfully at:"<<res;
     double **temp;
-    temp = res->D;
+
+    temp = res->D;  
+    delete[] temp; 
+
+    temp = res->U;    
     delete[] temp;
-    temp = res->U;
-    delete[] temp;
+
     temp = res->R;
     delete[] temp;
+
     temp = res->B;
+    int arg = std::atoi(argv[1]);
+    int Drow = res->rSizes[arg].first;
+    int DCol = res->rSizes[arg].second;
+
+    std::ofstream txtOut;
+    txtOut.open("Diag1.txt", std::ofstream::out);
+    for(int row = 0; row < Drow; row++){
+        for(int col = 0; col < DCol; col++){
+            txtOut <<setprecision(16)<<temp[arg][col + row*DCol]<<"\t";
+        }
+        if(row != Drow-1)
+            txtOut<<"\n";
+    }
     delete[] temp;
-    cout<<"Pritesh";
+    
     delete[] A;
     return 0;
 }

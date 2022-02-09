@@ -125,8 +125,7 @@ B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
         
             for(unsigned int row = startROw,col = startCol; row < uRow, col < 2*w; row++, col++)
             {                                    
-                    U[i-1][col + row*uCol] = 1;
-                    col++;
+                    U[i-1][col + row*uCol] = 1;                    
             }          
         }        
 

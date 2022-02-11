@@ -4,7 +4,7 @@
 class nonleaf{
         public:
         double *QC[6];
-        std::pair<int,int>*qcSizes;
+        std::pair<int,int>qcSizes[6];
         double *J;
         std::pair<int,int>JSize;
         double *G;

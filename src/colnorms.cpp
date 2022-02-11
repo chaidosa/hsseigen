@@ -5,6 +5,7 @@
 #include <iostream>
 #include<string.h>
 #include "bsxfun.h"
+#include "colnorms.h"
 extern "C"
 {
     #include<lapacke.h>
@@ -12,7 +13,7 @@ extern "C"
     #include<cblas.h>
 }
 
-std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& tau, std::vector<double>& org, std::vector<double>& v, double N = 1024){
+std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& tau, std::vector<double>& org, std::vector<double>& v, double N){
 /*
 %%% Input:
 %%% d, lam, tau, org, v : from secular.m and rootfinder.m
@@ -36,30 +37,41 @@ std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, s
             }
         }
 
+
         bsxfun('P',&S,{sRows, sCols}, &tau[0], {tau.size(), 1});
+
 
         for(int row_col = 0; row_col < (sRows*sCols); row_col++)
             S[row_col] = 1 / (S[row_col]*S[row_col]);
+
 
         s = new double[sRows];
         sSize = sRows;
         memset(s, 0 ,sizeof(double)*sRows);
 
+
         double *temp_vSqr = new double[v.size()];
-        for(int i = 0; i < v.size(); ++i)
+        for(int i = 0; i < v.size(); ++i)        
             temp_vSqr[i] = v[i]*v[i];
         
+
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, sRows, 1, sCols, 1.0, S, sCols, temp_vSqr, 1, 0.0, s, 1);
+
 
         for(int i = 0; i < sRows; i++)
             s[i] = 1 / std::sqrt(s[i]);
 
         delete [] S;
+        delete [] temp_vSqr;
     }
+
     else{
         //FMM 1D local shift
     }
+
+    
     std::vector<double>result(s, s+sSize);
+    
     delete [] s;
     return result;
 }

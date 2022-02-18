@@ -12,7 +12,7 @@
 #include  "colnorms.h"
 using namespace std;
 
-SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
+SECU* secular(double *d, int dSize, double *v, int vSize,double N){
 /*    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% roots of secular equation w/ deflation %%%%%
@@ -43,7 +43,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
     std::vector<double>v2c;
     int n2;
     int n3;
-
+    double percent;
 
     if(dSize != vSize){
         std::cout<<"diagonal and vector size should be same\n";
@@ -52,10 +52,10 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
     //to store the results of secular 
     nonleaf *result = new nonleaf();
 
-    double tol = 1.0e-10;
+    double tol = 1.0e-16;
     int n      = vSize;
     //step 1: deflate small vi
-    std::vector<int> Tempt;        
+    std::vector<double> Tempt;        
     std::vector<int> zero_2_n;
 
     for(int i = 0; i < vSize; ++i)
@@ -74,7 +74,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
 
     std::vector<double> Lam1;
     for(int i = 0 ; i < Tempt.size() ; ++i){
-        Lam1.push_back(d[Tempt[i]]);
+        Lam1.push_back(d[(int)Tempt[i]]);
     }
 
     std::vector<double> Lam2;
@@ -204,7 +204,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
             Lam3 = rf_res->x;
             tau = rf_res->tau;
             org = rf_res->org;
-
+            percent = rf_res->percent;
             //V hat call
             v3_hat = vhat(d3, Lam3, org, tau, v3);
 
@@ -273,7 +273,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
     res->JSize = {J.size(), 1};
 
     double *T = new double[Tempt.size()];
-    memcpy(T, &Tempt[0], sizeof(double)*Tempt.size());
+    memcpy(T, Tempt.data(), sizeof(double)*Tempt.size());
     res->T = T;
     res->TSize = {Tempt.size(), 1};
 
@@ -312,6 +312,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N=1024){
         res->n3 = 0;
         ret->Q = res;
         ret->Lam = Lam;
+        ret->percent = percent;
     }
 
     return ret;

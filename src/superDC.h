@@ -3,6 +3,7 @@
 #include"BinTree.h"
 #include "mat2hsssym.h"
 #include "test_mat2hsssym.h"
+#include "band2hss.h"
 class SDC
 {
 
@@ -11,7 +12,7 @@ public:
     std::pair<int,int> *qSizes;
 };
 
-SDC* superDC(tHSSMat * A,  BinTree* bt, int * m, int mSize); 
+SDC* superDC(tHSSMat *A,  BinTree* bt, int * m, int mSize); 
 
 
 #endif

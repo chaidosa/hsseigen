@@ -31,7 +31,10 @@ void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<
     double * X_req = *X;
     std::vector<int> desc = bt->GetTreeDesc();  
     int k = desc[index+1];
-
+    std::pair<int, int>rg[bt->GetNumNodes()];
+    for(int itr = 0; itr < bt->GetNumNodes(); itr++){
+        rg[itr]  = {indexRange[itr].first-indexRange[index].first, indexRange[itr].second-indexRange[index].first};
+    }
     if(ifTrans == 0){
         //X = Q*X;
     }
@@ -41,11 +44,12 @@ void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<
             int K = indexRange[j].second-indexRange[j].first+1; 
             int columns = xSize.second;
             double *tempX  = new double[K*columns];
-            memset(tempX,0,sizeof(double)*K*columns);
-            memcpy(tempX,X_req+indexRange[j].first,sizeof(double)*K*columns);
+            //memset(tempX,0,sizeof(double)*K*columns);
+            memcpy(tempX,X_req+(rg[j].first*xSize.second),sizeof(double)*K*columns);
             std::pair<int,int>tempXSize = {K,columns};
-            superdcmv_node(Q[j],qSize[j],&tempX,tempXSize,bt,j,1,N);
-            memcpy(X_req+indexRange[j].first,tempX,sizeof(double)*K*columns);            
+            superdcmv_node(&Q[j],qSize[j],&tempX,tempXSize,bt,j,1,N);
+            memcpy(X_req+(rg[j].first*xSize.second),tempX,sizeof(double)*K*columns);     
+            delete [] tempX;       
         }
     }
     *X = X_req;

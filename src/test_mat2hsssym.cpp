@@ -134,7 +134,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
             for(int k = 0, j = rSI; j <= rEI; j++, k++)
                 memcpy(temp+(k*dRowWidth),A+j*aRowWidth+cSI, sizeof(double)*dRowWidth);
                 
-           
+           //This block will copy Hss blocks.
             if (i == 0)
             {
                 //dimension of row and column of temporary array 

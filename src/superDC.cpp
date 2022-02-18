@@ -1,11 +1,14 @@
+#include<bits/stdc++.h>
 #include<string.h>
 #include "BinTree.h"
 #include "test_mat2hsssym.h"
 #include "superDC.h"
 #include "divide2.h"
 #include "superdcmv_desc.h"
+#include "superdcmv_cauchy.h"
 #include "eigenmatrix.h"
 #include "secular.h"
+#include "band2hss.h"
 //#include "secualr"
 extern "C"
 {
@@ -15,12 +18,14 @@ extern "C"
 }
 using namespace std;
 
-SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
+SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
 {
 
+    cout<<"Reached superDC\n";
     //Dividing Stage
     DVD *resDvd = divide2(A,bt,m,mSize);
 
+    cout<<"Sucess Divide\n";
     //Conquering stage
     int N  = bt->GetNumNodes();
     //Index range of each node
@@ -29,22 +34,22 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
     for(int k = 0; k < N; k++)
 		l[k] = std::make_pair(0,0);    
 
-    l[0]                  = {0,m[0]-1};
+    l[0]                  = {0,m[0] - 1};
     int it                = 0;
     int lt                = 0;
 
     for(int k = 0; k < N; k++)
     {
-        std::vector<int> ch = bt->GetChildren(k+1);
+        std::vector<int> ch = bt->GetChildren(k + 1);
         if(ch.size() == 0)
         {
-            l[k] = {lt,lt+m[it]-1};
-            lt   = l[k].second +1;
-            it   = it+1;
+            l[k] = {lt,lt + m[it] - 1};
+            lt   = l[k].second + 1;
+            it   = it + 1;
         }
         else
         {
-            l[k] = {l[ch[0]-1].first,l[ch[1]-1].second};
+            l[k] = {l[ch[0] - 1].first,l[ch[1] - 1].second};
 
         }
     }
@@ -71,96 +76,116 @@ SDC* superDC(tHSSMat* A,  BinTree* bt, int* m, int mSize)
 
     for(int i = 0; i < N; i++)
     {
-        std::vector<int> ch = bt->GetChildren(i+1);
-        //if ch is a leaf node
-        if(ch.size() == 0){           
-            //on exit of LAPACKE_dsyevd, it will have eigenvalues          
-            double *d  = new double[resDvd->dSizes[i].first];
-            double *e  = new double[resDvd->dSizes[i].first-1];
-            double *t   = new double[resDvd->dSizes[i].first-1];
-            //on exit of LAPACKE_dsyevd, it contains eigenvectors
-            double *D   = new double[(resDvd->dSizes[i].first*(resDvd->dSizes[i].second))];
-            memcpy(D,resDvd->D[i],sizeof(double)*(resDvd->dSizes[i].first)*(resDvd->dSizes[i].second));
-
-            //computes all eigenvalues and eigenvectors of a real symmetric matrix D using divide and conquer algorithm       
-            //by first converting matrix to tridiagonal form  
-            int info = LAPACKE_dsytrd(LAPACK_ROW_MAJOR,'U',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),d,e,t);
+        std::vector<int> ch = bt->GetChildren(i + 1);
+        //if current index i is a leaf node
+        if(ch.size() == 0){
+            double *E = new double[resDvd->dSizes[i].first];
+            double *EV = new double[resDvd->dSizes[i].first*resDvd->dSizes[i].second];
+            int *Isuppz = new int[2*resDvd->dSizes[i].second];
+           // int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, E);
+            double abstol = 1.234e-27;
+            int info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, NULL, NULL, NULL, NULL,abstol, &resDvd->dSizes[i].first, E, EV, resDvd->dSizes[i].second, Isuppz);
             if(info > 0){
-                cout<<"Error at converting";
+                cout<<"Eigensolver doesn't work";
                 exit(1);
             }
 
-            info = LAPACKE_dorgtr(LAPACK_ROW_MAJOR,'U',(resDvd->dSizes[i].first),D,(resDvd->dSizes[i].first),t);
-            if(info > 0){
-                cout<<"Error at converting";
-                exit(1);
-            } 
-
-            info=LAPACKE_dstedc(LAPACK_ROW_MAJOR,'V',(resDvd->dSizes[i].first),d,e,D,(resDvd->dSizes[i].first));              
-            //check for convergence
-            if( info > 0 ) {
-                printf( "The algorithm failed to compute eigenvalues.\n" );
-                exit( 1 );
-            }            
+            Lam[i] = E;
+            E = NULL;
             
-            Lam[i]            = d;
-            LamSizes[i]       = (resDvd->dSizes[i].first);
-            Q0[i]             = new EIG_MAT();
-            Q0[i]->Q0_leaf    = D;
-            Q0[i]->Q0_nonleaf = NULL;            
-            q0Sizes[i]        = {(resDvd->dSizes[i].first),(resDvd->dSizes[i].second)};  
-            d = NULL;
-            D = NULL;
-            delete [] e;
-            delete [] t;
-        }        
+            LamSizes[i] = resDvd->dSizes[i].first;
+            
+            Q0[i] = new EIG_MAT();
+            Q0[i]->Q0_leaf = EV;
+            EV = NULL;
+            Q0[i]->Q0_nonleaf = NULL;
+            q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};
+            delete [] Isuppz;
+
+        } 
+        //current index is non-leaf node       
         else
         {
             int left  = ch[0];
             int right = ch[1];
 
             superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);
-            //[Z{i}, nflops1] =  superdcmv_desc(Q0, Z{i}, tr, i, 1, rg, desc, N);
-            /*
-            Lam{i} = [Lam{c1}; Lam{c2}];
-            Lam{c1} = [];
-            Lam{c2} = [];
-            r = size(Z{i}, 2);
-            rho{i} = zeros(r, 1);
-            for j = 1:r    
-                [Lam{i}, Q0{i}{j}, nflops1, rho1] = secular(Lam{i}, Z{i}(:, j), tol, N);
-                flops_conquer = flops_conquer + nflops1;
-                rho{i}(j) = rho1;
-                if j < r
-                [Z{i}(:, j+1:r), nflops1] = superdcmv_cauchy(Q0{i}{j}, Z{i}(:, j+1:r), 1, N);  
-                flops_conquer = flops_conquer + nflops1;
-                end
-            end
-            */
-            Lam[i] = new double[(LamSizes[left-1])+(LamSizes[right-1])];
-            memcpy(Lam[i],Lam[left-1],sizeof(double)*(LamSizes[left-1]));
-            memcpy(Lam[i]+(LamSizes[left-1]),Lam[right-1],sizeof(double)*(LamSizes[right-1]));
-            LamSizes[i] = (LamSizes[left-1])+(LamSizes[right-1]);
-            delete [] Lam[left-1];
-            delete [] Lam[right-1];
-            LamSizes[left-1]  = 0;
-            LamSizes[right-1] = 0;
-            int r             = resDvd->zSizes[i].second;
-            Q0[i] = new EIG_MAT();
-            Q0[i]->Q0_leaf = NULL;
-            nonleaf **temp = new nonleaf*[r];
-            Q0[i]->Q0_nonleaf = temp;
-            for(int j = 0; j < r; j++){
-                Q0[i]->Q0_nonleaf[j] = new nonleaf();
-             //   Q0[i]->Q0_nonleaf[j] = secular(Lam[i],LamSizes[i],);   
-            } 
+          
+            Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
+            memcpy(Lam[i], Lam[left-1], sizeof(double) * (LamSizes[left-1]));
+            memcpy(Lam[i]+(LamSizes[left - 1]), Lam[right - 1], sizeof(double) * (LamSizes[right - 1]));
+
+            LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
+
+            delete [] Lam[left - 1];
+            delete [] Lam[right - 1];
+
+            LamSizes[left - 1]  = 0;
+            LamSizes[right - 1] = 0;
+
+            int r             = resDvd->zSizes[i].second;
+
+            Q0[i]             = new EIG_MAT();
+            Q0[i]->Q0_leaf    = NULL;
+
+            nonleaf **n_leaf    = new nonleaf*[r];
+            
+
+            double *temp_d   = Lam[i];
+            int temp_d_size = LamSizes[i];
+
+            for(int j = 0; j < r; j++){                
+                //Z{:, j}                
+                double *tempZ = new double[resDvd->zSizes[i].first];
+
+                for(int row = 0; row < resDvd->zSizes[i].first; row++){
+                    tempZ[row] = resDvd->Z[i][j + row * r];
+                }
+
+                SECU *res_sec = new SECU();
+                res_sec = secular(temp_d, temp_d_size, tempZ, resDvd->zSizes[i].first, 1024);
+                n_leaf[j] = res_sec->Q;
+
+
+                delete [] temp_d;
+                temp_d = res_sec->Lam;
+                
+                
+                if(j < (r-1))
+                {
+                    double *tempZi = new double[resDvd->zSizes[i].first * (r - (j + 1))];
+
+                    for(int row = 0; row < resDvd->zSizes[i].first; row++)
+                        memcpy(tempZi + row*(r-(j+1)), resDvd->Z[i] + j + 1 + row * (resDvd->zSizes[i].second), sizeof(double) * (r - (j + 1)) );
+                    
+                    superdcmv_cauchy(&(n_leaf[j]), {1, 7}, &tempZi, {resDvd->zSizes[i].first, (r- ( j + 1)) }, 1);
+
+                    for(int row = 0; row < resDvd->zSizes[i].first; row++)
+                        memcpy(resDvd->Z[i] + j + 1 + row * (resDvd->zSizes[i].second), tempZi + row*(r - (j + 1)), sizeof(double) * (r - (j + 1)));
+                    
+                    delete [] tempZi;
+                }
+                
+                delete [] tempZ;
+                //will add rho later
+            }
+            Lam[i] = temp_d;
+            Q0[i]->Q0_nonleaf = n_leaf;
+            Q0[i]->n_non_leaf = r;
+            q0Sizes[i] = {1, r};
         }
 
        
 
     }
-     
+    
+    vector<double> tempeig;
+    for(int k = 0; k < 256; k++)
+        tempeig.push_back(Lam[N-1][k]);
+    sort(tempeig.begin(), tempeig.end());
+    for(int k = 0; k < 256; k++)
+        cout<<setprecision(16)<<tempeig[k]<<endl;
 	return NULL;
 
 } 

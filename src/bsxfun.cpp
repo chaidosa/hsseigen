@@ -70,13 +70,15 @@ void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std
 }
 
 //used for arranging  arrays
-void arrange_elements2(double *X, std::pair<int,int>XSize,double *T, std::pair<int,int>tSize,double *result){
-    double *temp = new double[(tSize.second * XSize.second)];
+void arrange_elements2(double **Xc, std::pair<int,int>XSize,double **Tt, std::pair<int,int>tSize,double **result){
+    double *X = *Xc;
+    double *T = *Tt;
+    double *temp = new double[(tSize.first * XSize.second)];
 
-    for(unsigned int row = 0; row < tSize.second; row++){
+    for(unsigned int row = 0; row < tSize.first; row++){
         memcpy(temp+row*(XSize.second),X+((int)T[row])*(XSize.second),sizeof(double)*(XSize.second));
     }
-    result = temp;
+    *result = temp;
     temp = NULL;
 }
 

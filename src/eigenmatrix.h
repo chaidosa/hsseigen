@@ -21,7 +21,7 @@ class EIG_MAT{
     public:
     double  *Q0_leaf;    
     nonleaf **Q0_nonleaf;
-    std::pair<int,int>*q0_nonleaf_Sizes;
+    int n_non_leaf;    
 };
 
 /* Nikhil:

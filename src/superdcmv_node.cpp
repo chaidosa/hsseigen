@@ -10,7 +10,7 @@ extern "C"
     #include<cblas.h>
 }
 
-void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double **tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
+void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
 /*
 %%% Input:
 %%% Q: hss sturctured cauchylike eigenmatrix of descendants of i
@@ -24,6 +24,7 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double **tempX,std::pai
 %%% ifTrans = 0: X = Qi * X 
 %%% ifTrans = 1: X = Qi^T * X;
 */
+    EIG_MAT *Q = *Qt;
     double *X = *tempX;
     double alpha = 1;
     double beta  = 0;
@@ -54,6 +55,7 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double **tempX,std::pai
             tempQX = NULL;
         }
     }
+
     else{
         int r = qSize.second;
         if(ifTrans == 0){
@@ -61,9 +63,10 @@ void superdcmv_node(EIG_MAT *Q,std::pair<int, int>qSize, double **tempX,std::pai
             //    [X, nflops1] = superdcmv_cauchy(Qi{j}, X, t, N);
         }
         else{
-            for(int j = 0; j <r; j++){
-             // superdcmv_cauchy(Q->Q0_nonleaf[j],Q->q0_nonleaf_Sizes[j],X,xSize,1,1024);  
+            for(int j = 0; j < r; j++){
+              superdcmv_cauchy(&Q->Q0_nonleaf[j],{7 , 1}, &X, xSize, 1, 1024);  
             }
+            *tempX = X;
         }
     }
 }

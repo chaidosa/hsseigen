@@ -9,6 +9,7 @@
 #include "divide2.h"
 #include<stdio.h>
 #include "QR.h"
+#include "band2hss.h"
 extern "C"
 {
     #include<lapacke.h>

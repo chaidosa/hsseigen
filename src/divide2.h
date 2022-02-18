@@ -3,7 +3,7 @@
 #include "test_mat2hsssym.h"
 #include "BinTree.h"
 #include "superDC.h"
-
+#include "band2hss.h"
 class DVD{
     public:
         double **D, **Z;

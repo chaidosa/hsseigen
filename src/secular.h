@@ -6,8 +6,9 @@ class SECU
     public:
         nonleaf *Q;
         double  *Lam;
+        double percent;
 };
 
-SECU *secular(double *d, int dSize, double *v, int vSize,double N);
+SECU *secular(double *d, int dSize, double *v, int vSize,double N = 1024);
 
 #endif

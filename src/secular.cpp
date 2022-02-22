@@ -121,8 +121,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
         for(int i = 0; i < d2.size(); i++)
             d2[i] = vP[i].first;
 
-        vector<double> tempV2;
-        tempV2 = v2;
+        vector<double> tempV2(v2);
         for(int i = 0 ;i < v2.size(); ++i)
             v2[i] = tempV2[vP[i].second];        
         
@@ -163,12 +162,13 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
             }
         }
    
-        std::vector<int>Jc;
+        
         vector<int> n_sub_n1;
         for(int i = 0; i < (n-n1); ++i){
             n_sub_n1.push_back(i);
         }
-
+        
+        std::vector<int>Jc;
         std::set_difference(n_sub_n1.begin(),n_sub_n1.end(),J.begin(),J.end(),std::inserter(Jc, Jc.begin())); 
 
         // Lam2 = d2(J);

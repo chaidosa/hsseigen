@@ -84,6 +84,7 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
             int *Isuppz = new int[2*resDvd->dSizes[i].second];
            // int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, E);
             double abstol = 1.234e-27;
+            cout << "Computing eigenvalues and eigenvectors for node: "<<(i+1)<<"\n";
             int info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, NULL, NULL, NULL, NULL,abstol, &resDvd->dSizes[i].first, E, EV, resDvd->dSizes[i].second, Isuppz);
             if(info > 0){
                 cout<<"Eigensolver doesn't work";
@@ -143,7 +144,7 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
                     tempZ[row] = resDvd->Z[i][j + row * r];
                 }
 
-                SECU *res_sec = new SECU();
+                SECU *res_sec;
                 res_sec = secular(temp_d, temp_d_size, tempZ, resDvd->zSizes[i].first, 1024);
                 n_leaf[j] = res_sec->Q;
 
@@ -180,12 +181,14 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
 
     }
     
+    
     vector<double> tempeig;
-    for(int k = 0; k < 256; k++)
+    for(int k = 0; k < LamSizes[N-1]; k++)
         tempeig.push_back(Lam[N-1][k]);
     sort(tempeig.begin(), tempeig.end());
-    for(int k = 0; k < 256; k++)
+    for(int k = 0; k < LamSizes[N-1]; k++)
         cout<<setprecision(16)<<tempeig[k]<<endl;
-	return NULL;
+	
+    return NULL;
 
 } 

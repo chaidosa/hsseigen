@@ -13,7 +13,7 @@ int main(){
     #ifndef INPUT_OUT
 	    freopen("/home/pritesh/Music/TEst/SuperDC-main/superdc_1.0.0/tests/input_sec.txt","r",stdin);	
     #endif
-    int n = 64;
+    int n = 128;
     
     double *d = new double[n];
     double *v = new double[n];

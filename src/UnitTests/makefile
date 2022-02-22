@@ -22,7 +22,7 @@ testsec: ../rootfinder.cpp ../bsxfun.cpp ../secular.cpp ../colnorms.cpp ../vhat.
 testsuperdcmv: ../superdcmv_cauchy.cpp ../cauchylikematvec.cpp ../bsxfun.cpp test_superdcmvs.cpp 
 				$(GCC) $(CXXFLAGS) $^ -o $@ $(CFLAGS)
 
-testm2: ../NPart.cpp ../BinTree.cpp ../test_mat2hsssym.cpp ../QR.cpp ../compr_new.cpp ../superdcmv_cauchy.cpp ../cauchylikematvec.cpp ../superDC.cpp ../bsxfun.cpp ../superdcmv_desc.cpp ../superdcmv_node.cpp ../secular.cpp ../colnorms.cpp ../vhat.cpp ../rootfinder.cpp ../divide2.cpp teshmat2hss.cpp
+testm2: ../NPart.cpp ../BinTree.cpp ../test_mat2hsssym.cpp ../QR.cpp ../compr_new.cpp ../superdcmv_cauchy.cpp ../cauchylikematvec.cpp ../superDC.cpp ../bsxfun.cpp ../superdcmv_desc.cpp ../superdcmv_node.cpp ../secular.cpp ../colnorms.cpp ../vhat.cpp ../rootfinder.cpp ../divide2.cpp testmat2hss.cpp
 			$(GCC) $(CXXFLAGS) $^ -o $@ $(CFLAGS)
 clean:
 	rm -rf fmm

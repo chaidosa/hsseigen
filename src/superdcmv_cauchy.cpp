@@ -41,12 +41,15 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         bsxfun('T',&tempX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
 
         //eigenvalue sorting permutation
-        double *tempI = Q->I+(Q->n1);
+        double *tempI = new double[Q->ISize.first];
+        for(int row = 0; row < Q->ISize.first; row++)
+            tempI[row] = Q->I[row] + Q->n1;
+
         double *result_eigen_permutation;
 
-        arrange_elements2(&tempX,{xSize.first - Q->n1,xSize.second},&tempI,{Q->ISize.first-(Q->n1),Q->ISize.second},&result_eigen_permutation);
+        arrange_elements2(&tempX,{xSize.first - Q->n1,xSize.second},&tempI,{Q->ISize.first, Q->ISize.second},&result_eigen_permutation);
         memcpy(tempX,result_eigen_permutation,sizeof(double)*((xSize.first - Q->n1)*xSize.second));
-
+        delete [] tempI;
         //Givens rotation
 
 
@@ -55,10 +58,13 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         //2nd deflation permutation
         double *res_2_deflation;
 
-        double *tempJ = Q->J+(Q->n1);
+        double *tempJ = new double[Q->JSize.first];
+        for(int row = 0; row < Q->JSize.first; row++)
+            tempJ[row] = Q->J[row] + Q->n1;
 
-        arrange_elements2(&tempX,{xSize.first - Q->n1,xSize.second},&tempJ,{Q->JSize.first-(Q->n1), Q->JSize.second},&res_2_deflation);
-        
+        arrange_elements2(&tempX,{xSize.first - Q->n1,xSize.second},&tempJ,{Q->JSize.first, Q->JSize.second},&res_2_deflation);
+        delete [] tempJ;
+         
         memcpy(tempX,res_2_deflation,sizeof(double)*((xSize.first - Q->n1)*xSize.second));
         
         double **Qc = Q->QC;

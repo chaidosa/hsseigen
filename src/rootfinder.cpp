@@ -217,9 +217,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     int stop_criteria = 1;
     int display_warning =1;
    // if(record){
-        std::vector<double> iter(n);
-        std::vector<double> residual(n);
-        std::vector<double> erretms(n);
+        std::vector<double> iter(n, 0);
+        std::vector<double> residual(n, 0);
+        std::vector<double> erretms(n, 0);
   //  }
     double v_norm = vec_norm(v);
     double rho    = 1 / (v_norm*v_norm);
@@ -355,15 +355,13 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         xlb[I2[i]] = (d1[I2[i]] - d2[I2[i]]) / 2;  
     
 
-    std::vector<double>xlb0(xlb.begin(), xlb.end());
-    std::vector<double>xub0(xub.begin(), xub.end());
-
-
+    std::vector<double>xlb0(xlb);
+    std::vector<double>xub0(xub);
 
 
     // **inital guess**      
     std::vector<double>a; //a = (2*(f0>=0) - 1) .* d0 .* g + v(1:n-1).^2 + v(2:n).^2;
-    for(unsigned int i = 0; i <(unsigned)n-1; ++i)
+    for(unsigned int i = 0; i <(unsigned)n-1; i++)
     {
         double temp_first_part = 0;
         double temp_second_part = 0;
@@ -382,7 +380,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     }
     //b = ((f0>=0) .* v(1:n-1).^2 - (f0<0) .* v(2:n).^2) .* d0;
     std::vector<double>b;
-    for(unsigned int i = 0; i <(unsigned)n-1; ++i)
+    for(unsigned int i = 0; i <(unsigned)n-1; i++)
     {
         double temp_first_part = 0;
         double temp_second_part = 0; 
@@ -398,9 +396,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
     std::vector<double>tau(n-1, 0);    
     //clearnig previous allocations
-    I1.resize(0); I1.shrink_to_fit(); I2.resize(0); I2.shrink_to_fit();
+    I1.clear(); I1.resize(0); I1.shrink_to_fit();I2.clear(); I2.resize(0); I2.shrink_to_fit();
 
-    for(unsigned int i = 0; i <(unsigned)a.size(); ++i)
+    for(unsigned int i = 0; i <(unsigned)a.size(); i++)
     {
 
         if(a[i]>0)
@@ -411,15 +409,15 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     }
 
     //tau(I1) = 2*b(I1) ./ (a(I1) + sqrt(abs(a(I1).^2 - 4*b(I1).*g(I1))));    
-    for(unsigned int i = 0; i <(unsigned)I1.size(); ++i)
+    for(unsigned int i = 0; i <(unsigned)I1.size(); i++)
     {
         tau[I1[i]] = (2*b[I1[i]]) / (a[I1[i]] + std::sqrt(std::abs( (a[I1[i]]*a[I1[i]]) - (4*b[I1[i]]) * (g[I1[i]]))));
     }
 
     //tau(I2) = (a(I2) - sqrt(abs(a(I2).^2 - 4*b(I2).*g(I2)))) ./ (2*g(I2));
-    for(unsigned int i = 0; i <(unsigned)I2.size(); ++i)
+    for(unsigned int i = 0; i <(unsigned)I2.size(); i++)
     {
-        tau[I2[i]] = (a[I2[i]] - std::sqrt(std::abs( (a[I2[i]]* a[I2[i]]) - (4 * b[I2[i]]*g[I2[i]])))) / (2* g[I2[i]]);
+        tau[I2[i]] = (a[I2[i]] - std::sqrt(std::abs( (a[I2[i]]* a[I2[i]]) - (4 * b[I2[i]]*g[I2[i]]) ))) / (2* g[I2[i]]);
     }
 
 
@@ -428,22 +426,17 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     // **bound check**
     //this vector is same as I in matlab version
     std::vector<int>I_B;
-    for(unsigned int i = 0; i <(unsigned)tau.size(); ++i)
-    {
-
+    for(unsigned int i = 0; i <(unsigned)tau.size(); i++)
         if((tau[i]<=xlb[i]) | (tau[i]>=xub[i]))
             I_B.push_back(i);
 
-    }
-
-    if(I_B.size() != 0)
+    if(!I_B.empty())
         for(unsigned int i = 0; i <(unsigned)I_B.size(); ++i)
             tau[I_B[i]] = (xub[I_B[i]] + xlb[I_B[i]])/2;      
     
 
     for(unsigned int i = 0; i <(unsigned)tau.size(); ++i)
         x[i] = tau[i] + d[(int)org[i]];
-
 
 
 
@@ -465,18 +458,19 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     {    
         if(iter_ct > 0)
         {
-            pref = f_prev;            
+            pref.clear();
+            copy(f_prev.begin(), f_prev.end(), back_inserter(pref));            
         }
     
         // **bound check with bisection safeguard**
-        I_B.clear(); I_B.resize(0); I_B.shrink_to_fit();
+        I_B.clear();
         for(unsigned int i = 0; i <(unsigned)tau.size(); i++)
         {
             if((tau[i] == 0) | ((tau[i]*xub[i]) < 0) | ((tau[i]*xlb[i]) < 0) | (std::isnan(tau[i])) | (tau[i] < xlb0[i]) | (tau[i] > xub0[i]))
                 I_B.push_back(i);
         }
 
-        if(I_B.size() != 0)
+        if(!I_B.empty())
         {
             for(unsigned int i = 0; i <(unsigned)I_B.size(); ++i)
             {
@@ -484,7 +478,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
                 x[I_B[i]] = tau[I_B[i]] + d[(int)org[I_B[i]]];
             }
         }
-
 
 
 

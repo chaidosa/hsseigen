@@ -52,7 +52,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
     //to store the results of secular 
     nonleaf *result = new nonleaf();
 
-    double tol = 1.0e-16;
+    double tol = 1.0e-10;
     int n      = vSize;
     //step 1: deflate small vi
     std::vector<double> Tempt;        

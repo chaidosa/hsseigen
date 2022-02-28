@@ -84,14 +84,23 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
             int *Isuppz = new int[2*resDvd->dSizes[i].second];
            // int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, E);
             double abstol = 1.234e-27;
+        
             cout << "Computing eigenvalues and eigenvectors for node: "<<(i+1)<<"\n";
             int info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, NULL, NULL, NULL, NULL,abstol, &resDvd->dSizes[i].first, E, EV, resDvd->dSizes[i].second, Isuppz);
+           // int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', resDvd->dSizes[i].first, resDvd->D[i], resDvd->dSizes[i].second, E);
+             //int info = LAPACKE_dggev(LAPACK_ROW_MAJOR, 'V', 'N', resDvd->dSizes[i].first, resDvd->Z[i], resDvd->dSizes[i].second, )
+
             if(info > 0){
                 cout<<"Eigensolver doesn't work";
                 exit(1);
             }
+            //EV = resDvd->D[i];
+            std::sort(E, E+resDvd->dSizes[i].first);
+            vector<double>ee(E, E+resDvd->dSizes[i].first);
 
+            //std::copy(E, E+resDvd->dSizes[i].first, ee);
             Lam[i] = E;
+
             E = NULL;
             
             LamSizes[i] = resDvd->dSizes[i].first;
@@ -111,13 +120,16 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
             int right = ch[1];
 
             superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);
-          
+
+            //vector<double>Zi(resDvd->Z[i], resDvd->Z[i]+(resDvd->zSizes[i].first * resDvd->zSizes[i].second));
+
             Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
-            memcpy(Lam[i], Lam[left-1], sizeof(double) * (LamSizes[left-1]));
-            memcpy(Lam[i]+(LamSizes[left - 1]), Lam[right - 1], sizeof(double) * (LamSizes[right - 1]));
-
+            std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
+            std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
+            
             LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
+            //std::sort(Lam[i], Lam[i]+LamSizes[i]);
 
             delete [] Lam[left - 1];
             delete [] Lam[right - 1];
@@ -147,7 +159,7 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
                 SECU *res_sec;
                 res_sec = secular(temp_d, temp_d_size, tempZ, resDvd->zSizes[i].first, 1024);
                 n_leaf[j] = res_sec->Q;
-
+                vector<double> LamVec(res_sec->Lam, (res_sec->Lam)+ temp_d_size);
 
                 delete [] temp_d;
                 temp_d = res_sec->Lam;
@@ -158,7 +170,7 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
                     double *tempZi = new double[resDvd->zSizes[i].first * (r - (j + 1))];
 
                     for(int row = 0; row < resDvd->zSizes[i].first; row++)
-                        memcpy(tempZi + row*(r-(j+1)), resDvd->Z[i] + j + 1 + row * (resDvd->zSizes[i].second), sizeof(double) * (r - (j + 1)) );
+                        memcpy(tempZi + row*(r-(j+1)), resDvd->Z[i] + (j + 1) + row * (resDvd->zSizes[i].second), sizeof(double) * (r - (j + 1)) );
                     
                     superdcmv_cauchy(&(n_leaf[j]), {1, 7}, &tempZi, {resDvd->zSizes[i].first, (r- ( j + 1)) }, 1);
 
@@ -185,10 +197,14 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
     vector<double> tempeig;
     for(int k = 0; k < LamSizes[N-1]; k++)
         tempeig.push_back(Lam[N-1][k]);
+
     sort(tempeig.begin(), tempeig.end());
-    for(int k = 0; k < LamSizes[N-1]; k++)
+    int count = 0;
+    for(int k = 0; k < LamSizes[N-1]; k++){
+        count++;
         cout<<setprecision(16)<<tempeig[k]<<endl;
-	
+    }
+	cout << count;
     return NULL;
 
 } 

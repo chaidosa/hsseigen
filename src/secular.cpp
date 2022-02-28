@@ -132,7 +132,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
         }
 
         int p=0;        
-        for(int j = 1; j < d2.size(); ++j){
+        for(int j = 1; j < d2.size(); j++){
             double s   = v2[p];
             double c   = v2[j];
             double tau = sqrt((c*c)+(s*s));
@@ -218,9 +218,14 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
     int lamSize = Lam1.size() + Lam2.size() + Lam3.size();
     double *Lam = new double[lamSize];
     
-    memcpy(Lam, &Lam1[0], sizeof(double)*Lam1.size());
-    memcpy(Lam+Lam1.size(), &Lam2[0], sizeof(double)*Lam2.size());
-    memcpy(Lam+Lam2.size(), &Lam3[0], sizeof(double)*Lam3.size());
+    vector<double> Lam_F;
+    Lam_F.reserve(lamSize);
+    Lam_F.insert(Lam_F.end(), Lam1.begin(), Lam1.end());
+    Lam_F.insert(Lam_F.end(), Lam2.begin(), Lam2.end());
+    Lam_F.insert(Lam_F.end(), Lam3.begin(), Lam3.end());
+
+    memcpy(Lam, Lam_F.data(), sizeof(double)*lamSize);
+    
 
     if(n1 < n){    
     

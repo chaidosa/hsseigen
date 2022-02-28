@@ -45,7 +45,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     int aColWidth         = aRowWidth;    
     //storing info about node starting and ending block 
     //Index range of each node 
-    std::pair<int,int>* l = new std::pair<int,int>[N];
+    std::pair<int,int> l[N];
 
     for(int i = 0; i < N; i++)
 		l[i] = std::make_pair(0,0);    
@@ -362,137 +362,78 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
     //Remaining B
     int node            = N;
     std::vector<int> ch = bt->GetChildren(node);
-    int left            = (ch[0])-1;
-    int right           = (ch[1])-1;
+    int left            = ch[0];
+    int right           = ch[1];
      //sizes of left and right child
-    int r1              = tSizes[left].first;
-    int n1              = tSizes[left].second;
-    int r2              = tSizes[right].first;
-    int n2              = tSizes[right].second;
+    int r1              = tSizes[left-1].first;
+    int n1              = tSizes[left-1].second;
+    int r2              = tSizes[right-1].first;
+    int n2              = tSizes[right-1].second;
     int rSI             = 0;
-    int rEI             = tSizes[right].first;
-    int cSI             = n1-(aRowWidth-(l[left].second+1));
+    int rEI             = tSizes[right-1].first;
+    int cSI             = n1-(aRowWidth-(l[left-1].second+1));
     int cEI             = n2-(aRowWidth-(l[node-1].second+1));
     int bRowWidth       = cEI-cSI;
     int bColWidth       = rEI;
-    //bSizes[left]        = {bRowWidth,bColWidth};
-    bSizes[left]        = {bRowWidth,bColWidth};
-    B[left]             = new double[bColWidth*bRowWidth];
-    double* tempB       = B[left];
-    double* tempTT      = T[right];
+    bSizes[left -1]        = {bRowWidth,bColWidth};
+    //bSizes[left-1]        = {bRowWidth,bColWidth};
+    B[left-1]             = new double[bColWidth*bRowWidth];
+    double* tempB       = B[left-1];
+    double* tempTT      = T[right-1];
     int index           = 0;
 
-    printf("Computing B%d\n", left+1);
+    printf("Computing B%d\n", left);
 
+    for(int row = 0; row < rEI; row++)
+        memcpy(tempB + row*(bRowWidth), tempTT + cSI + row*(n2), sizeof(double)*(bRowWidth));
+    /*
     for(int i = rSI; i < rEI; i++){
         for(int j = cSI;j < cEI; j++){
-            tempB[index++] = tempTT[j+i*tSizes[right].second];
+            tempB[index++] = tempTT[j+i*tSizes[right-1].second];
         }
     }
-
+    */
     GetTransposeInPlace(tempB,bColWidth,bRowWidth);
 
 //Computing R
     for(int i = N-1; i >= 1; i--){
         std::vector<int> ch = bt->GetChildren(i);
-        if(ch.size() != 0){
-            int left         = ch[0]-1;
-            int right        = ch[1]-1;
-            int sz           = uSizes[left].second;
+        if(ch.empty())
+            continue;
 
-            //for left 
-            int rColWidth    = sz;
-            int rRowWidth    = uSizes[i-1].second;
-            R[left]          = new double[rRowWidth*rColWidth];
-            rSizes[left]     = {rColWidth,rRowWidth};
 
-            //for right
-            rColWidth        = uSizes[i-1].first-sz;            
-            R[right]         = new double[rRowWidth*rColWidth];            
-            rSizes[right]    = {rColWidth,rRowWidth};
+        int left         = ch[0];
+        int right        = ch[1];
+        int sz           = uSizes[left-1].second;
 
-            double *tempR_L  = R[left];
-            double *tempR_R  = R[right];
-            double *tempU    = U[i-1];
+        //for left 
+        int rColWidth    = sz;
+        int rRowWidth    = uSizes[i-1].second;
+        R[left-1]          = new double[rRowWidth*rColWidth];
+        rSizes[left-1]     = {rColWidth,rRowWidth};
+        
+        printf("computing R%d\n",left);
+        for(int row = 0; row < sz; row++)
+            memcpy(R[left-1]+row*(rRowWidth), U[i-1]+row*(rRowWidth), sizeof(double)*rRowWidth);     
+        
+        //for right
+        rColWidth           = uSizes[i-1].first-sz;            
+        R[right-1]          = new double[rRowWidth*rColWidth];            
+        rSizes[right-1]     = {rColWidth,rRowWidth};       
 
-            //copying R[left]
-            
-            index            = 0;
-            printf("computing R%d\n",left);
-            for(int i = 0; i < sz; i++){
-                for(int j = 0;j < rRowWidth; j++){
-                    tempR_L[index] = tempU[j+i*rRowWidth];
-                    index++;
-                }
-            }
-           
-           //copying R[right]
-           rColWidth    += sz;
-           index = 0;
-           printf("computing R%d\n",right);
-           for(int i = sz; i < rColWidth; i++){
-               for(int j = 0; j<rRowWidth;j++){
-                   tempR_R[index] = tempU[j+i*rRowWidth];
-                   index++;
-               }
-           }
-
-           U[i-1]      = NULL;
-           uSizes[i-1] = {0,0};
-           printf("Deleting U%d\n",i);
-           delete [] tempU;    
-        }
+        printf("computing R%d\n",right);
+        for(int row = sz, ind = 0; row < uSizes[i-1].second, ind < rColWidth; row++, ind++)
+            memcpy(R[right-1]+ind*(rRowWidth), U[i-1]+row*(rRowWidth), sizeof(double)*rRowWidth);
+        
+        printf("Deleting U%d\n",i);
+        delete[] U[i-1];
+        U[i-1]      = NULL;
+        uSizes[i-1] = {0,0};       
 
     }
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
-	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;
+	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;   
     
-    //Output generator U to a file generator_U.txt 
-    ofstream txtOut;    
-    txtOut.open("generator_U.txt");
-    ofstream txtOut1;
-    txtOut1.open("generator_B.txt");
-    ofstream txtOut2;
-    txtOut2.open("generator_R.txt");
-
-    for(int i=0;i<N;i++){
-        if(uSizes[i].first!=0){
-            for(int k=0;k<uSizes[i].first;k++){
-                for(int l=0;l<uSizes[i].second;l++){
-                    txtOut << std::setprecision(16)<< U[i][l+k*uSizes[i].second] <<"\t"; 
-                }
-                txtOut << endl;
-            }
-        txtOut<<"\nU:"<<i<<endl;
-        }
-
-        if(bSizes[i].first!=0){
-            for(int k=0;k<bSizes[i].first;k++){
-                for(int l=0;l<bSizes[i].second;l++){
-                    txtOut1 << std::setprecision(16)<< B[i][l+k*bSizes[i].second] <<"\t"; 
-                }
-                txtOut1 << endl;
-            }
-        txtOut1<<"\nB:"<<i<<endl;
-        }
-
-         if(rSizes[i].first!=0){
-            for(int k=0;k<rSizes[i].first;k++){
-                for(int l=0;l<rSizes[i].second;l++){
-                    txtOut2 << std::setprecision(16)<< R[i][l+k*rSizes[i].second] <<"\t"; 
-                }
-                txtOut2<< endl;
-            }
-        txtOut2<<"\nR:"<<i<<endl;
-        }
-        }
-
-        
-       
-    
-    
-    return ret;
-    
-    
+    return ret;        
 }

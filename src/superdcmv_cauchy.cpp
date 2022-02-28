@@ -5,6 +5,16 @@
 #include "eigenmatrix.h"
 #include "bsxfun.h"
 #include "cauchylikematvec.h"
+
+/*extern "C"{
+
+    #include<lapacke.h>
+    #include<lapack.h>
+    #include<cblas.h>
+
+}
+*/
+
 void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pair<int, int>xSize,int ifTrans,double N){
 /*
 %%% Input:
@@ -26,62 +36,51 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
     
     else{
         // 1st deflation permutation
-        double *temp;
-        arrange_elements2(&X,xSize,&(Q->T),Q->TSize,&temp);
+        int *temp = new int[Q->TSize.first];
+        for(int i = 0; i < Q->TSize.first; i++)
+            temp[i] = (Q->T[i]) + 1;        
+       
+        arrange_elements2(&X, xSize, &(temp), Q->TSize);
+        delete [] temp;      
 
-        delete [] X;
-        X = temp;
-        temp = NULL;
+        //double *tempX = X + (Q->n1)*xSize.second;
+        double *tempXX = new double[(xSize.first - Q->n1) * xSize.second];
+        memcpy(tempXX, X+(Q->n1 * xSize.second), sizeof(double)*((xSize.first - Q->n1) * xSize.second));
 
-        xSize = {Q->TSize.first,xSize.second};
-
-        //conjugate normalizermalloc(): corrupted top size
-
-        double *tempX = X + (Q->n1)*xSize.second;
-        bsxfun('T',&tempX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
+        bsxfun('T',&tempXX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
 
         //eigenvalue sorting permutation
-        double *tempI = new double[Q->ISize.first];
+        int *tempI = new int[Q->ISize.first];        
         for(int row = 0; row < Q->ISize.first; row++)
-            tempI[row] = Q->I[row] + Q->n1;
+            tempI[row] = Q->I[row] + 1;
 
-        double *result_eigen_permutation;
+        arrange_elements2(&tempXX, {xSize.first - Q->n1, xSize.second}, &(tempI), Q->ISize);
 
-        arrange_elements2(&tempX,{xSize.first - Q->n1,xSize.second},&tempI,{Q->ISize.first, Q->ISize.second},&result_eigen_permutation);
-        memcpy(tempX,result_eigen_permutation,sizeof(double)*((xSize.first - Q->n1)*xSize.second));
-        delete [] tempI;
-        //Givens rotation
+        delete[] tempI;
+        // Givens rotation
 
 
+        // second deflation permutation
+        int *tempJ = new int[Q->JSize.first];
+        for(int i = 0; i < Q->JSize.first; i++)
+            tempJ[i] = Q->J[i] + 1;
 
-
-        //2nd deflation permutation
-        double *res_2_deflation;
-
-        double *tempJ = new double[Q->JSize.first];
-        for(int row = 0; row < Q->JSize.first; row++)
-            tempJ[row] = Q->J[row] + Q->n1;
-
-        arrange_elements2(&tempX,{xSize.first - Q->n1,xSize.second},&tempJ,{Q->JSize.first, Q->JSize.second},&res_2_deflation);
-        delete [] tempJ;
-         
-        memcpy(tempX,res_2_deflation,sizeof(double)*((xSize.first - Q->n1)*xSize.second));
+        arrange_elements2(&tempXX, {xSize.first - Q->n1, xSize.second}, &(tempJ), Q->JSize);
         
-        double **Qc = Q->QC;
+        memcpy(X+(Q->n1 * xSize.second), tempXX, sizeof(double)*((xSize.first - Q->n1) * xSize.second));
+        delete[] tempXX;
 
-        int tempRows = Q->n1+Q->n2;
-        int tempRowe = Q->n;
-        int tempcols = 0;
-        int tempcole = xSize.second;
-        double *tempp = new double[(tempRowe-tempRows)*(tempcole)];
-        memcpy(tempp, X+tempRows, sizeof(double)*((tempRowe-tempRows)*(tempcole)));
-        cauchylikematvec(&Qc, Q->qcSizes, &tempp, {(tempRowe-tempRows), tempcole}, 1);        
-        memcpy(X+tempRows, tempp, sizeof(double)*((tempRowe-tempRows)*(tempcole)));
-        std::cout<<"Success\n";
-        *Xx = X;
-        delete [] tempp;
-        delete [] res_2_deflation;
-        delete [] result_eigen_permutation;
+        int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
+        double **Qc = Q->QC;
+        //tempXX = X + (Q->n1 + Q->n2 + 1) * xSize.second;
+        tempXX = new double[rowSize * xSize.second];
+        //for(int row = (Q->n1 + Q->n2), curr = 0; row < Q->n, curr < rowSize; row++, curr++)
+        //    memcpy(tempXX + curr*(xSize.second), X+row*(xSize.second), sizeof(double)*(xSize.second));
+        memcpy(tempXX, X+(Q->n1 + Q->n2), sizeof(double)*(rowSize * xSize.second));
+        cauchylikematvec(&Qc, (Q->qcSizes), &(tempXX), {rowSize, xSize.second}, 1);
+        memcpy(X+(Q->n1 + Q->n2), tempXX, sizeof(double)*(rowSize * xSize.second));
+        delete[] tempXX;
+       
     }
     
 

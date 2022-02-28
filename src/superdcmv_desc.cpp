@@ -32,12 +32,15 @@ void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<
     std::vector<int> desc = bt->GetTreeDesc();  
     int k = desc[index+1];
     std::pair<int, int>rg[bt->GetNumNodes()];
+
     for(int itr = 0; itr < bt->GetNumNodes(); itr++){
         rg[itr]  = {indexRange[itr].first-indexRange[index].first, indexRange[itr].second-indexRange[index].first};
     }
+
     if(ifTrans == 0){
         //X = Q*X;
     }
+    
     else{
         for(int j = k-1; j < index; ++j){
             

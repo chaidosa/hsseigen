@@ -4,12 +4,21 @@
 #include <string.h>
 #include <cstring>
 #include <bits/stdc++.h>
+
+extern "C"
+{
+    #include<lapacke.h>
+    #include<lapack.h>
+    #include<cblas.h>
+}
 using namespace std;
 /*  Bsxfun similar to matlab,
 *   character 'T' for times
 *   character 'P' for plus
 *   character 'M' for minus   
 */
+
+
 void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std::pair<int,int>ySize){
     double *X = *tempX;
     switch (method)
@@ -54,11 +63,14 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
         std::cout<<"Enter valid Parameters";
         assert(false);
         break;
+
+    
     }
 }
 
 //used for arranging vector
 void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std::pair<int,int>indSize,double *result){
+    
     if(arrSize.first != indSize.first){
         std::cout<<"Enter valid arguments";
         assert(false);
@@ -70,16 +82,11 @@ void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std
 }
 
 //used for arranging  arrays
-void arrange_elements2(double **Xc, std::pair<int,int>XSize,double **Tt, std::pair<int,int>tSize,double **result){
-    double *X = *Xc;
-    double *T = *Tt;
-    double *temp = new double[(tSize.first * XSize.second)];
-
-    for(unsigned int row = 0; row < tSize.first; row++){
-        memcpy(temp+row*(XSize.second),X+((int)T[row])*(XSize.second),sizeof(double)*(XSize.second));
-    }
-    *result = temp;
-    temp = NULL;
+void arrange_elements2(double **Xc, std::pair<int,int>XSize,int **Tt, std::pair<int,int>tSize){
+    if(XSize.first == 1)
+        return;
+    assert(XSize.first == tSize.first);
+     LAPACKE_dlapmr(LAPACK_ROW_MAJOR,true, XSize.first, XSize.second, *Xc, XSize.second, *Tt);
 }
 
 

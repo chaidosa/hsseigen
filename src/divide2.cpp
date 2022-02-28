@@ -53,7 +53,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
     
         std::vector<int> ch = bt->GetChildren(i);
 
-        if(ch.size() == 0)
+        if(ch.empty())
             continue;
         
         //divide at the non-leaf nodes
@@ -69,7 +69,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
         delete [] Temp_BC1;
         //updating B generators of left subtree
         std::vector<int> tch = bt->GetChildren(left);
-        if(tch.size() == 0)
+        if(tch.empty())
         {
             if(A->bSizes[left-1].first <= A->bSizes[left-1].second)
             {                
@@ -84,7 +84,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 {
                     for(int col = 0; col < A->dSizes[left-1].second; col++)
                     {
-                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - (B_c1_norm *(tempUUt[col+row*(A->dSizes[left-1].second)]));
+                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - (B_c1_norm *(tempUUt[col+row*(A->uSizes[left-1].first)]));
                     }
                 }
                 delete [] tempUUt;
@@ -107,7 +107,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 {
                     for(int col = 0; col < A->dSizes[left-1].second; col++)
                     {
-                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - (tempTTt[col+row*(A->dSizes[left-1].second)]/B_c1_norm);
+                        A->D[left-1][col+row*(A->dSizes[left-1].second)] = A->D[left-1][col+row*(A->dSizes[left-1].second)] - (tempTTt[col+row*(A->uSizes[left-1].first)]/B_c1_norm);
                     }
                 }
                 delete [] tempTTt;
@@ -189,7 +189,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     {
                         for(int col=0; col<A->bSizes[sib-1].second;col++)
                         {
-                            A->B[sib-1][col+(row*(A->bSizes[sib-1].second))]=A->B[sib-1][col+(row*(A->bSizes[sib-1].second))]-tempRSST_Rjt[col+row*A->rSizes[j-1].first];
+                            A->B[sib-1][col+(row*(A->bSizes[sib-1].second))] = A->B[sib-1][col+(row*(A->bSizes[sib-1].second))] - tempRSST_Rjt[col+row*A->rSizes[j-1].first];
                         }
                     }
                     delete [] tempSST;
@@ -216,7 +216,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     {
                         for(int col=0;col < (A->dSizes[j-1].second);col++)
                         {
-                            A->D[j-1][col+(row*(A->dSizes[j-1].second))]-=tempTTt[col+(row*(A->uSizes[j-1].first))];
+                            A->D[j-1][col+(row*(A->dSizes[j-1].second))] -= tempTTt[col+(row*(A->uSizes[j-1].first))];
                         }
                     }
                     delete [] tempT;
@@ -263,7 +263,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 {
                     for(int col = 0; col < A->dSizes[right-1].second;col++)
                     {
-                        tempD[col+(row*(A->dSizes[right-1].second))]-=(tempTTt[col+(row*(A->uSizes[right-1].first))]/B_c1_norm);
+                        tempD[col+(row*(A->dSizes[right-1].second))] -= (tempTTt[col+(row*(A->uSizes[right-1].first))] / B_c1_norm);
                     }
                 }
                 delete[] tempTTt;
@@ -285,7 +285,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 {
                    for(int col = 0; col < A->dSizes[right-1].second;col++)
                    {
-                        tempD[col+(row*(A->dSizes[right-1].second))]-=(tempUUt[col+(row*(A->uSizes[right-1].first))]*B_c1_norm);
+                        tempD[col+(row*(A->dSizes[right-1].second))] -= (tempUUt[col+(row*(A->uSizes[right-1].first))]*B_c1_norm);
                    }
                 }                               
                 delete [] tempUUt;
@@ -302,16 +302,19 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
              {
                 double *Sp = new double[(A->bSizes[left-1].second)*(A->bSizes[left-1].first)];
                 memset(Sp,0,sizeof(double)*(A->bSizes[left-1].second)*(A->bSizes[left-1].first));
-              
-                //check if it can be made more efficient
+                double *tempBC1 = new double[A->bSizes[left-1].first * (A->bSizes[left-1].second)];
+                memcpy(tempBC1, A->B[left-1], sizeof(double)*(A->bSizes[left-1].first * (A->bSizes[left-1].second)));
+                GetTransposeInPlace(tempBC1, A->bSizes[left-1].first, A->bSizes[left-1].second);
+                //check if it can be made more efficient check weather it is corrrect or not?
                 for(int row =0; row<A->bSizes[left-1].second;row++)
                 {
                     for(int col=0;col<A->bSizes[left-1].first;col++)
                     {
-                        Sp[col+(row*(A->bSizes[left-1].first))] = (A->B[left-1][row+(col*(A->bSizes[left-1].first))])/sqrt_B_c1_norm;
+                        Sp[col + row*(A->bSizes[left-1].first)] = tempBC1[col + row*(A->bSizes[left-1].first)] / sqrt_B_c1_norm;
+                       // Sp[col+(row*(A->bSizes[left-1].first))] = (A->B[left-1][row+(col*(A->bSizes[left-1].first))])/sqrt_B_c1_norm;
                     }
                 }
-                
+                delete[] tempBC1;
                 tempV = Sp;                
                 tempP = {(A->bSizes[left-1].second),(A->bSizes[left-1].first)};         
              }
@@ -330,7 +333,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 tempP = {eye_size,eye_size};
                 
              }
-
+//Note: check all the updates of the generator B
             std:: stack<pair<double*,pair<int,int>>> S;
             S.push({tempV,tempP});
             for(int j=right-1;j >= desc[right];j--)
@@ -378,6 +381,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                 }
                 //Sj = R{j} * Sp;
                 double *Sj = new double[A->rSizes[j-1].first*Sp_col];
+                //check this as well
                 cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,A->rSizes[j-1].first,Sp_col,Sp_row,alpha,A->R[j-1],A->rSizes[j-1].second,Sp,Sp_col,beta,Sj,Sp_col); 
                 std::vector<int> temp_ch2 = bt->GetChildren(j);
                 if(temp_ch2.size()==0)
@@ -395,7 +399,7 @@ DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
                     {
                         for(int col=0;col < (A->dSizes[j-1].second);col++)
                         {
-                            A->D[j-1][col+(row*(A->dSizes[j-1].second))]-=tempTTt[col+(row*(A->uSizes[j-1].first))];
+                            A->D[j-1][col+(row*(A->dSizes[j-1].second))] -= tempTTt[col+(row*(A->uSizes[j-1].first))];
                         }
                     }
                     delete [] tempT;

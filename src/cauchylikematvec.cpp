@@ -34,14 +34,16 @@ void cauchylikematvec(double ***Qcd, std::pair<int,int>*qcSizes,double **Xx, std
     int n        = qcSizes[0].first;
     int r        = 50;
 
-    if(n < N){
+    if(n < N)
+    {
         if(ifTrans == 0){
 
         }
 
-        else{
+        else
+        {
             double *d_org = new double[qcSizes[5].first];
-            for(int i = 0 ; i < qcSizes[2].first; i++)
+            for(int i = 0 ; i < qcSizes[5].first; i++)
                 d_org[i] = d[(int)org[i]];
                 
             
@@ -72,10 +74,12 @@ void cauchylikematvec(double ***Qcd, std::pair<int,int>*qcSizes,double **Xx, std
             }           
 
             //Y = S*X
-            double *Y = new double[qcSizes[2].first*xSize.second];
-            memset(Y,0,sizeof(double)*(qcSizes[2].first*xSize.second));
-            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qcSizes[2].first,xSize.second,qcSizes[2].first,alpha,S,qcSizes[2].first,X,xSize.second,beta,Y,xSize.second);           
-            memcpy(Y, X, sizeof(double)*((qcSizes[2].first*xSize.second)));
+            double *Y = new double[qcSizes[5].first*xSize.second];
+            memset(Y,0,sizeof(double)*(qcSizes[5].first*xSize.second));
+            
+            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qcSizes[5].first,xSize.second,qcSizes[2].first,alpha,S,qcSizes[2].first,X,xSize.second,beta,Y,xSize.second);           
+            
+            memcpy(X, Y, sizeof(double)*((qcSizes[5].first*xSize.second)));
             //delete [] Xx;
             *Xx = X;
             delete [] Y;

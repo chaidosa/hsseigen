@@ -116,6 +116,9 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
         //current index is non-leaf node       
         else
         {
+            //if(i == 2)
+            //    continue;
+
             int left  = ch[0];
             int right = ch[1];
 

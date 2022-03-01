@@ -49,8 +49,11 @@ void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<
             double *tempX  = new double[K*columns];
             //memset(tempX,0,sizeof(double)*K*columns);
             memcpy(tempX,X_req+(rg[j].first*columns),sizeof(double)*K*columns);
+            
             std::pair<int,int>tempXSize = {K,columns};
+
             superdcmv_node(&Q[j],qSize[j],&tempX,tempXSize,bt,j,1,N);
+
             memcpy(X_req+(rg[j].first * columns),tempX,sizeof(double)*K*columns);     
             delete [] tempX;       
         }

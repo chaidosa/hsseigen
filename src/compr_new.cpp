@@ -25,7 +25,8 @@ void compr_new(double* A, std::pair<int, int>aSize, double** Q, std::pair<int, i
 
     //Note: m = aSize.first, n = aSize.second, lda = aSize.second, ldu = aSize.first, ldvt = aSize.second, info;
     //calling lapack routine for SVD singular value decomposition
-    int info = LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'A','A',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,VT,aSize.second,W);    
+    int info = LAPACKE_dgesdd(LAPACK_ROW_MAJOR, 'A', aSize.first, aSize.second, A, aSize.second, S, U, aSize.first, VT, aSize.second);    
+	//int info = LAPACKE_dgesvd(LAPACK_ROW_MAJOR,'A','A',aSize.first,aSize.second,A,aSize.second,S,U,aSize.first,VT,aSize.second,W);    
    if(info > 0) {
    	printf("ERROR: LAPACKE_dgesvd failed to converge\n");
 	exit(1);

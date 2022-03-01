@@ -1,5 +1,6 @@
 #include "superdcmv_node.h"
 #include "BinTree.h"
+#include<string.h>
 #include <assert.h>
 #include "eigenmatrix.h"
 #include "superdcmv_cauchy.h"
@@ -29,7 +30,8 @@ void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::p
     double alpha = 1;
     double beta  = 0;
     std::vector<int> ch = bt->GetChildren(index+1);
-    if(ch.size()==0){
+    if(ch.size()==0)
+    {
         if(ifTrans == 0){
             if(qSize.second != xSize.first){
                 cout<<"Multiplication is not possible";
@@ -56,15 +58,22 @@ void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::p
         }
     }
 
-    else{
+    else
+    {
         int r = qSize.second;
-        if(ifTrans == 0){
+        if(ifTrans == 0)
+        {
             //for j = r:-1:1
             //    [X, nflops1] = superdcmv_cauchy(Qi{j}, X, t, N);
         }
-        else{
-            for(int j = 0; j < r; j++){
-              superdcmv_cauchy(&Q->Q0_nonleaf[j],{7 , 1}, &X, xSize, 1, 1024);  
+        else
+        {
+            for(int j = 0; j < r; j++)
+            {
+              double *tempXX = new double[xSize.first * xSize.second];
+              memcpy(tempXX, X, sizeof(double)*(xSize.first * xSize.second));
+              superdcmv_cauchy(&Q->Q0_nonleaf[j],{7 , 1}, &tempXX, xSize, 1, 1024);
+              memcpy(X, tempXX, sizeof(double)*(xSize.first * xSize.second));  
             }
             *tempX = X;
         }

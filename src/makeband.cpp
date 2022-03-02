@@ -7,6 +7,7 @@
 //#include<random>
 
 using namespace std;
+extern char* testFile;
 #ifdef DEBUG
 int counter=1.; 
 #endif
@@ -60,7 +61,7 @@ int MakeBand(int n, int r, double** bandMatrix)
     }
   }
 #else
-  std::ifstream inputStr("sparseOut.txt",std::ifstream::in);
+  std::ifstream inputStr(testFile,std::ifstream::in);
 
   if(!inputStr.is_open()) {
 	cout<<"Error opening test_input.txt."<<endl;

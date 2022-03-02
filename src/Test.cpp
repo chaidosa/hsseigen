@@ -10,11 +10,23 @@
 #include "superDC.h"
 #include "band2hss.h"
 
-int main()
+char* testFile="sparseOut.txt";
+
+int main(int argc, char* argv[])
 {
+	int n=126, band_width=2;
+	int r=32;
+	if(argc!=4){
+		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size>\n");
+		printf("Default values will be used: filename=sparseOut.txt, n=126, diagblock_size=32\n");
+	}else{
+		testFile=argv[1];
+		n=atoi(argv[2]);
+		r=atoi(argv[3]);
+	}
+
 	BinTree* bt=NULL;
 	double * A=NULL;
-	int n=126, band_width=2;
 	//create a banded matrix
 	int status = MakeBand(n,band_width,&A);
 	if(status) 
@@ -178,7 +190,6 @@ int main()
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.
 	 * Arguments of NPart: n is the number of rows/columns in an input matrix. r is the number of rows in a partition (horizontal) of the matrix 
 	 * Number of leaves = n/r. Num nodes in the tree = num leaves* 2 - 1*/
-	int r=32;
 	int *m=NULL;
 	int mSize;
 	NPart(n, r, &bt, &m, mSize, numNodes);

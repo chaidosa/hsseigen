@@ -1,7 +1,6 @@
 #ifndef SUPERDC_H
 #define SUPERDC_H
 #include"BinTree.h"
-#include "mat2hsssym.h"
 #include "test_mat2hsssym.h"
 #include "band2hss.h"
 class SDC

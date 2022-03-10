@@ -1,76 +1,100 @@
 #include<math.h>
 #include<assert.h>
 #include"BinTree.h"
-void BinTree::Create(int n)
-{
-	// Not a complete binary tree;
-	if((n+1) & n) {
-		cout<<"Error cannot create a complete binary tree with "<<n<<"nodes"<<endl;
-		return;
-	}
-	numNodes=n;
-	cout<<"creating tree with "<<numNodes<<"nodes"<<endl;
 
-	//reserve space to hold parent IDs of n vertices
-	tr = new int[numNodes];
+std::vector<int> btree(int n){
+    
+    if(n%2 == 0){
+        std::cout<<"Error!! cannot create the tree input must be odd";
+        assert(false);
+    }
 
-	//reserve space to hold level numbers of n vertices
-	level = new int[numNodes];
+    if(n > 3){
+        int m = (n-1)/2;
+        std::vector<int> t11 = btree(m);
+        std::vector<int> t22(t11.begin(), t11.end());
+        
+        for(int i = 0; i < t22.size(); i++)
+            t22[i] = t22[i] + m;
 
-	//set parent ID of root node
-	tr[numNodes-1]=0;
+        t11[t11.size() - 1] = n;
+        t22[t22.size() - 1] = n;
+        
+        std::vector<int> result(t11);
+        result.insert(result.end(), t22.begin(), t22.end());      
 
-	//set level of root node
-	level[numNodes-1]=0;
+        result.push_back(0);
 
-	//step is one more than the number of nodes in a subtree rooted at left/right child
-	int step = (numNodes+1)/2;
+        return result;
+    }
 
-	//maximum possible level (levels starting from 0. Hence, -1.
-	maxLevel = log2(numNodes+1) - 1;
+    else if (n == 3){
+        std::vector<int>result;
+        result.push_back(3);
+        result.push_back(3);
+        result.push_back(0);
+        return result;
+    }
+    
+    else{
+        std::vector<int> result;
+        result.push_back(0);
+        return result;
+    }
 
-	//create IDs of left subtree
-	int leftID = BinaryPostorderTree(numNodes, step, true);
-
-	//create IDs of right subtree
-	int rightID = BinaryPostorderTree(numNodes, step, false);
-
-	//make root node the parent of left and right children
-	tr[rightID-1]=numNodes;
-	tr[leftID-1]=numNodes;
-
-	return;
 }
 
-BinTree::~BinTree()
-{
-	if(tr)
-		delete [] tr;
-	if(level)
-		delete [] level;
+
+std::vector<int> ntree(int n){
+    
+    if(n%2 == 0){
+        std::cout<<"Error!! cannot create the tree input must be odd";
+        assert(false);
+    }
+
+    if(n == 1){
+        std::vector<int> result;
+        result.push_back(0);
+        return result;
+    }    
+
+    else{
+        
+        int n1 = std::floor(std::log2(n));
+            n1 = std::pow(2, n1) - 1;
+
+        std::vector<int>tr1 = btree(n1); 
+
+        std::vector<int>tr2 = ntree(n-n1-1);
+        for(int i = 0; i < tr2.size(); i++)
+            tr2[i] = tr2[i] + n1;
+        
+        tr1[tr1.size() - 1] = n;
+        tr2[tr2.size() - 1] = n;      
+
+
+        std::vector<int>result(tr1);
+        result.insert(result.end(), tr2.begin(), tr2.end());
+        result.push_back(0);
+        return result;
+    }
+
+
+
 }
+void BinTree::Create(int n){
+    
+    if(n%2 == 0){
+        std::cout<<"Error!! cannot create the tree input must be odd";
+        assert(false);
+    }
 
-int BinTree::BinaryPostorderTree(int parentID, int step, bool leftChild)
-{
-	int myID;
-	if(!leftChild)
-		myID = parentID-1;
-	else
-		myID = parentID - step;
+    numNodes = n;
+    std::cout<<"Creating tree with "<<n<<" nodes";
 
-	level[myID-1] = level[parentID-1] + 1;
-	if(step == 2)
-	{
-		leaves.push_back(myID);
-		return myID;
-	}
-
-	step=step/2;
-	int leftID = BinaryPostorderTree(myID, step, true);
-	int rightID = BinaryPostorderTree(myID, step, false);
-	tr[rightID-1] = myID;
-	tr[leftID-1] = myID;
-	return myID;
+    tr = ntree(n);   
+    //ntree(int n);
+    
 }
 
 std::vector<int> BinTree::GetChildren(int ID)
@@ -85,112 +109,26 @@ std::vector<int> BinTree::GetChildren(int ID)
 				break;
 		}
 	}
+
 	return ret;
 }
 
-int BinTree::GetSibling(int ID)
-{
-	int sib=-1;
-	if((ID >= numNodes) || (ID <= 0))
-		return sib;
+std::vector<int> BinTree::GetTreeDesc(){
+    std::vector<int> result(numNodes+1, 0);
 
-	int parentID = tr[ID-1];
-	int step = (numNodes+1)/(1<<(level[ID-1]));
-	if(ID == parentID-1)
-	{
-		//I am rightChild. Get leftSibling ID.
-		sib = parentID-step;
-	}
-	else
-	{
-		//I am leftChild. Get rightSibling ID.
-		sib = parentID-1;
-	}
+    for(int i = 1; i < numNodes+1; i++){
+        if(GetChildren(i).size() == 0){
+            result[i] = i;
+        }
+        else{
+            result[i] = result[GetChildren(i)[0]];
+        }
+    }
 
-	return sib;
+    return result;
 }
 
-/*bool BinTree::IsLeaf(int ID)
-{
-	std::vector<int>::iterator iter = std::find(leaves.begin(), leaves.end(), ID);
-	if(iter == leaves.end())
-		return false;
-	else
-		return true;
-}*/
 
-int BinTree::GetLeftMostChild(int ID)
-{
-	int curLevel = level[ID-1];
-	int numNodesInSubtreeOfChild = 1<<(maxLevel-curLevel);
-
-	while(level[ID-1] < maxLevel) {
-		ID = ID-numNodesInSubtreeOfChild; //since leftChildID is equal to parentID-step.
-		numNodesInSubtreeOfChild /= 2;
-	}
-	return ID;
+int BinTree::GetNumNodes(){
+    return numNodes;
 }
-
-int BinTree::GetRightMostChild(int ID)
-{
-	while(level[ID-1] < maxLevel)
-		ID = ID-1; //since the rightChildID is equal to parentID-1.
-	return ID;
-}
-
-std::vector<int> BinTree::GetDescendents(int ID)
-{
-	int curLevel = level[ID-1];
-	//Number of descendents = totalNodesInSubtree-1.
-	int totalNodesInSubtree = (1<<(maxLevel-curLevel+1))-1;
-	std::vector<int> ret(totalNodesInSubtree-1);
-	int leftMostID = GetLeftMostChild(ID);
-	int numAdded=0;
-	assert((unsigned int)(ID-leftMostID) == ret.size());
-	for(int i=leftMostID;i<ID;i++)
-		ret[numAdded++]=i;
-	return ret;
-}
-
-std::vector<int> BinTree::GetTreeDesc()
-{
-	std::vector<int>ret(numNodes+1);
-	ret[0] = 0;
-	for(int i=1;i<=numNodes;i++){
-		ret[i] = GetLeftMostChild(i);
-	}
-	return ret;
-}
-
-#ifdef DEBUG
-void BinTree::Print() {
-	cout<<"numNodes: "<<numNodes<<" maxLevel: "<<maxLevel<<endl;
-	cout<<"----------level--------"<<endl;
-	for(int i=0;i<numNodes;i++) {
-		cout<<level[i];
-		if( i!= numNodes - 1)
-			cout<<" ";
-		else
-			cout<<endl;
-	}
-	cout<<"----------level--------"<<endl;
-	cout<<"----------parent IDs--------"<<endl;
-	for(int i=0;i<numNodes;i++) {
-		cout<<tr[i];
-		if( i!= numNodes - 1)
-			cout<<" ";
-		else
-			cout<<endl;
-	}
-	cout<<"----------parent IDs--------"<<endl;
-	cout<<"----------Leaf Nodes--------"<<endl;
-	for(int i=0;i<leaves.size();i++) {
-		cout<<leaves[i];
-		if( i!= leaves.size() - 1)
-			cout<<" ";
-		else
-			cout<<endl;
-	}
-	cout<<"----------Leaf Nodes--------"<<endl;
-}
-#endif

@@ -4,9 +4,7 @@
 #include"BinTree.h"
 #include"NPart.h"
 #include"test_mat2hsssym.h"
-#include"mat2hsssym.h"
 #include "QR.h"
-#include "Divide.h"
 #include "superDC.h"
 #include "band2hss.h"
 

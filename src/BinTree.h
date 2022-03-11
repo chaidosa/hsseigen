@@ -3,7 +3,7 @@
 #include<stdio.h>
 #include<vector>
 #include<iostream>
-
+#include<map>
 using namespace std;
 
 class BinTree
@@ -15,10 +15,11 @@ class BinTree
 	std::vector<int> GetChildren(int ID);
 
 	std::vector<int> GetTreeDesc();
+	std::vector<vector<int>> hsslevel();
 	int GetNumNodes();
 
 	vector<int> tr; 
-
+	std::map<int, vector<int>> ch;
 	int numNodes; //number of nodes in the complete binary tree.
 
 	//helper functions to create the tree

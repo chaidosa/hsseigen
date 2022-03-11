@@ -2,6 +2,8 @@
 #include<assert.h>
 #include"BinTree.h"
 
+
+//This function creates a perfect binary tree with n nodes.
 std::vector<int> btree(int n){
     
     if(n%2 == 0){
@@ -44,7 +46,7 @@ std::vector<int> btree(int n){
 
 }
 
-
+//This function creates a full binary tree with n nodes.
 std::vector<int> ntree(int n){
     
     if(n%2 == 0){
@@ -92,7 +94,12 @@ void BinTree::Create(int n){
     numNodes = n;
     std::cout<<"Creating tree with "<<n<<" nodes";
 
-    tr = ntree(n);   
+    tr = ntree(n);
+    for(int i = 0; i < numNodes; i++){
+        if(tr[i] == 0)
+            continue;
+        ch[tr[i]].push_back(i+1);    
+    }
     //ntree(int n);
     
 }
@@ -100,15 +107,10 @@ void BinTree::Create(int n){
 std::vector<int> BinTree::GetChildren(int ID)
 {
 	std::vector<int> ret;
-	for(int i=0;i<numNodes;i++)
-	{
-		if(tr[i] == ID)
-		{
-			ret.push_back(i+1);
-			if(ret.size() == 2)
-				break;
-		}
-	}
+    std::map<int , std::vector<int>>::iterator it;
+    it = ch.find(ID);
+    if(it != ch.end())
+        ret.insert(ret.begin(), it->second.begin(), it->second.end());
 
 	return ret;
 }
@@ -131,4 +133,30 @@ std::vector<int> BinTree::GetTreeDesc(){
 
 int BinTree::GetNumNodes(){
     return numNodes;
+}
+
+std::vector<vector<int>> BinTree::hsslevel(){
+    
+    std::vector<vector<int>>nodes_lvl;
+    
+    std::vector<int> curr;
+    curr.push_back(numNodes);
+    while(!curr.empty())
+    {        
+        nodes_lvl.push_back(curr);
+
+        vector<int>nextlvl;
+
+        for(int j = 0; j < curr.size(); j++){
+            vector<int>ch = GetChildren(curr[j]);
+            if(!ch.empty())
+                nextlvl.insert(nextlvl.end(), ch.begin(), ch.end());
+        }
+
+        curr.clear();
+        curr.insert(curr.begin(), nextlvl.begin(), nextlvl.end());
+        nextlvl.clear();
+    }  
+
+    return nodes_lvl;
 }

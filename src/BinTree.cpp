@@ -46,6 +46,8 @@ std::vector<int> btree(int n){
 
 }
 
+
+
 //This function creates a full binary tree with n nodes.
 std::vector<int> ntree(int n){
     
@@ -84,6 +86,10 @@ std::vector<int> ntree(int n){
 
 
 }
+
+
+
+//This function creates full binary tree with nodes n.
 void BinTree::Create(int n){
     
     if(n%2 == 0){
@@ -104,6 +110,9 @@ void BinTree::Create(int n){
     
 }
 
+
+
+//This function returns the childrens of a node. 
 std::vector<int> BinTree::GetChildren(int ID)
 {
 	std::vector<int> ret;
@@ -115,6 +124,9 @@ std::vector<int> BinTree::GetChildren(int ID)
 	return ret;
 }
 
+
+
+//This function returns the smallest descendents of all the nodes.
 std::vector<int> BinTree::GetTreeDesc(){
     std::vector<int> result(numNodes+1, 0);
 
@@ -131,10 +143,15 @@ std::vector<int> BinTree::GetTreeDesc(){
 }
 
 
+
+// This function returns number of nodes in the tree.
 int BinTree::GetNumNodes(){
     return numNodes;
 }
 
+
+
+//This function returns all the nodes stored in level order.
 std::vector<vector<int>> BinTree::hsslevel(){
     
     std::vector<vector<int>>nodes_lvl;

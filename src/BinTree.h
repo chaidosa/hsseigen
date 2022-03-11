@@ -12,6 +12,7 @@ class BinTree
 	
 	BinTree(int n):numNodes(0){Create(n);}
 	//~BinTree();
+	//return childrens of a node with some ID
 	std::vector<int> GetChildren(int ID);
 
 	std::vector<int> GetTreeDesc();
@@ -19,6 +20,7 @@ class BinTree
 	int GetNumNodes();
 
 	vector<int> tr; 
+	//stores children of all the parent
 	std::map<int, vector<int>> ch;
 	int numNodes; //number of nodes in the complete binary tree.
 

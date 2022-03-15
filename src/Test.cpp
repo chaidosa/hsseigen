@@ -7,6 +7,7 @@
 #include "QR.h"
 #include "superDC.h"
 #include "band2hss.h"
+#include <sys/time.h>
 
 char* testFile="sparseOut.txt";
 
@@ -157,7 +158,9 @@ int main(int argc, char* argv[])
 	desc.clear();
 	desc = bt->GetDescendents(7);
 	if(desc.size() > 0) {
-		cout<<"descendants of 7: ";
+		cout<<"
+            //std::copy(E, E+resDvd->dSizes[i].first, ee);
+            Lam[i] = E;descendants of 7: ";
 		for(int i=0;i<desc.size();i++) {
 			cout<<desc[i];
 			if(i != desc.size()-1)
@@ -243,10 +246,14 @@ int main(int argc, char* argv[])
 	//DivideOutParams* dd = Divide(hss,bt);
 //	B2HSS *hss = band2hss(&A, 126, bt, m, mSize, 30);
 	cout<<"Generators created successfully. HSS matrix is located at:"<<hss<<endl;
+	//struct timeval timeStart, timeEnd;
 
 	//calling superDC routine
+	//gettimeofday(&timeStart, 0);
 	SDC* res = superDC(hss, bt, m, mSize);
+	//gettimeofday(&timeEnd, 0);
+	//long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
+      //  printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
 
-
-
+	return 0;
 }

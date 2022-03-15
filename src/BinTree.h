@@ -22,8 +22,9 @@ class BinTree
 	vector<int> tr; 
 	//stores children of all the parent
 	std::map<int, vector<int>> ch;
-	int numNodes; //number of nodes in the complete binary tree.
-
+	int numNodes; //number of nodes in the full binary tree.
+	int numLevels; //number of levels in full binary tree
+	std::vector<vector<int>>nodeAtLvl;
 	//helper functions to create the tree
 	void Create(int n);
 };

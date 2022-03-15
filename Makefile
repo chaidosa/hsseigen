@@ -7,6 +7,7 @@ CC = g++
 CXXFLAGS = -std=c++11 -Wall
 LDFLAGS = -lblas
 LDFLAGS+= -llapacke
+LDFLAGS+= -fopenmp
 
 ifeq ($(DEBUG),1)
 	CXXFLAGS += -g

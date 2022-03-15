@@ -106,6 +106,8 @@ void BinTree::Create(int n){
             continue;
         ch[tr[i]].push_back(i+1);    
     }
+
+    nodeAtLvl = hsslevel();
     //ntree(int n);
     
 }
@@ -174,6 +176,6 @@ std::vector<vector<int>> BinTree::hsslevel(){
         curr.insert(curr.begin(), nextlvl.begin(), nextlvl.end());
         nextlvl.clear();
     }  
-
+    numLevels = nodes_lvl.size();
     return nodes_lvl;
 }

@@ -1,7 +1,7 @@
 #include<math.h>
 #include<assert.h>
 #include"BinTree.h"
-
+#include <unordered_map>
 
 //This function creates a perfect binary tree with n nodes.
 std::vector<int> btree(int n){
@@ -118,7 +118,7 @@ void BinTree::Create(int n){
 std::vector<int> BinTree::GetChildren(int ID)
 {
 	std::vector<int> ret;
-    std::map<int , std::vector<int>>::iterator it;
+    std::unordered_map<int , std::vector<int>>::iterator it;
     it = ch.find(ID);
     if(it != ch.end())
         ret.insert(ret.begin(), it->second.begin(), it->second.end());

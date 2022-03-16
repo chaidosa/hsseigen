@@ -10,6 +10,7 @@
 #include "secular.h"
 #include "band2hss.h"
 #include "omp.h"
+//#include <cilk/cilk.h>
 #include <sys/time.h>
 extern "C"
 {
@@ -18,6 +19,78 @@ extern "C"
     #include<cblas.h>
 }
 using namespace std;
+std::pair<double *, nonleaf**> r_RankOneUpdate(double* Lam, int lamSize, std::pair<int, int>zSize, double* Z, nonleaf **n_leaf, int r);
+std::pair<double*, double*> computeLeafEig(std::pair<int, int> dSize, double *D, int i);
+void Eig_func(int i);
+
+//Global declaration
+int N;
+DVD *resDvd;
+EIG_MAT **Q0;
+std::pair<int, int>* q0Sizes;
+double **Lam; 
+int *LamSizes;
+BinTree *bt;
+std::pair<int,int>* l;
+
+void Eig_func(int i){
+    vector<int> ch = bt->GetChildren(i + 1);
+    
+    if(ch.empty())
+    {
+        std::pair<double*, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
+        Lam[i] = E.first;         
+        LamSizes[i] = resDvd->dSizes[i].first;
+
+        Q0[i] = new EIG_MAT();
+        Q0[i]->Q0_leaf = E.second;            
+        Q0[i]->Q0_nonleaf = NULL;
+        q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};
+       // light_switch[i] = true;
+       return;
+    }
+    
+    int left = ch[0];
+    int right = ch[1];
+
+    Eig_func(left-1);
+    Eig_func(right-1);   
+    
+    //compute
+    superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);           
+    Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
+
+    std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
+    std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
+            
+    LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
+    //std::sort(Lam[i], Lam[i]+LamSizes[i]);
+
+    delete [] Lam[left - 1];
+    delete [] Lam[right - 1];
+
+    LamSizes[left - 1]  = 0;
+    LamSizes[right - 1] = 0;
+
+    int r             = resDvd->zSizes[i].second;
+
+    Q0[i]             = new EIG_MAT();
+    Q0[i]->Q0_leaf    = NULL;
+
+    nonleaf **n_leaf    = new nonleaf*[r];
+            
+    std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
+    Lam[i] = result.first;
+    Q0[i]->Q0_nonleaf = result.second;
+    Q0[i]->n_non_leaf = r;
+    q0Sizes[i] = {1, r};
+    return;
+}
+
+
+
+
+
 
 std::pair<double *, nonleaf**> r_RankOneUpdate(double* Lam, int lamSize, std::pair<int, int>zSize, double* Z, nonleaf **n_leaf, int r){
     
@@ -95,18 +168,22 @@ std::pair<double*, double*> computeLeafEig(std::pair<int, int> dSize, double *D,
 }
 
 
-SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
+SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
 {
-
+    bt = btree;
     cout<<"Reached superDC\n";
     //Dividing Stage
-    DVD *resDvd = divide2(A,bt,m,mSize);
-
+    resDvd = divide2(A,bt,m,mSize);
+    
     cout<<"Sucess Divide\n";
     //Conquering stage
-    int N  = bt->GetNumNodes();
-    //Index range of each node
-    std::pair<int,int>* l = new std::pair<int,int>[N];
+    N  = bt->GetNumNodes();
+
+    Q0 = new EIG_MAT*[N];
+    q0Sizes = new std::pair<int, int>[N];
+    Lam  = new double*[N]; 
+    LamSizes = new int[N];
+    l = new std::pair<int,int>[N];  
 
     for(int k = 0; k < N; k++)
 		l[k] = std::make_pair(0,0);    
@@ -130,159 +207,33 @@ SDC* superDC(tHSSMat *A,  BinTree* bt, int* m, int mSize)
 
         }
     }
-    /*
-        Q0 = cell(k,1);         
-        Lam = cell(k,1);
-        rho = cell(k,1);
-    */
-    EIG_MAT **Q0 = new EIG_MAT*[N]; //Nikhil: [] not necessary (multiple places).
-    //double **Q0 = new double*[N];    
-    std::pair<int, int>* q0Sizes = new std::pair<int, int>[N]; 
+ 
     for(int k = 0; k < N; k++)
 		q0Sizes[k]=std::make_pair(0,0);    
-    
-    double **Lam  = new double*[N]; 
-    int *LamSizes = new int[N];
-    
+ 
 
-    //double **rho = new double*[N]; 
-    //std::pair<int, int>* rhoSizes = new std::pair<int, int>[N];
-    //for(int k = 0; k < N; k++)
-	//	rhoSizes[k]=std::make_pair(0,0);
-    vector<bool> light_switch(N, false);
     struct timeval timeStart, timeEnd;
-    gettimeofday(&timeStart, 0);
-    omp_set_dynamic(0);     // Explicitly disable dynamic teams
-    omp_set_num_threads(omp_get_num_procs());
-    //#pragma omp parallel for
-    for(int k = bt->nodeAtLvl.size()-1; k >=0; k--){
-    //    #pragma omp parallel for shared(bt, Lam, Q0)
-        for(int p = 0; p < bt->nodeAtLvl[k].size(); p++){
-            int i = bt->nodeAtLvl[k][p] - 1;
-            vector<int> ch = bt->GetChildren(i+1);
-            if(ch.size() == 0){
-               
-                std::pair<double*, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
-                Lam[i] = E.first;         
-                LamSizes[i] = resDvd->dSizes[i].first;
-
-                Q0[i] = new EIG_MAT();
-                Q0[i]->Q0_leaf = E.second;            
-                Q0[i]->Q0_nonleaf = NULL;
-                q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};
-                light_switch[i] = true;
-            }
-            else{
-
-                int left = ch[0];
-                int right = ch[1]; 
-              //  while(!light_switch[left-1] && !light_switch[right - 1]);
-
-                superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);            
-
-                Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
-
-                std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
-                std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
-            
-                LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
-                //std::sort(Lam[i], Lam[i]+LamSizes[i]);
-
-                delete [] Lam[left - 1];
-                delete [] Lam[right - 1];
-
-                LamSizes[left - 1]  = 0;
-                LamSizes[right - 1] = 0;
-
-                int r             = resDvd->zSizes[i].second;
-
-                Q0[i]             = new EIG_MAT();
-                Q0[i]->Q0_leaf    = NULL;
-
-                nonleaf **n_leaf    = new nonleaf*[r];
-            
-                std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
-                Lam[i] = result.first;
-                Q0[i]->Q0_nonleaf = result.second;
-                Q0[i]->n_non_leaf = r;
-                q0Sizes[i] = {1, r}; 
-                light_switch[i] = true;
-
-            }
-        }
-         
-    }
+    gettimeofday(&timeStart, 0); 
     
+    gettimeofday(&timeStart, 0);
+    Eig_func(bt->nodeAtLvl[0][0] - 1);
     gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
         printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
-  /*  for(int i = 0; i < N; i++)
-    {
-        std::vector<int> ch = bt->GetChildren(i + 1);
-        //if current index i is a leaf node
-        if(ch.size() == 0)
-        {
-            std::pair<double*, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
-            Lam[i] = E.first;         
-            LamSizes[i] = resDvd->dSizes[i].first;
+  
 
-            Q0[i] = new EIG_MAT();
-            Q0[i]->Q0_leaf = E.second;            
-            Q0[i]->Q0_nonleaf = NULL;
-            q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};           
-      
-        }
-
-        //current index is non-leaf node       
-        else
-        {           
-
-            int left  = ch[0];
-            int right = ch[1];
-
-            superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);            
-
-            Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
-
-            std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
-            std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
-            
-            LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
-            //std::sort(Lam[i], Lam[i]+LamSizes[i]);
-
-            delete [] Lam[left - 1];
-            delete [] Lam[right - 1];
-
-            LamSizes[left - 1]  = 0;
-            LamSizes[right - 1] = 0;
-
-            int r             = resDvd->zSizes[i].second;
-
-            Q0[i]             = new EIG_MAT();
-            Q0[i]->Q0_leaf    = NULL;
-
-            nonleaf **n_leaf    = new nonleaf*[r];
-            
-            std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
-             Lam[i] = result.first;
-            Q0[i]->Q0_nonleaf = result.second;
-            Q0[i]->n_non_leaf = r;
-            q0Sizes[i] = {1, r};       
-        }      
-    }
-*/
-  /*  vector<double> tempeig;
+    vector<double> tempeig;
     for(int k = 0; k < LamSizes[N-1]; k++)
         tempeig.push_back(Lam[N-1][k]);
 
-   // std::sort(tempeig.begin(), tempeig.end());
+    std::sort(tempeig.begin(), tempeig.end());
     int count = 0;
     for(int k = 0; k < LamSizes[N-1]; k++){
         count++;
         cout<<setprecision(20)<<tempeig[k]<<endl;
     }
 	cout << count;
-    */
+    
     return NULL;
 
 } 

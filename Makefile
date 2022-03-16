@@ -8,6 +8,7 @@ CXXFLAGS = -std=c++11 -Wall
 LDFLAGS = -lblas
 LDFLAGS+= -llapacke
 LDFLAGS+= -fopenmp
+#LDFLAGS+= -fopencilk
 
 ifeq ($(DEBUG),1)
 	CXXFLAGS += -g

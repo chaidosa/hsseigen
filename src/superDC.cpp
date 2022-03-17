@@ -10,7 +10,7 @@
 #include "secular.h"
 #include "band2hss.h"
 #include "omp.h"
-//#include <cilk/cilk.h>
+
 #include <sys/time.h>
 extern "C"
 {
@@ -211,18 +211,118 @@ SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
     for(int k = 0; k < N; k++)
 		q0Sizes[k]=std::make_pair(0,0);    
  
+    vector<int> counter(N+1, 0);
+    std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
+    
 
     struct timeval timeStart, timeEnd;
-    gettimeofday(&timeStart, 0); 
-    
     gettimeofday(&timeStart, 0);
-    Eig_func(bt->nodeAtLvl[0][0] - 1);
+    cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
+
+    //omp_set_num_threads();
+    #pragma omp parallel
+    {
+
+        //omp_set_num_threads(omp_get_num_procs());
+       // cout<<"In Parallel:"<<omp_in_parallel()<<endl;
+        cout<<"Number of threads:"<<omp_get_num_threads()<<endl;
+        #pragma omp for
+        for(int thr = 0; thr < bt->leaves.size(); thr++){
+           // cout<<"iteration:"<<thr<<"thread:"<<omp_get_thread_num()<<endl;            
+            while(true){
+                int node;
+                vector<int> ch;
+                #pragma omp critical
+                {
+                    if(!WorkQueue.empty()){
+                        node = WorkQueue.back();
+                        WorkQueue.pop_back();
+                    }
+                    else{
+                        node = -1;
+                    }
+                }
+                
+                if(node != -1 && bt->GetChildren(node).empty()){
+                    int i = node - 1;
+                    std::pair<double*, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
+                    Lam[i] = E.first;         
+                    LamSizes[i] = resDvd->dSizes[i].first;
+
+                    Q0[i] = new EIG_MAT();
+                    Q0[i]->Q0_leaf = E.second;            
+                    Q0[i]->Q0_nonleaf = NULL;
+                    q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};                  
+
+                    #pragma omp critical
+                    {
+                        counter[bt->tr[node - 1]]++;
+                        if(counter[bt->tr[node - 1]] == 2){
+                                WorkQueue.push_back(bt->tr[node - 1]);
+                            }
+                    }
+                }
+
+                else if (node != -1 && !bt->GetChildren(node).empty()){
+                    cout<<"Computing Internal node: "<<node<<"\n";
+                    ch = bt->GetChildren(node);
+                    int left = ch[0];
+                    int right = ch[1];
+                    int i = node - 1;
+                    superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);           
+                    Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
+
+                    std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
+                    std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
+            
+                    LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
+                    //std::sort(Lam[i], Lam[i]+LamSizes[i]);
+
+                    delete [] Lam[left - 1];
+                    delete [] Lam[right - 1];
+
+                    LamSizes[left - 1]  = 0;
+                    LamSizes[right - 1] = 0;
+
+                    int r             = resDvd->zSizes[i].second;
+
+                    Q0[i]             = new EIG_MAT();
+                    Q0[i]->Q0_leaf    = NULL;
+
+                    nonleaf **n_leaf    = new nonleaf*[r];
+            
+                    std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
+                    Lam[i] = result.first;
+                    Q0[i]->Q0_nonleaf = result.second;
+                    Q0[i]->n_non_leaf = r;
+                    q0Sizes[i] = {1, r};   
+
+                    #pragma omp critical
+                    {
+                        counter[bt->tr[node - 1]]++;
+                        if(counter[bt->tr[node - 1]] == 2){
+                                WorkQueue.push_back(bt->tr[node - 1]);
+                        }
+        
+                    } 
+                }
+                else if(node == -1)
+                    break;
+            }
+            
+        }
+    }
     gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
         printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
-  
+    
+   // Eig_func(bt->nodeAtLvl[0][0] - 1);
+   /* gettimeofday(&timeEnd, 0);
+    long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
+        printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
+  */
 
-    vector<double> tempeig;
+   /* vector<double> tempeig;
     for(int k = 0; k < LamSizes[N-1]; k++)
         tempeig.push_back(Lam[N-1][k]);
 
@@ -232,8 +332,8 @@ SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
         count++;
         cout<<setprecision(20)<<tempeig[k]<<endl;
     }
-	cout << count;
-    
+    cout << count;
+*/
     return NULL;
 
 } 

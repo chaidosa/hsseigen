@@ -4,10 +4,10 @@
 
 # Compiler settings - Can be customized.
 CC = g++ 
-CXXFLAGS = -std=c++11 -Wall
+CXXFLAGS = -std=c++11
 LDFLAGS = -lblas
 LDFLAGS+= -llapacke
-LDFLAGS+= -fopenmp
+CXXFLAGS+= -fopenmp
 #LDFLAGS+= -fopencilk
 
 ifeq ($(DEBUG),1)
@@ -24,7 +24,7 @@ OBJDIR = obj
 ############## Do not change anything from here downwards! #############
 SRC = $(wildcard $(SRCDIR)/*$(EXT))
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
-DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
+#DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
 
 # UNIX-based OS variables & settings
 RM = rm
@@ -41,14 +41,14 @@ all: $(APPNAME)
 
 # Builds the app
 $(APPNAME): $(OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CXXFLAGS) $^ $(LDFLAGS) -o $@ 
 
 # Creates the dependecy rules
 %.d: $(SRCDIR)/%$(EXT)
 	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
 
 # Includes all .h files
--include $(DEP) 
+#-include $(DEP) 
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
 $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)

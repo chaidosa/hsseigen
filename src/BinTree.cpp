@@ -168,8 +168,12 @@ std::vector<vector<int>> BinTree::hsslevel(){
 
         for(int j = 0; j < curr.size(); j++){
             vector<int>ch = GetChildren(curr[j]);
-            if(!ch.empty())
+            if(!ch.empty()){
                 nextlvl.insert(nextlvl.end(), ch.begin(), ch.end());
+            }
+            else{
+                leaves.push_back(curr[j]);
+            }
         }
 
         curr.clear();

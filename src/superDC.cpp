@@ -219,7 +219,7 @@ SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
     gettimeofday(&timeStart, 0);
     cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
-    //omp_set_num_threads();
+    omp_set_num_threads(4);
     #pragma omp parallel
     {
 
@@ -227,8 +227,8 @@ SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
        // cout<<"In Parallel:"<<omp_in_parallel()<<endl;
         cout<<"Number of threads:"<<omp_get_num_threads()<<endl;
         #pragma omp for
-        for(int thr = 0; thr < bt->leaves.size(); thr++){
-           // cout<<"iteration:"<<thr<<"thread:"<<omp_get_thread_num()<<endl;            
+        for(int thr = 0; thr < WorkQueue.size(); thr++){
+           cout<<"iteration:"<<thr<<"thread:"<<omp_get_thread_num()<<endl;            
             while(true){
                 int node;
                 vector<int> ch;
@@ -314,15 +314,18 @@ SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
     }
     gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
-        printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
+        //printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
     
+   
    // Eig_func(bt->nodeAtLvl[0][0] - 1);
    /* gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
         printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
   */
-
-   /* vector<double> tempeig;
+    std::ofstream txtOut;
+    txtOut.open("output.txt", std::ofstream::out);
+    txtOut <<setprecision(10)<<elapsed/(double)1000000<<" seconds"<<endl;
+    vector<double> tempeig;
     for(int k = 0; k < LamSizes[N-1]; k++)
         tempeig.push_back(Lam[N-1][k]);
 
@@ -330,10 +333,10 @@ SDC* superDC(tHSSMat *A,  BinTree* btree, int* m, int mSize)
     int count = 0;
     for(int k = 0; k < LamSizes[N-1]; k++){
         count++;
-        cout<<setprecision(20)<<tempeig[k]<<endl;
+        txtOut<<setprecision(20)<<tempeig[k]<<endl;
     }
     cout << count;
-*/
+
     return NULL;
 
 } 

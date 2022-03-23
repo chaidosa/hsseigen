@@ -5,6 +5,8 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 -> make sure you've installed lapack and blas. <a> http://www.netlib.org/lapack/ </a> </br>
 -> In ubuntu one can also do `sudo apt-get install libblas-dev liblapack-dev liblapacke-dev` <a>https://askubuntu.com/questions/623578/installing-blas-and-lapack-packages</a></br>
 -> `sudo apt install libatlas-base-dev` https://stackoverflow.com/questions/66023082/usr-bin-ld-cannot-find-ldlib-usr-bin-ld-cannot-find-lcblas-usr-bin-ld-ca <br/>
+**TO RUN Programs** <br/>
 -> **Make sure you've created a directory name `obj` in the project** <br/>
 -> **In the terminal write the command `make` for compiling and creating all the object files** </br>
--> **Lastly `./Test`**
+-> **aftter compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth>` to run the code**</br>
+-> **by default Mat2HSSsym is used.**

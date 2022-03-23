@@ -20,7 +20,7 @@ void NPart(int n, int ni, BinTree** tr, int**m, int& mSize, int ltr)
 		return;
 	}
 
-	if(ltr == 0) {
+	if(ltr == 0){
 		//k = number of horizontal partitions of input matrix
 		int k=n/ni;
 		

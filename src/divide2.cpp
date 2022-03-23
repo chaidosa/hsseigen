@@ -9,6 +9,7 @@
 #include "divide2.h"
 #include<stdio.h>
 #include "QR.h"
+#include "Generators.h"
 #include "band2hss.h"
 extern "C"
 {
@@ -37,8 +38,9 @@ void norm_svd(double * A, std::pair<int, int>aSize, double *norm){
 }
 
 
-DVD* divide2(tHSSMat *A, BinTree *bt,int* m, int mSize)
+DVD* divide2(GEN *A, BinTree *bt,int* m, int mSize)
 {
+
     DVD* ret = new DVD();
     double alpha,beta;
     alpha = 1.0;

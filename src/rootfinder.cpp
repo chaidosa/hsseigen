@@ -177,7 +177,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
     Root * results = new Root();
 
-    double N = 1024;
+    double N = 17000;
     
 
     int n = v.size();

@@ -1,11 +1,12 @@
-#include<bits/stdc++.h>
-#include<stdio.h>
-#include<string.h>
-#include<math.h>
-#include<stack>
-#include<algorithm>
-#include<assert.h>
-#include"test_mat2hsssym.h"
+#include <bits/stdc++.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <stack>
+#include <algorithm>
+#include <assert.h>
+#include "test_mat2hsssym.h"
+#include "Generators.h"
 #include "compr.h"
 #include "QR.h"
 #include "compr_new.h"
@@ -37,8 +38,8 @@ void merge_arr(std::pair<vector<double>,int>*tempSt,int ns, double *tempT,int tR
 }
 
 //Todo:: Add the edge case in the routine
-tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char const* tol, double par){
-    tHSSMat* ret          = new tHSSMat();
+GEN* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char const* tol, double par){
+    GEN* ret          = new GEN();
     //int n                 = mSize; //number of leaf nodes
     int N                 = bt->GetNumNodes();
     int aRowWidth         = sqrt(aSize);
@@ -434,6 +435,7 @@ tHSSMat* t_mat2hsssym(double* A, int aSize, BinTree* bt, int* m, int mSize, char
 
     ret->D=D;ret->U=U;ret->R=R;ret->B=B;
 	ret->dSizes=dSizes;ret->uSizes=uSizes;ret->rSizes=rSizes;ret->bSizes=bSizes;   
-    
+    delete[] tSizes;
+    delete[] T;
     return ret;        
 }

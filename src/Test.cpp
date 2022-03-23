@@ -8,6 +8,7 @@
 #include "superDC.h"
 #include "band2hss.h"
 #include <sys/time.h>
+#include<assert.h>
 
 char* testFile="sparseOut.txt";
 
@@ -15,13 +16,17 @@ int main(int argc, char* argv[])
 {
 	int n=126, band_width=2;
 	int r=32;
-	if(argc!=4){
-		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size>\n");
-		printf("Default values will be used: filename=sparseOut.txt, n=126, diagblock_size=32\n");
+	int MorB = 1; // to select which routine to use Band2HSS (2) or Mat2HSSsymm (1).
+	int w = 0;	//  band of the matrix, can be changes according to the requirement.
+	if(argc!=6){
+		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth>\n");
+		printf("Default values will be used: filename=sparseOut.txt, n=126, diagblock_size=32, Mat2hsssym, 0\n");
 	}else{
 		testFile=argv[1];
 		n=atoi(argv[2]);
 		r=atoi(argv[3]);
+		MorB = atoi(argv[4]);
+		w = atoi(argv[5]);
 	}
 
 	BinTree* bt=NULL;
@@ -213,47 +218,12 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	//Testing GetTransposeInPlace
-	/*double *testm  = new double[10*4];
-	int numRows = 10, numCols=4;
-	for(int i=0;i<numRows;i++)
-		for(int j=0;j<numCols;j++)
-			testm[i*numCols+j]=(i+j)*10;
-
-	printf("Before\n");
-	for(int i=0;i<numRows;i++)
-	{
-		printf("[");
-		for(int j=0;j<numCols;j++)
-			printf("%f ",testm[i*numCols+j]);
-		printf("]\n");
-	}
-
-	GetTransposeInPlace(testm, numRows, numCols);
-	std::swap(numRows, numCols);
-	printf("After\n");
-	for(int i=0;i<numRows;i++)
-	{
-		printf("[");
-		for(int j=0;j<numCols;j++)
-			printf("%f ",testm[i*numCols+j]);
-		printf("]\n");
-	}*/
-
-	//Testing mat2hsssym
-	tHSSMat* hss = t_mat2hsssym(A, n*n, bt, m, mSize);
-	//HSSMat* hss = mat2hsssym(A, n*n, bt, m, mSize);
-	//DivideOutParams* dd = Divide(hss,bt);
-//	B2HSS *hss = band2hss(&A, 126, bt, m, mSize, 30);
-	cout<<"Generators created successfully. HSS matrix is located at:"<<hss<<endl;
-	//struct timeval timeStart, timeEnd;
-
-	//calling superDC routine
-	//gettimeofday(&timeStart, 0);
+	GEN *hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+	
+	
 	SDC* res = superDC(hss, bt, m, mSize);
-	//gettimeofday(&timeEnd, 0);
-	//long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
-      //  printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
-
+	res->~SDC();
+	delete[] m;
+	
 	return 0;
 }

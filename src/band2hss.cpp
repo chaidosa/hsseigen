@@ -4,8 +4,8 @@
 #include<assert.h>
 #include "BinTree.h"
 #include "band2hss.h"
-
-B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
+#include "Generators.h"
+GEN *band2hss(double *AA, int aSize, BinTree* bt, int* m, int mSize, int w){
     /**
      * @brief Computes HSS form of a banded matrix A
      * @param    AA: banded form
@@ -16,8 +16,8 @@ B2HSS *band2hss(double **AA, int aSize, BinTree* bt, int* m, int mSize, int w){
      * @return  D, U, R, B Generators:HSS of the banded form of Class B2HSS
      */
     
-    B2HSS * result = new B2HSS();
-    double *A = *AA;
+    GEN * result = new GEN();
+    double *A = AA;
     int n = bt->GetNumNodes();
 
     int aRowWidth         = sqrt(aSize);

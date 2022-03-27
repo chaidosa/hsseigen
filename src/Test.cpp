@@ -163,9 +163,8 @@ int main(int argc, char* argv[])
 	desc.clear();
 	desc = bt->GetDescendents(7);
 	if(desc.size() > 0) {
-		cout<<"
+		cout<<"descendants of 7: ";
             //std::copy(E, E+resDvd->dSizes[i].first, ee);
-            Lam[i] = E;descendants of 7: ";
 		for(int i=0;i<desc.size();i++) {
 			cout<<desc[i];
 			if(i != desc.size()-1)

@@ -1,12 +1,16 @@
 #include "cauchylikematvec.h"
 #include "bsxfun.h"
 #include <string.h>
+#ifndef OPENBLAS 
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
+#ifndef OPENBLAS 
 }
+#endif
 void cauchylikematvec(double ***Qcd, std::pair<int,int>*qcSizes,double **Xx, std::pair<int,int>xSize,int ifTrans, double N){
 /*
     %%% Input:

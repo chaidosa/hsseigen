@@ -11,12 +11,16 @@
 #include "QR.h"
 #include "Generators.h"
 #include "band2hss.h"
+#ifndef OPENBLAS 
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
+#ifndef OPENBLAS 
 }
+#endif
 using namespace std;
 //norm using svd
 void norm_svd(double * A, std::pair<int, int>aSize, double *norm){

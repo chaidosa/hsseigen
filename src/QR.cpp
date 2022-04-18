@@ -4,11 +4,15 @@
 #include<assert.h>
 #include<stdio.h>
 #include"QR.h"
+#ifndef OPENBLAS 
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
+#ifndef OPENBLAS 
 }
+#endif
 
 void qpr( double* const _Q, double* const _R, int* const _P, double* const _A, const size_t _m, const size_t _n) {
     // Maximal rank is used by Lapacke

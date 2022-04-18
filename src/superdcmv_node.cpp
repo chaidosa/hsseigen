@@ -4,12 +4,16 @@
 #include <assert.h>
 #include "eigenmatrix.h"
 #include "superdcmv_cauchy.h"
+#ifndef OPENBLAS 
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
+#ifndef OPENBLAS 
 }
+#endif
 
 void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
 /*

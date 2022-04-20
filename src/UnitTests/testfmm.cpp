@@ -1,7 +1,12 @@
 #include<iostream>
 #include<fstream>
 #include<iomanip>
-#include"../fmm1d_local_shift.h"
+#include"../fmm1d_local_shift_2.h"
+#include"../fmm_types.h"
+
+
+void PrintTree(const Vertex* node);
+
 using namespace std;
 int main(int argc, char* argv[]){
 	string header;
@@ -51,6 +56,8 @@ int main(int argc, char* argv[]){
 	ifs.close();
 
 	fmm1d_local_shift(r[0],x,y,q,gap,org,3,numXElems,numYElems);
+	PrintTree(GetRootNode());
+
 
 	delete [] x;
 	delete [] y;
@@ -59,3 +66,21 @@ int main(int argc, char* argv[]){
 	delete [] org;
 	delete [] r;
 }
+
+void PrintTree(const Vertex* node) {
+	if(node == NULL)
+		return;
+	printf("label:%d\t(c, r):(%lf %lf)\tlvl:%d\n",node->label, node->center, node->radius, node->level);
+	printf("\tnbrs:");
+	for(int i=0;i<node->nbrs.size();i++)
+		printf("%d ",node->nbrs[i]);
+	printf("\n");
+	printf("\til:");
+	for(int i=0;i<node->il.size();i++)
+		printf("%d ",node->il[i]);
+	printf("\n");
+	printf("\t(numX, numY):(%d, %d)\t(xL,xR,yL,yR):(%d %d %d %d)\n",node->xRight-node->xLeft,node->yRight-node->yLeft, node->xLeft, node->xRight, node->yLeft, node->yRight);
+	PrintTree(node->left);
+	PrintTree(node->right);
+}
+

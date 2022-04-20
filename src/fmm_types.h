@@ -20,9 +20,10 @@ typedef struct Vertex{
 	short int level;
 	bool isLeaf;
 	int xLeft, xRight, yLeft, yRight; //indices of points within the box
-	double center, radius, eta;
+	double center, radius;//, eta;
+	double* res; //used to hold intermediate results v, u, and z.
 	Vertex():parent(0), level(0), isLeaf(false), left(NULL), right(NULL){
-		xLeft=-1;xRight=-1;yLeft=-1;yRight=-1;
+		xLeft=-1;xRight=-1;yLeft=-1;yRight=-1;res=NULL;
 #ifdef DEBUG
 		label=0;
 #endif

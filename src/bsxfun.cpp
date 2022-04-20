@@ -4,13 +4,16 @@
 #include <string.h>
 #include <cstring>
 #include <bits/stdc++.h>
-
+#ifndef OPENBLAS
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
+#ifndef OPENBLAS
 }
+#endif
 using namespace std;
 /*  Bsxfun similar to matlab,
 *   character 'T' for times
@@ -59,6 +62,19 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
             }
         }
         break;
+    //@minus column-wise: subtracting A-B, where A is a matrix and B is a vector. Num cols of A and B must match.
+    case 'm':
+		if(xSize.second != ySize.second){
+		    std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+		    assert(false);
+		}
+		for(unsigned int row = 0 ; row < xSize.first; row++){
+		    for(int col = 0; col<xSize.second; col++){
+			X[col+row*xSize.second] = X[col+row*xSize.second]-Y[col];
+		    }
+		}
+        break;
+
     default:
         std::cout<<"Enter valid Parameters";
         assert(false);

@@ -1,8 +1,8 @@
 GCC=g++
-CFLAGS = -llapacke -lcblas -llapack
-CXXFLAGS = -g
-fmm: ../fmm1d_local_shift.cpp testfmm.cpp
-	$(GCC) $(CFLAGS) $^ -o $@
+CFLAGS = -llapacke -lblas
+CXXFLAGS = -g -DDEBUG
+fmm: ../fmm1d_local_shift_2.cpp ../computeX_Scaled.cpp ../QR.cpp ../bsxfun.cpp testfmm.cpp
+	$(GCC) $(CXXFLAGS) $^ -o $@ $(CFLAGS) 
 
 vhat: ../vhat.cpp testvhat.cpp
 	$(GCC) $(CFLAGS) $^ -o $@

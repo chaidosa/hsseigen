@@ -6,34 +6,35 @@
 #include"computeX_Scaled.h"
 using namespace std;
 
+//function computes local expansion.
 //x is the vector of elements in the cell, r is the number of terms in taylor expansion, eta is a per-node term computed as ((2*pi*r)^(0.5/r))/exp(1), a is the center of the cell, dx is the diameter of the cell.
-void ComputeU_Scaled(double** UTrans, double* x, int numXElems, int r, double eta, double a, double dx, const int scaling) {
+void ComputeU_Scaled(double** UTrans, double* x, int numXElems, int r, double eta0, double a, double dx, const int scaling) {
 
 	*UTrans = new double[numXElems*r];
 	double* temp=*UTrans;
-	//1st term in the multipole expansion ia 1.
-	memset(temp, 1, sizeof(double)*numXElems);
-	
-	//2nd term in the multipole expansion
-	for(int i=0;i<numXElems;i++)
-		temp[i+numXElems]=eta * (x[i] - a); 
+	double eta = eta0*2/dx;
+		if(scaling == 1) {
+		
+		//1st term in the multipole expansion ia 1.
+		for(int i=0;i<numXElems;i++) temp[i]=1;
+		
+		//2nd term in the multipole expansion
+		for(int i=0;i<numXElems;i++)
+			temp[i+numXElems]=eta * (x[i] - a); 
 
-	int k=1;
-	if(scaling == 1) {
 		for(int k=1;k<r-1;k++)
 			for(int i=0;i<numXElems;i++)
-				temp[numXElems*(k+1)+i]=pow(1+1/(double)(k-1), (k-1)) * eta * (x[i]-a) * temp[numXElems*k+i] ; 
+				temp[numXElems*(k+1)+i]=pow(1+1/(double)(k), k) * eta * (x[i]-a) * temp[numXElems*k+i] ; 
 	}
 	else if(scaling ==0) {
+		for(int i=0;i<numXElems*r;i++) temp[i]=1;
 		for(int k=0;k<r-1;k++)
 			for(int i=0;i<numXElems;i++)
-				temp[numXElems*(k+1)+i]= 1/(double)k * (x[i]-a) * temp[numXElems*k+i] ; 
+				temp[numXElems*(k+1)+i]= 1/(double)(k+1) * (x[i]-a) * temp[numXElems*k+i] ; 
 	}
 }
 
-	
-//Now you have to compute a function considering two cells (cell-cell interaction). the centers of the cells are a and b. diameters are dx and dy.
-void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double etax, double etay, double a, double b, double dx, double dy, int fun, const int scaling) {
+void ComputeB_Scaled(double** outB, int r, double eta0, double a, double b, double dx, double dy, int fun, const int scaling) {
 
 	double ba = b-a;
 	//TODO: used in fun values other than 1 and 3.
@@ -46,8 +47,12 @@ void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 	for(int i=0;i<r;i++)
 		diagDD[i]=(i%2)?-1:1;*/
 	
-	double *B = new double[r*r];
-	memset(B, 0, sizeof(double)*r*r);
+	double etax = eta0 * 2/dx;
+	double etay = eta0 * 2/dy;
+
+	*outB = new double[r*r];
+	double* B=*outB;
+	for(int i=0;i<r*r;i++) B[i]=0;
 
 	if(fun == 1) {
 		switch(scaling) {
@@ -71,14 +76,14 @@ void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 					B[r+1]=2/(ba*etay)*B[r];
 					double* temppower = new double[r];
 					for(int i=2;i<r;i++)
-						temppower[i]=pow(1 - 1/((double)(i-1)), i-2);
+						temppower[i]=pow(1 - 1/((double)i), i-1);
 
 					//completing first row of B
 					for(int i=2;i<r;i++)
 						B[i]=1/(double)(ba * etay) * B[i-1] * temppower[i];
 					//completing second row of B
 					for(int i=2;i<r-1;i++)
-						B[r+i]=i/(double)(ba * etay * (i-1)) * B[r+i-1] * temppower[i];
+						B[r+i]=(i+1)/(double)(ba * etay * i) * B[r+i-1] * temppower[i];
 
 					//completing first column of B
 					for(int i=2;i<r;i++)
@@ -86,13 +91,12 @@ void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 
 					//completing second column of B
 					for(int i=2;i<r-1;i++)
-						B[r*i+1]=i/(double)(ba * etax * (i-1)) * B[r*(i-1)+1] * temppower[i];
+						B[r*i+1]=(i+1)/(double)(ba * etax * i) * B[r*(i-1)+1] * temppower[i];
 
 					//completing rest of B
 					for(int k = 2;k<r-2;k++)
 						for(int i = 2;i<r-k+1;i++)
-							B[k*r+i] = (k+i-2)/(double)(ba*etay *(i-1))*B[k*r+i-1]*temppower[i];
-
+							B[k*r+i] = (k+i)/(double)(ba*etay *i)*B[k*r+i-1]*temppower[i];
 					delete [] temppower;
 			       }
 				break;
@@ -140,18 +144,18 @@ void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 				B[r+1]=1/(ba*etay)*B[r];
 				double* temppower = new double[r];
 				for(int i=2;i<r;i++)
-					temppower[i]=pow(1 - 1/((double)(i-1)), i-2);
+					temppower[i]=pow(1 - 1/((double)i), i-1);
 
 				//completing first row of B
 				for(int i=2;i<r;i++)
-					B[i]=(i-2)/(double)(ba * etay * (i-1)) * B[i-1] * temppower[i];
+					B[i]=(i-1)/(double)(ba * etay * i) * B[i-1] * temppower[i];
 				//completing second row of B
 				for(int i=2;i<r-1;i++)
 					B[r+i]=1/(double)(ba * etay) * B[r+i-1] * temppower[i];
 
 				//completing first column of B
 				for(int i=2;i<r;i++)
-					B[r*i]=(i-2)/(double)(ba * etax * (i-1))* B[r*(i-1)] * temppower[i];
+					B[r*i]=(i-1)/(double)(ba * etax * i)* B[r*(i-1)] * temppower[i];
 
 				//completing second column of B
 				for(int i=2;i<r-1;i++)
@@ -160,8 +164,15 @@ void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 				//completing rest of B
 				for(int k = 2;k<r-2;k++)
                 			for(int i = 2;i<r-k+1;i++)
-                    				B[k*r+i] = (k+i-2)/(double)(ba*etay*(i-1))*B[k*r+i-1]*temppower[i];
-
+                    				B[k*r+i] = (k+i-1)/(double)(ba*etay*i)*B[k*r+i-1]*temppower[i];
+				//Doing B=B*DD;
+				for(int i=0;i<r;i++) {
+					for(int j=0;j<r;j++) {
+						if((j+1)%2)
+							B[r*i+j] *= -1;
+					}
+				}
+				
 				delete [] temppower;
 				}
 				break;
@@ -171,23 +182,26 @@ void ComputeB_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 	else
 		printf("TODO: FUN %d NOT SUPPORTED\n",fun);
 
-	*UTrans = B;
 }
 
 
-//Now you have to compute a function considering two cells (cell-cell interaction). the centers of the cells are a and b. diameters are dx and dy.
-void ComputeT_Scaled(double** UTrans, double* x, int numXElems, int r, double eta0, double a, double b, double dx, double dy, const int scaling) {
+//to compute a function (outer shift) considering two cells. the centers of the cells are a and b. diameters are dx and dy.
+void ComputeT_Scaled(double** outT, int r, double eta0, double a, double b, double dx, double dy, const int scaling) {
 
-	double *T=new double[r*r];
+	*outT = new double[r*r];
+	double* T=*outT;
 
 	double temp = dx/dy;
+	for(int i=0;i<r*r;i++)
+		T[i]=0;
+
 	for(int i=0;i<r;i++)
 		T[r*i+i]=pow(temp, i);
 
 	double ab=a-b;
 	T[1] = ab*eta0*2/dy;
 	
-	assert(abs(T[1]-1*eta0*(dx/2)*ab) == 0); 
+	//assert(abs(T[1]-1*eta0*(dx/2)*ab) == 0); 
 		
 	switch(scaling) {
 		case 0:
@@ -207,7 +221,7 @@ void ComputeT_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 			{
 			double* temppower = new double[r];
 			for(int i=2;i<r;i++)
-				temppower[i]=pow(1 - 1/((double)(i-1)), i-2);
+				temppower[i]=pow(1 - 1/((double)i), i-1);
 
 			//completing first row of B
 			for(int i=2;i<r;i++)
@@ -216,7 +230,7 @@ void ComputeT_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 			//completing rest of B
 			for(int k = 1;k<r;k++)
 				for(int i = k+1;i<r;i++)
-					T[k*r+i] = (ab)/(i-k)*(i-1)*(eta0*2/dy)*T[k*r+i-1]/temppower[i];
+					T[k*r+i] = (ab)/(i-k)*i*(eta0*2/dy)*T[k*r+i-1]/temppower[i];
 
 			delete [] temppower;
 			}
@@ -253,5 +267,4 @@ void ComputeT_Scaled(double** UTrans, double* x, int numXElems, int r, double et
 			break;
 		default:assert(0);
 	}
-	*UTrans = T;
 }

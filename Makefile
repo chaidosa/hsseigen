@@ -1,7 +1,7 @@
 ########################################################################
 ####################### Makefile Template ##############################
 ########################################################################
-OPENBLAS=1
+OPENBLAS=0
 ifeq ($(OPENBLAS), 1)
 	#set BLAS_INSTALL_PATH appropriately if you have a local installation of blas library. If there is a system-wide installation available, leave this as blank
 	BLAS_INSTALL_PATH=/home/nikhilh/installed_software/openblas_0_3_20
@@ -15,7 +15,7 @@ endif
 # Compiler settings - Can be customized.
 CC = g++ 
 CXXFLAGS += -std=c++11 
-#LDFLAGS = -lblas -llapacke
+LDFLAGS = -lblas -llapacke
 CXXFLAGS+= -fopenmp
 CXXFLAGS+= -O3
 #LDFLAGS+= -fopencilk

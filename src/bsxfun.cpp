@@ -50,6 +50,19 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
             }
         }
         break;
+    //@plus column-wise: adding A+B, where A is a matrix and B is a vector. Num cols of A and B must match.
+    case 'p':
+        if(xSize.second != ySize.second){
+            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+            assert(false);
+        }
+        for(unsigned int row = 0 ; row < xSize.first; row++){
+            for(unsigned int col = 0; col<xSize.second; col++){
+                X[col+row*xSize.second] = X[col+row*xSize.second]+Y[col];
+            }
+        }
+        break;
+
     //@minus
     case 'M':
         if(xSize.first != ySize.first){

@@ -2,7 +2,7 @@
 #include<cassert>
 #include<cmath>
 #include<set>
-#include<cfloat>
+//#include<cfloat>
 #include"computeX_Scaled.h"
 #include"fmm_types.h"
 #include "QR.h"
@@ -18,15 +18,16 @@ extern "C"
 
 double TAU=0.6; //also called separation ratio or opening radius (in case of tree representing 2D/3D points) 
 using namespace std;
-typedef pair<double*, int*> TreeNodeData;
 
 Vertex* rootNode = NULL;
-vector<Vertex*> allLeaves;
 double eta0;
 
 double* dataX, *dataY;
 int scalingLocal = 0, numTerms=0, funLocal;
 double* dataQ;
+const int* org; const double* gap; int orgSize;
+
+typedef void (*VisitorFunc)(Vertex*);
 
 const Vertex* GetRootNode() { return rootNode;}
 void SetRootNode(Vertex* node) { rootNode=node;}
@@ -283,13 +284,14 @@ void UpdateNeighbors(Vertex* node) {
 	return;
 }
 
-void LeafNodeActions(Vertex* node, const int* org, const double* gap, int orgSize) {
+void LeafNodeActions(Vertex* node) {
 	if((node->left==NULL) && (node->right==NULL)) {
 		if((node->xRight - node->xLeft) != 0) {
 			double* outU=NULL;
 			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
 			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
-			if(node->res[numTerms] != DBL_MAX) {
+			//if(node->res[numTerms] != DBL_MAX) {
+			if(node->computed) {
                 		//compute z(px, :) = Ui * u{i};
 				int numElements=node->xRight-node->xLeft;
 				double* z=new double[numElements];
@@ -385,23 +387,14 @@ void LeafNodeActions(Vertex* node, const int* org, const double* gap, int orgSiz
 	
 }
 
-void LeafVisitor(Vertex* node, const int* org, const double* gap, int orgSize){
-	if(node->left)
-		LeafVisitor(node->left, org, gap, orgSize);
-
-	if(node->right)
-		LeafVisitor(node->right, org, gap, orgSize);
-
-	LeafNodeActions(node, org, gap, orgSize);
-}
-
 void PreorderActions(Vertex* node) {
 	if(node->level >= 2) {
 		for(std::vector<Vertex*>::iterator iter=node->wellSeparatedNodes.begin();iter!=node->wellSeparatedNodes.end();iter++) {
 			double* outB; 
 			Vertex* wsNode=*iter;
             		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
-			if(node->res[numTerms] == DBL_MAX) {
+			//if(node->res[numTerms] == DBL_MAX) {
+			if(node->computed == false) {
 				//computing u{i}=Bij * v{j}
 				for(int j=0;j<numTerms;j++){
 					double temp=0;
@@ -410,6 +403,7 @@ void PreorderActions(Vertex* node) {
 					}
 					node->res[numTerms+j] = temp;
 				}
+				node->computed=true;
 			} else {
 				//computing u{i}+=Bij * v{j}
 				for(int j=0;j<numTerms;j++){
@@ -426,10 +420,12 @@ void PreorderActions(Vertex* node) {
 
 		if(node->level > 3) {
 		    Vertex* parent = node->parent;
-		    if(parent->res[numTerms]!=DBL_MAX) {
+		    //if(parent->res[numTerms]!=DBL_MAX) {
+		    if(parent->computed) {
 			double *outT=NULL;
 			ComputeT_Scaled(&outT, numTerms, eta0, node->center, parent->center,  2*(node->radius), 2*(parent->radius), scalingLocal);
-			if(node->res[numTerms] == DBL_MAX) {
+			//if(node->res[numTerms] == DBL_MAX) {
+			if(node->computed == false) {
 				//computing u{i}=Ri * u{p}
 				for(int j=0;j<numTerms;j++){
 					double temp=0;
@@ -438,6 +434,7 @@ void PreorderActions(Vertex* node) {
 					}
 					node->res[numTerms+j] = temp;
 				}
+				node->computed=true;
 			} else {
 				//computing u{i}+=Ri * u{p}
 				for(int j=0;j<numTerms;j++){
@@ -455,13 +452,13 @@ void PreorderActions(Vertex* node) {
 }
 
 
-void PreorderVisitor(Vertex* node) {
-		PreorderActions(node);
+void PreorderVisitor(Vertex* node, VisitorFunc func) {
+		(*func)(node);
 		if(node->left)
-			PreorderVisitor(node->left);
+			PreorderVisitor(node->left, func);
 
 		if(node->right)
-			PreorderVisitor(node->right);
+			PreorderVisitor(node->right, func);
 
 	return;
 }
@@ -483,10 +480,11 @@ void PostorderActions(Vertex* node) {
 		}
 		node->res=yNode; //Now first numTerms of res array contain v{i} 
 		//reset the remaining memory allocated. Used for storing other intermediate results.
-		int remainingElems=(numTerms*(node->yRight-node->yLeft-1));
+		/*int remainingElems=(numTerms*(node->yRight-node->yLeft-1));
 		double* ptr=node->res+numTerms;
-		for(int i=0;i<remainingElems;i++)
-			ptr[i]=DBL_MAX;
+		for(int i=0;i<remainingElems;i++) {
+			ptr[i]=DBL_MAX;*/
+		node->computed=true;
 	} else {
 		double* nodeLeftOutput=NULL, *nodeRightOutput=NULL;
 	    	assert(node->left && node->right);
@@ -503,10 +501,11 @@ void PostorderActions(Vertex* node) {
 		}
 		node->res=nodeLeftOutput; //Now first numTerms of res array contain v{i} 
 		//reset the remaining memory allocated. Used for storing other intermediate results.
-		int remainingElems=(numTerms*(numTerms-1));
+		/*int remainingElems=(numTerms*(numTerms-1));
 		double* ptr=node->res+numTerms;
 		for(int i=0;i<remainingElems;i++)
-			ptr[i]=DBL_MAX;
+			ptr[i]=DBL_MAX;*/
+		node->computed=true;
 		delete [] nodeRightOutput;
     	}
     }
@@ -514,15 +513,15 @@ void PostorderActions(Vertex* node) {
 
 
 
-void PostorderVisitor(Vertex* node)
+void PostorderVisitor(Vertex* node, VisitorFunc func)
 {
 		if(node->left)
-			PostorderVisitor(node->left);
+			PostorderVisitor(node->left, func);
 
 		if(node->right)
-			PostorderVisitor(node->right);
+			PostorderVisitor(node->right, func);
 
-		PostorderActions(node);
+		(*func)(node);
 	return;
 }
 
@@ -534,13 +533,16 @@ void PostorderVisitor(Vertex* node)
 * gap is the difference between consecutive elements in a global order. E.g. if we have interlacing vectors x and y i.e. x[i]<y[i]<x[i+1]<y[i+1], gap[i]=y[i]-x[i]
 * fun is the kernel used. E.g. 1/(x-y) or 1/(x-y)^2 etc.
 * By default, scaling is on (scaling is used for stability) */
-double* fmm1d_local_shift(int r, double *x, double *y, double * q, const double *gap, const int* org, const int fun, const int numXElems, int numYElems, const int scaling=1) {
+double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const double *p_gap, const int* p_org, const int fun, const int numXElems, int numYElems, const int scaling=1) {
 	dataX=x;
 	dataY=y;
 	dataQ=q;
 	scalingLocal=scaling;
 	funLocal=fun;
 	numTerms=r;
+	org=p_org;
+	gap=p_gap;
+	orgSize=numXElems;
 	const double pi = 3.14159265358979323846;
 	std::qsort(x, numXElems, sizeof(double), compare);  
 	std::qsort(y, numYElems, sizeof(double), compare); 
@@ -567,14 +569,674 @@ double* fmm1d_local_shift(int r, double *x, double *y, double * q, const double 
 	if(node->right)
 		UpdateNeighbors(node->right);
 
-	
-	PostorderVisitor(node); 
-	PreorderVisitor(node);
-	assert(numXElems == numYElems);
-	LeafVisitor(node, org, gap, numXElems);
+	VisitorFunc vis=PostorderActions;
+	PostorderVisitor(node,vis);
+        vis=PreorderActions;	
+	PreorderVisitor(node, vis);
+        vis=LeafNodeActions;	
+	PostorderVisitor(node, vis);
 
 	return NULL;
 }	
+
+//-------------------------Tri FMM Local Shift - II part here-----------------------------
+void PreorderActions_triFMM_2(Vertex* node) {
+	if(node->level >= 2) {
+		for(std::vector<Vertex*>::iterator iter=node->wellSeparatedNodes.begin();iter!=node->wellSeparatedNodes.end();iter++) {
+			double* outB; 
+			Vertex* wsNode=*iter;
+            		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
+			if(node->center > wsNode->center) {
+				//lower triangular part
+				//if(node->res[numTerms] == DBL_MAX) {
+				if(node->computed == false) {
+					//computing ul{i}=Bij * v{j}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
+						}
+						node->res[numTerms+j] = temp;
+					}
+					node->computed = true;
+				} else {
+					//computing ul{i}+=Bij * v{j}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
+						}
+						node->res[numTerms+j] += temp;
+					}
+				}
+			} else if(node->center < wsNode->center) {
+				//upper triangular part
+				//if(node->resu[numTerms] == DBL_MAX) {
+				if(node->computedUpper == false) {
+					node->resu = new double[node->xRight-node->xLeft];
+#ifdef DEBUG
+					node->resuSize = node->xRight-node->xLeft;
+#endif
+					//computing uu{i}=Bij * v{j}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
+						}
+						node->resu[j] = temp;
+					}
+					node->computedUpper = true;
+				} else {
+					//computing uu{i}+=Bij * v{j}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
+						}
+						node->resu[j] += temp;
+					}
+				}
+			}
+			delete [] outB;
+		}
+	
+
+		if(node->level > 3) {
+		    Vertex* parent = node->parent;
+		    //if((parent->res[numTerms]!=DBL_MAX)||(parent->resu[numTerms]!=DBL_MAX)) {
+		    if(parent->computed || parent->computedUpper) {
+			double *outT=NULL;
+			ComputeT_Scaled(&outT, numTerms, eta0, node->center, parent->center,  2*(node->radius), 2*(parent->radius), scalingLocal);
+			//if(parent->res[numTerms] != DBL_MAX) {
+			//	if(node->res[numTerms] == DBL_MAX) {
+			if(parent->computed) {
+				if(node->computed == false) {
+					//computing ul{i}=Ri * ul{p}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outT[j*numTerms+i] * parent->res[numTerms+i]); 
+						}
+						node->res[numTerms+j] = temp;
+					}
+					node->computed = true;
+				} else {
+					//computing ul{i}+=Ri * ul{p}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outT[j*numTerms+i] * parent->res[numTerms+i]); 
+						}
+						node->res[numTerms+j] += temp;
+					}
+				}
+			}
+			
+			//if(parent->resu[numTerms] != DBL_MAX) {
+			//	if(node->resu[numTerms] == DBL_MAX) {
+			if(parent->computedUpper) {
+				if(node->computedUpper == false) {
+					node->resu = new double[node->xRight-node->xLeft];
+#ifdef DEBUG
+					node->resuSize = node->xRight-node->xLeft;
+#endif
+					//computing uu{i}=Ri * uu{p}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outT[j*numTerms+i] * parent->resu[i]); 
+						}
+						node->resu[j] = temp;
+					}
+					node->computedUpper=true;
+				} else {
+					//computing u{i}+=Ri * u{p}
+					for(int j=0;j<numTerms;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += (outT[j*numTerms+i] * parent->resu[i]); 
+						}
+						node->resu[j] += temp;
+					}
+				}
+			}
+			delete [] outT;
+		    }
+		}	    
+	}
+}
+
+#if 0
+void LeafNodeActions_triFMM_2(Vertex* node) {
+	if((node->left==NULL) && (node->right==NULL)) {
+		if((node->xRight - node->xLeft) != 0) {
+			double* outU=NULL;
+			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+			//if(node->res[numTerms] != DBL_MAX) {
+			if(node->computed) {
+                		//compute zl(px, :) = Ui * ul{i};
+				int numElements=node->xRight-node->xLeft;
+				double* z=new double[numElements];
+				for(int j=0;j<numElements;j++){
+					double temp=0;
+					for(int i=0;i<numTerms;i++){
+						temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+					}
+					z[j] = temp; 
+				}
+				delete [] node->res;
+				node->res = z;
+			}
+			//if(node->resu[numTerms] != DBL_MAX) {
+			if(node->computedUpper) {
+                		//compute zu(px, :) = Ui * uu{i};
+				int numElements=node->xRight-node->xLeft;
+				double* z=new double[numElements];
+				for(int j=0;j<numElements;j++){
+					double temp=0;
+					for(int i=0;i<numTerms;i++){
+						temp += outU[j*numTerms+i] * node->resu[numTerms+i]; 
+					}
+					z[j] = temp; 
+				}
+				delete [] node->resu;
+				node->resu = z;
+			}
+			delete [] outU;
+
+			//Union(i, neighbor{i})
+			bool isSelf=true; 
+			node->neighbors.insert(node->neighbors.begin(), node);
+			for(std::vector<Vertex*>::iterator iter=node->neighbors.begin();iter!=node->neighbors.end();iter++) {
+				Vertex* nbr = *iter;
+				int xjVectorSize = nbr->yRight-nbr->yLeft;
+				if(xjVectorSize !=0) {
+					//assert((node->xRight-node->xLeft) == (node->yRight-node->yLeft));
+					//assert((node->xRight-node->xLeft) == (nbr->yRight-nbr->yLeft));
+
+					double* tj = new double[xjVectorSize];
+					double* xj = new double[xjVectorSize];
+					for(int i=0;i<xjVectorSize;i++) {
+						assert(org[i] < orgSize);
+						assert(i < orgSize);
+						xj[i] = dataX[org[nbr->yLeft+i]]; 
+						tj[i] = gap[nbr->yLeft+i];
+					}
+					int xiVectorSize = node->xRight-node->xLeft;
+					double *D = new double[xiVectorSize*xjVectorSize];
+					//computing D=xi-xj.' 
+					for(int i=0;i<xiVectorSize;i++) {
+						for(int j=0;j<xjVectorSize;j++) {
+					 		D[i*xjVectorSize+j] = dataX[node->xLeft+i] - xj[j];
+						}
+					}
+					delete [] xj;
+					bsxfun('m',&D, std::make_pair(xiVectorSize, xjVectorSize), tj, std::make_pair(1,xjVectorSize)); 
+					delete [] tj;
+					switch(funLocal) {
+						case 1: 
+							{
+								for(int i=0;i<xiVectorSize;i++) 
+									for(int j=0;j<xjVectorSize;j++) 
+					 					D[i*xjVectorSize+j] = 1/(double)D[i*xjVectorSize+j];
+							}
+							break;
+						case 2:
+							{
+								for(int i=0;i<xiVectorSize;i++) 
+									for(int j=0;j<xjVectorSize;j++) 
+					 					D[i*xjVectorSize+j] = 1/(double)(D[i*xjVectorSize+j] * D[i*xjVectorSize+j]);
+							}
+							break;
+						case 3:
+							{
+								for(int i=0;i<xiVectorSize;i++) { 
+									for(int j=0;j<xjVectorSize;j++) {
+					 					D[i*xjVectorSize+j] = log(abs(D[i*xjVectorSize+j]));
+										if(isSelf && isnan(D[i*xjVectorSize+j]))
+											D[i*xjVectorSize+j] = 0;
+									}
+								}
+							}
+							break;
+						default:
+							assert(0);				
+					}
+					
+					double *Dl = new double[xiVectorSize*xjVectorSize];
+					memcpy(Dl, D, sizeof(double)*xiVectorSize*xjVectorSize);
+					double* px=dataX+node->xLeft;
+					double* py=dataY+nbr->yLeft;
+					for(int i=0;i<xiVectorSize;i++) {
+						for(int j=0;j<xjVectorSize;j++) {
+							if(px[i] < py[j] )
+					 			Dl[i*xjVectorSize+j] = 0 ;
+						}
+					}
+					
+					for(int i=0;i<xiVectorSize;i++)
+						for(int j=0;j<xjVectorSize;j++)
+							D[i*xjVectorSize+j]=D[i*xjVectorSize+j]-Dl[i*xjVectorSize+j];
+                    			
+#ifdef DEBUG
+					printf("node %d: px size:%d resuSize:%d\n",node->label, node->xRight-node->xLeft, node->resuSize);
+#endif
+					//zl(px, :) = zl(px, :) + Dl * q(py, :);
+                    			//zu(px, :) = zu(px, :) + D * q(py, :);
+					cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans, xiVectorSize, 1, xjVectorSize, 1, Dl, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);	
+					cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans, xiVectorSize, 1, xjVectorSize, 1, D, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->resu, 1);	
+					//cblas_dgemv(CblasRowMajor, CblasNoTrans, xiVectorSize, xjVectorSize, 1, D, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);	
+					/*numElements=node->xRight-node->xLeft;
+					for(int i=node->xLeft, xIndex=0;i<xiVectorSize;i++){
+						double temp=0;
+						for(int j=nbr->yLeft;j<xjVectorSize;j++){
+							temp +=  D[xIndex*j[i] * dataQ[k]; 
+						}
+						node->res[j] += temp;
+					}*/
+					delete [] D;
+					delete [] Dl;
+				}
+				isSelf=false; //set flag to false in all iterations except the first one. When this is false, (isnan() call is not done)
+			}
+			node->neighbors.erase(node->neighbors.begin());
+		}
+	}
+	
+}
+
+double* trifmm1d_local_shift_2(int r, double *x, double *y, double * q, const double *p_gap, const int* p_org, const int fun, const int numXElems, int numYElems, const int scaling=1) {
+	dataX=x;
+	dataY=y;
+	dataQ=q;
+	scalingLocal=scaling;
+	funLocal=fun;
+	numTerms=r;
+	org=p_org;
+	gap=p_gap;
+	orgSize=numXElems;
+	const double pi = 3.14159265358979323846;
+	std::qsort(x, numXElems, sizeof(double), compare);  
+	std::qsort(y, numYElems, sizeof(double), compare); 
+	double z2 = max(x[numXElems-1], y[numYElems-1]);
+	double z1 = min(x[0], y[0]);
+	z2 += 0.1 * abs(z2);
+	z1 -= 0.1 * abs(z1);
+
+	Vertex* markerNode = new Vertex(); // this is a dummy node created to avoid having 'if(parent) == NULL' checks in ConstructSPatialTree.
+	markerNode->level=0;
+
+	eta0 = pow(2*pi*r, 0.5/r) / exp(1);
+	Vertex* node = ConstructSpatialTree(x,y,0,numXElems,0,numYElems, (z1+z2)/2, (z2-z1)/2, 1, 1, markerNode); 
+	markerNode->left=node;
+	SetRootNode(node);
+#ifdef DEBUG
+	AssignLabels(node);
+#endif
+	
+
+	if(node->left)
+		UpdateNeighbors(node->left);
+
+	if(node->right)
+		UpdateNeighbors(node->right);
+
+	VisitorFunc vis=PostorderActions;
+	PostorderVisitor(node,vis);
+        vis=PreorderActions_triFMM_2;	
+	PreorderVisitor(node, vis);
+        vis=LeafNodeActions_triFMM_2;	
+	PostorderVisitor(node, vis);
+
+	return NULL;
+
+}
+#endif
+//---------------------Tri FMM Local Shift - I part here
+void LeafNodeActions_triFMM_1(Vertex* node) {
+	if((node->left==NULL) && (node->right==NULL)) {
+		if((node->xRight - node->xLeft) != 0) {
+			double* outU=NULL;
+			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+			//if(node->res[numTerms] != DBL_MAX) {
+			if(node->computed) {
+                		//compute zl(px, :) = Ui * ul{i};
+				int numElements=node->xRight-node->xLeft;
+				double* z=new double[numElements];
+				for(int j=0;j<numElements;j++){
+					double temp=0;
+					for(int i=0;i<numTerms;i++){
+						temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+					}
+					z[j] = temp; 
+				}
+				delete [] node->res;
+				node->res = z;
+			}
+			//if(node->resu[numTerms] != DBL_MAX) {
+			if(node->computedUpper) {
+                		//compute zu(px, :) = Ui * uu{i};
+				int numElements=node->xRight-node->xLeft;
+				double* z=new double[numElements];
+				for(int j=0;j<numElements;j++){
+					double temp=0;
+					for(int i=0;i<numTerms;i++){
+						temp += outU[j*numTerms+i] * node->resu[i]; 
+					}
+					z[j] = temp; 
+				}
+				delete [] node->resu;
+				node->resu = z;
+#ifdef DEBUG
+				node->resuSize=numElements;
+#endif
+			}
+			delete [] outU;
+			
+			
+			int xiVectorSize = node->xRight-node->xLeft;
+			double* ti = new double[xiVectorSize];
+			double* yi = new double[xiVectorSize];
+			for(int i=0;i<xiVectorSize;i++) {
+				assert(org[i] < orgSize);
+				assert(i < orgSize);
+				yi[i] = dataY[org[node->xLeft+i]]; 
+				ti[i] = gap[node->xLeft+i];
+			}
+
+			//Union(i, neighbor{i})
+			bool isSelf=true; 
+			node->neighbors.insert(node->neighbors.begin(), node);
+			for(std::vector<Vertex*>::iterator iter=node->neighbors.begin();iter!=node->neighbors.end();iter++) {
+				Vertex* nbr = *iter;
+				int xjVectorSize = nbr->yRight-nbr->yLeft;
+				if(xjVectorSize !=0) {
+					double *D = new double[xiVectorSize*xjVectorSize];
+					//computing D=yi-yj.' 
+					for(int i=0;i<xiVectorSize;i++) {
+						for(int j=0;j<xjVectorSize;j++) {
+					 		D[i*xjVectorSize+j] = yi[i] - dataY[nbr->yLeft+j];
+						}
+					}
+
+					bsxfun('p',&D, std::make_pair(xiVectorSize, xjVectorSize), ti, std::make_pair(1,xjVectorSize)); 
+					switch(funLocal) {
+						case 1: 
+							{
+								for(int i=0;i<xiVectorSize;i++) 
+									for(int j=0;j<xjVectorSize;j++) 
+					 					D[i*xjVectorSize+j] = 1/(double)D[i*xjVectorSize+j];
+							}
+							break;
+						case 2:
+							{
+								for(int i=0;i<xiVectorSize;i++) 
+									for(int j=0;j<xjVectorSize;j++) 
+					 					D[i*xjVectorSize+j] = 1/(double)(D[i*xjVectorSize+j] * D[i*xjVectorSize+j]);
+							}
+							break;
+						case 3:
+							{
+								for(int i=0;i<xiVectorSize;i++) { 
+									for(int j=0;j<xjVectorSize;j++) {
+					 					D[i*xjVectorSize+j] = log(abs(D[i*xjVectorSize+j]));
+										if(isSelf && isnan(D[i*xjVectorSize+j]))
+											D[i*xjVectorSize+j] = 0;
+									}
+								}
+							}
+							break;
+						default:
+							assert(0);				
+					}
+					
+					double *Dl = new double[xiVectorSize*xjVectorSize];
+					memcpy(Dl, D, sizeof(double)*xiVectorSize*xjVectorSize);
+					double* px=dataX+node->xLeft;
+					double* py=dataY+nbr->yLeft;
+					for(int i=0;i<xiVectorSize;i++) {
+						for(int j=0;j<xjVectorSize;j++) {
+							if(px[i] < py[j] )
+					 			Dl[i*xjVectorSize+j] = 0 ;
+						}
+					}
+					
+					for(int i=0;i<xiVectorSize;i++)
+						for(int j=0;j<xjVectorSize;j++)
+							D[i*xjVectorSize+j]=D[i*xjVectorSize+j]-Dl[i*xjVectorSize+j];
+					if(node->resu == NULL) {
+						node->resu=new double[xiVectorSize];
+					}
+						
+#ifdef DEBUG
+					printf("node %d: px size (xiVectorSize):%d (%d) resuSize:%d\n",node->label, node->xRight-node->xLeft, xiVectorSize, node->resuSize);
+#endif
+					//zl(px, :) = zl(px, :) + Dl * q(py, :);
+                    			//zu(px, :) = zu(px, :) + D * q(py, :);
+					cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans, xiVectorSize, 1, xjVectorSize, 1, Dl, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);	
+					cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans, xiVectorSize, 1, xjVectorSize, 1, D, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->resu, 1);	
+					//cblas_dgemv(CblasRowMajor, CblasNoTrans, xiVectorSize, xjVectorSize, 1, D, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);	
+					/*numElements=node->xRight-node->xLeft;
+					for(int i=node->xLeft, xIndex=0;i<xiVectorSize;i++){
+						double temp=0;
+						for(int j=nbr->yLeft;j<xjVectorSize;j++){
+							temp +=  D[xIndex*j[i] * dataQ[k]; 
+						}
+						node->res[j] += temp;
+					}*/
+					delete [] D;
+					delete [] Dl;
+				}
+				isSelf=false; //set flag to false in all iterations except the first one. When this is false, (isnan() call is not done)
+			}
+			delete [] yi;
+			delete [] ti;
+			node->neighbors.erase(node->neighbors.begin());
+		}
+	}
+	
+}
+
+double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const double *p_gap, const int* p_org, const int fun, const int numXElems, int numYElems, const int scaling=1) {
+	dataX=x;
+	dataY=y;
+	dataQ=q;
+	scalingLocal=scaling;
+	funLocal=fun;
+	numTerms=r;
+	org=p_org;
+	gap=p_gap;
+	orgSize=numXElems;
+	const double pi = 3.14159265358979323846;
+	std::qsort(x, numXElems, sizeof(double), compare);  
+	std::qsort(y, numYElems, sizeof(double), compare); 
+	double z2 = max(x[numXElems-1], y[numYElems-1]);
+	double z1 = min(x[0], y[0]);
+	z2 += 0.1 * abs(z2);
+	z1 -= 0.1 * abs(z1);
+
+	Vertex* markerNode = new Vertex(); // this is a dummy node created to avoid having 'if(parent) == NULL' checks in ConstructSPatialTree.
+	markerNode->level=0;
+
+	eta0 = pow(2*pi*r, 0.5/r) / exp(1);
+	Vertex* node = ConstructSpatialTree(x,y,0,numXElems,0,numYElems, (z1+z2)/2, (z2-z1)/2, 1, 1, markerNode); 
+	markerNode->left=node;
+	SetRootNode(node);
+#ifdef DEBUG
+	AssignLabels(node);
+#endif
+	
+
+	if(node->left)
+		UpdateNeighbors(node->left);
+
+	if(node->right)
+		UpdateNeighbors(node->right);
+
+	VisitorFunc vis=PostorderActions;
+	PostorderVisitor(node,vis);
+        vis=PreorderActions_triFMM_2;	
+	PreorderVisitor(node, vis);
+        vis=LeafNodeActions_triFMM_1;	
+	PostorderVisitor(node, vis);
+
+	return NULL;
+
+}
+
+//-------------------FMM 1D Local Shift - I Part here...
+void LeafNodeActions_1(Vertex* node) {
+	if((node->left==NULL) && (node->right==NULL)) {
+		if((node->xRight - node->xLeft) != 0) {
+			double* outU=NULL;
+			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+			//if(node->res[numTerms] != DBL_MAX) {
+			if(node->computed) {
+                		//compute z(px, :) = Ui * u{i};
+				int numElements=node->xRight-node->xLeft;
+				double* z=new double[numElements];
+				for(int j=0;j<numElements;j++){
+					double temp=0;
+					for(int i=0;i<numTerms;i++){
+						temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+					}
+					z[j] = temp; 
+				}
+				delete [] node->res;
+				node->res = z;
+			}
+			delete [] outU;
+			
+			int xiVectorSize = node->xRight-node->xLeft;
+			double* ti = new double[xiVectorSize];
+			double* yi = new double[xiVectorSize];
+			for(int i=0;i<xiVectorSize;i++) {
+				assert(org[i] < orgSize);
+				assert(i < orgSize);
+				yi[i] = dataY[org[node->xLeft+i]]; 
+				ti[i] = gap[node->xLeft+i];
+			}
+
+
+			//Union(i, neighbor{i})
+			bool isSelf=true; 
+			node->neighbors.insert(node->neighbors.begin(), node);
+			for(std::vector<Vertex*>::iterator iter=node->neighbors.begin();iter!=node->neighbors.end();iter++) {
+				Vertex* nbr = *iter;
+				int xjVectorSize = nbr->yRight-nbr->yLeft;
+				if(xjVectorSize !=0) {
+					double *D = new double[xiVectorSize*xjVectorSize];
+					//computing D=yi-yj.' 
+					for(int i=0;i<xiVectorSize;i++) {
+						for(int j=0;j<xjVectorSize;j++) {
+					 		D[i*xjVectorSize+j] = yi[i] - dataY[nbr->yLeft+j];
+						}
+					}
+					bsxfun('p',&D, std::make_pair(xiVectorSize, xjVectorSize), ti, std::make_pair(1,xjVectorSize)); 
+					switch(funLocal) {
+						case 1: 
+							{
+								for(int i=0;i<xiVectorSize;i++) 
+									for(int j=0;j<xjVectorSize;j++) 
+					 					D[i*xjVectorSize+j] = 1/(double)D[i*xjVectorSize+j];
+							}
+							break;
+						case 2:
+							{
+								for(int i=0;i<xiVectorSize;i++) 
+									for(int j=0;j<xjVectorSize;j++) 
+					 					D[i*xjVectorSize+j] = 1/(double)(D[i*xjVectorSize+j] * D[i*xjVectorSize+j]);
+							}
+							break;
+						case 3:
+							{
+								for(int i=0;i<xiVectorSize;i++) { 
+									for(int j=0;j<xjVectorSize;j++) {
+					 					D[i*xjVectorSize+j] = log(abs(D[i*xjVectorSize+j]));
+										if(isSelf && isnan(D[i*xjVectorSize+j]))
+											D[i*xjVectorSize+j] = 0;
+									}
+								}
+							}
+							break;
+						default:
+							assert(0);				
+					}
+
+					cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans, xiVectorSize, 1, xjVectorSize, 1, D, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);	
+					//cblas_dgemv(CblasRowMajor, CblasNoTrans, xiVectorSize, xjVectorSize, 1, D, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);	
+                    			//z(px, :) = z(px, :) + D * q(py, :);
+					/*numElements=node->xRight-node->xLeft;
+					for(int i=node->xLeft, xIndex=0;i<xiVectorSize;i++){
+						double temp=0;
+						for(int j=nbr->yLeft;j<xjVectorSize;j++){
+							temp +=  D[xIndex*j[i] * dataQ[k]; 
+						}
+						node->res[j] += temp;
+					}*/
+					delete [] D;
+				}
+				isSelf=false; //set flag to false in all iterations except the first one. When this is false, (isnan() call is not done)
+			}
+
+			delete [] yi;
+			delete [] ti;
+			node->neighbors.erase(node->neighbors.begin());
+		}
+	}
+	
+}
+
+
+double* fmm1d_local_shift(int r, double *x, double *y, double * q, const double *p_gap, const int* p_org, const int fun, const int numXElems, int numYElems, const int scaling=1) {
+	dataX=x;
+	dataY=y;
+	dataQ=q;
+	scalingLocal=scaling;
+	funLocal=fun;
+	numTerms=r;
+	org=p_org;
+	gap=p_gap;
+	orgSize=numXElems;
+	const double pi = 3.14159265358979323846;
+	std::qsort(x, numXElems, sizeof(double), compare);  
+	std::qsort(y, numYElems, sizeof(double), compare); 
+	double z2 = max(x[numXElems-1], y[numYElems-1]);
+	double z1 = min(x[0], y[0]);
+	z2 += 0.1 * abs(z2);
+	z1 -= 0.1 * abs(z1);
+
+	Vertex* markerNode = new Vertex(); // this is a dummy node created to avoid having 'if(parent) == NULL' checks in ConstructSPatialTree.
+	markerNode->level=0;
+
+	eta0 = pow(2*pi*r, 0.5/r) / exp(1);
+	Vertex* node = ConstructSpatialTree(x,y,0,numXElems,0,numYElems, (z1+z2)/2, (z2-z1)/2, 1, 1, markerNode); 
+	markerNode->left=node;
+	SetRootNode(node);
+#ifdef DEBUG
+	AssignLabels(node);
+#endif
+	
+
+	if(node->left)
+		UpdateNeighbors(node->left);
+
+	if(node->right)
+		UpdateNeighbors(node->right);
+
+	VisitorFunc vis=PostorderActions;
+	PostorderVisitor(node,vis);
+        vis=PreorderActions;	
+	PreorderVisitor(node, vis);
+        vis=LeafNodeActions_1;	
+	PostorderVisitor(node, vis);
+
+	return NULL;
+}	
+
 
 
 #ifdef DEBUG

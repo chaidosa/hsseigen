@@ -16,16 +16,19 @@ typedef struct Vertex{
 #ifdef DEBUG
 	int label;
 	std::vector<int> nbrs, il;
+	int resuSize;
 #endif
 	short int level;
 	bool isLeaf;
 	int xLeft, xRight, yLeft, yRight; //indices of points within the box
 	double center, radius;//, eta;
-	double* res; //used to hold intermediate results v, u, and z.
+	double* res, *resu; //used to hold intermediate results v, u, and z. resu is used to hold uppertriangular result of u and z
+	bool computed, computedUpper;
 	Vertex():parent(0), level(0), isLeaf(false), left(NULL), right(NULL){
-		xLeft=-1;xRight=-1;yLeft=-1;yRight=-1;res=NULL;
+		xLeft=-1;xRight=-1;yLeft=-1;yRight=-1;res=NULL;resu=NULL;computed=false;computedUpper=false;
 #ifdef DEBUG
 		label=0;
+		resuSize=0;
 #endif
 	}
 }Vertex;

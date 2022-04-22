@@ -55,11 +55,9 @@ int main(int argc, char* argv[]){
 	cout<<setprecision(12)<<"q["<<numQElems-1<<"]="<<q[numQElems-1]<<endl;
 	ifs.close();
 
-	fmm1d_local_shift_2(r[0],x,y,q,gap,org,3,numXElems,numYElems);
-	fmm1d_local_shift(r[0],x,y,q,gap,org,3,numXElems,numYElems);
-	trifmm1d_local_shift(r[0],x,y,q,gap,org,3,numXElems,numYElems);
-	PrintTree(GetRootNode());
-
+	//double* z1=fmm1d_local_shift_2(r[0],x,y,q,gap,org,3,numXElems,numYElems);
+	//double* z2=fmm1d_local_shift(r[0],x,y,q,gap,org,3,numXElems,numYElems);
+	double* z3=trifmm1d_local_shift(r[0],x,y,q,gap,org,3,numXElems,numYElems);
 
 	delete [] x;
 	delete [] y;

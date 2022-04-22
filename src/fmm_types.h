@@ -31,14 +31,23 @@ typedef struct Vertex{
 		resuSize=0;
 #endif
 	}
+	~Vertex(){
+		if(res){
+			delete [] res;
+			res=NULL;
+		}
+		if(resu==NULL) {
+			delete [] resu;
+			resu=NULL;
+		}
+	}
 }Vertex;
+
 
 
 #ifdef DEBUG
 void AssignLabels(Vertex* node);
 #endif
-const Vertex* GetRootNode();
-void SetRootNode(Vertex* node);
 
 #endif
 

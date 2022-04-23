@@ -17,9 +17,9 @@ CC = g++
 CXXFLAGS += -std=c++11 
 LDFLAGS = -lblas -llapacke
 CXXFLAGS+= -fopenmp
-CXXFLAGS+= -O3
+#CXXFLAGS+= -O3
 #LDFLAGS+= -fopencilk
-
+CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)
 	CXXFLAGS += -g
 endif

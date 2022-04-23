@@ -18,7 +18,8 @@ int main(int argc, char* argv[])
 	int r=32;
 	int MorB = 1; // to select which routine to use Band2HSS (2) or Mat2HSSsymm (1).
 	int w = 0;	//  band of the matrix, can be changes according to the requirement.
-	if(argc!=6){
+	int nProc = 1;
+	if(argc!=7){
 		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth>\n");
 		printf("Default values will be used: filename=sparseOut.txt, n=126, diagblock_size=32, Mat2hsssym, 0\n");
 	}else{
@@ -27,6 +28,7 @@ int main(int argc, char* argv[])
 		r=atoi(argv[3]);
 		MorB = atoi(argv[4]);
 		w = atoi(argv[5]);
+		nProc = atoi(argv[6]);
 	}
 
 	BinTree* bt=NULL;
@@ -220,8 +222,8 @@ int main(int argc, char* argv[])
 	GEN *hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
 	
 	
-	SDC* res = superDC(hss, bt, m, mSize);
-	res->~SDC();
+	SDC* res = superDC(hss, bt, m, mSize, nProc);
+	//res->~SDC();
 	delete[] m;
 	
 	return 0;

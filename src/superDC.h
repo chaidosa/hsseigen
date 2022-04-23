@@ -20,7 +20,7 @@ public:
     }
 };
 
-SDC* superDC(GEN *A, BinTree* bt, int * m, int mSize); 
+SDC* superDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc); 
 
 
 #endif

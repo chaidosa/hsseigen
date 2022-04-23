@@ -179,8 +179,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
     Root * results = new Root();
 
-    double N = 1024;
-    
+
+    double N = 1024;    
 
     int n = v.size();
     if(d.size()!=v.size())
@@ -491,21 +491,27 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         kRows = org.size();
         kCols = d.size();             
         f = new double[kRows];
+        
         dpsi = new double[kRows];
         dphi = new double[kRows];
+        df = new double[kRows];
 
         memset(dpsi, 0, sizeof(double)*kRows);
         memset(dphi, 0, sizeof(double)*kRows);
         psi = new double[kRows];
         phi = new double[kRows];
+
         // **secular function evaluation**     
         if(n >= N)
         {
             //fmm
-	    double* z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org.data(), 1, x.size(), d.size(), 1);
+	        double* z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org.data(), 1, x.size(), d.size(), 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
-
+                
+            double *zd = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org.data(), 1, x.size(), d.size(), 2);
+            for(unsigned int i = 0; i <(unsigned)kRows; ++i)
+              df[i] = zd[i] + zd[kRows+i];
         }
 
         else
@@ -577,7 +583,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, dK1, kCols, v2_arr, 1, 0, dpsi, 1);
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, dK2, kCols, v2_arr, 1, 0, dphi, 1);
 
-            df = new double[kRows];
+            
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
             {
                 df[i] = dpsi[i] + dphi[i];
@@ -870,13 +876,21 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
 
 
-    // **check residual after MAX_ITER iterations**    
+    // **check residual after MAX_ITER iterations**
+    psi = new double[kRows];
+    phi = new double[kRows];
+
+    memset(psi,0,sizeof(double)*kRows);
+    memset(phi,0,sizeof(double)*kRows);
+    f = new double[kRows];
+
     if(FMM_ITER){
         if(n >=N){
             //trifmm1dlocal shift
-
-
-        //end of inner if block    
+            double * z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org.data(), 1, x.size(), d.size(), 1);
+            for(unsigned int i = 0; i <(unsigned)kRows; ++i)
+              f[i] = rho - z[i] - z[kRows+i];       
+           
         }
         else{
             int kRows = org.size();
@@ -910,16 +924,12 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
                 }
             }
 
-            psi = new double[kRows];
-            phi = new double[kRows];
-
-            memset(psi,0,sizeof(double)*kRows);
-            memset(phi,0,sizeof(double)*kRows);
+           
 
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K1,kCols,v2_arr,1,0,psi,1);
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K2,kCols,v2_arr,1,0,phi,1);
             
-            f = new double[kRows];
+            
 
             for(unsigned int i = 0; i <(unsigned)kRows; i++)
                 f[i] = rho-psi[i]-phi[i];
@@ -927,8 +937,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
             pd_size = kRows;
 
             delete[] K;
-	    delete[] K1;
-	    delete[] K2;
+	        delete[] K1;
+	        delete[] K2;
          //end of inner else block   
         }
         

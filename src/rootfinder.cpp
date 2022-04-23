@@ -1,9 +1,11 @@
 #include <bits/stdc++.h>
 #include <iostream>
 #include <string>
+#include <cassert>
 #include "eigenmatrix.h"
 #include "bsxfun.h"
 #include "rootfinder.h"
+#include "fmm1d_local_shift_2.h"
 extern "C"
 {
     #include<lapacke.h>
@@ -177,7 +179,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
     Root * results = new Root();
 
-    double N = 17000;
+    double N = 1024;
     
 
     int n = v.size();
@@ -191,7 +193,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     {
         std::vector<double>x;
         std::vector<double>tau;
-        std::vector<double>org;
+        std::vector<int>org;
         double temp = (v[0]*v[0]) + d[0];
         x.push_back(temp);
         temp = temp - d[0];
@@ -207,7 +209,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     double C = 64;
     int record = 1;
     double alpha = 0;
-    //int r = 50; commented as it is unused
+    int r = 50; //commented as it is unused
     long double N0 = 1048576;
     double percent = 1;
     double FMM_ITER = ceil(log(n)/log(2))-6 > 5?ceil(log(n)/log(2))-6:5;
@@ -236,13 +238,17 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         x.push_back(temp);
     }
 
-    std::vector<double> org;
+    std::vector<int> org;
     for(unsigned int i=0; i <(unsigned) n-1; ++i)
         org.push_back(i);
     
 
+   int kRows = org.size();
+   int kCols  = d.size(); 
    double *f0;
-   int f0_size = 0;
+   f0 = new double[kRows]; 
+   int f0_size = kRows;
+   memset(f0, 0, sizeof(double)*kRows);
    
    //sqares of vector v so that v^2 isn't computed again
    double *v2_arr;   
@@ -251,33 +257,36 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         v2_arr[i] = v[i]*v[i];
     
 
+   //it used to hold d0/2
+   double *tempD = new double[d0.size()];
+
+   for(unsigned int i = 0; i <(unsigned)d0.size(); ++i)
+    tempD[i] = d0[i] / 2;
+   
+   assert(org.size() == x.size());
    if(n >= N)
    {
-        //[fl, fu, nflops1] = trifmm1d_local_shift(r, x, d, v.^2, d0/2, org, 1);
+	   
+        double* z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tempD, org.data(), 1, x.size(), d.size(), 1);
         //f0 = rho - fl - fu;
+        for(unsigned int i = 0; i <(unsigned)kRows; ++i)
+            f0[i] = rho - z[i] - z[kRows+i];
    }
    else
    {
        //  K = d(org) - d.';     
        
-        int kRows = org.size();
-        int kCols  = d.size(); 
         
         double *K = new double[kRows*kCols];
 
         for(unsigned int row = 0; row <(unsigned)kRows; ++row)
             for(unsigned int col=0; col <(unsigned)kCols; ++col)
-                K[col+row*(kCols)] = d[(int)org[row]] - d[col];
+                K[col+row*(kCols)] = d[org[row]] - d[col];
             
         
 
         //printArray(&K, kRows, kCols);
         
-        //it used to hold d0/2
-        double *tempD = new double[d0.size()];
-
-        for(unsigned int i = 0; i <(unsigned)d0.size(); ++i)
-            tempD[i] = d0[i] / 2;
         
 
         //  K = bsxfun(@plus, K, d0/2);
@@ -289,9 +298,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         
 
         // f0 = rho - K * v.^2;
-        f0 = new double[kRows]; 
-        f0_size = kRows;
-        memset(f0, 0, sizeof(double)*kRows);
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1.0, K, kCols, v2_arr, 1, 0.0, f0, 1);
 
         for(unsigned int i = 0; i <(unsigned)kRows; ++i)
@@ -299,9 +305,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         
 
         delete[] K;
-        delete[] tempD;
         K = NULL;
     }
+    
+    delete[] tempD;
 
     // h = 2 * diff(v.^2) ./ d0;
     std::vector<double>tempvSqr(v2_arr, v2_arr+v.size());
@@ -436,7 +443,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     
 
     for(unsigned int i = 0; i <(unsigned)tau.size(); ++i)
-        x[i] = tau[i] + d[(int)org[i]];
+        x[i] = tau[i] + d[org[i]];
 
 
 
@@ -481,17 +488,29 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
 
 
+        kRows = org.size();
+        kCols = d.size();             
+        f = new double[kRows];
+        dpsi = new double[kRows];
+        dphi = new double[kRows];
+
+        memset(dpsi, 0, sizeof(double)*kRows);
+        memset(dphi, 0, sizeof(double)*kRows);
+        psi = new double[kRows];
+        phi = new double[kRows];
         // **secular function evaluation**     
         if(n >= N)
         {
             //fmm
+	    double* z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org.data(), 1, x.size(), d.size(), 1);
+            for(unsigned int i = 0; i <(unsigned)kRows; ++i)
+              f[i] = rho - z[i] - z[kRows+i];
+
         }
 
         else
         {
 
-            int kRows = org.size();
-            int kCols  = d.size();             
             double *K = new double[kRows*kCols];
 
             for(unsigned int row = 0; row <(unsigned)kRows; ++row)
@@ -527,8 +546,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
            // printArray(&K1, kRows, kCols);            
            // printArray(&K2, kRows, kCols);
 
-            psi = new double[kRows];
-            phi = new double[kRows];
 
             memset(psi, 0, sizeof(double)*kRows);
             memset(phi, 0, sizeof(double)*kRows);            
@@ -537,7 +554,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, K1, kCols, v2_arr, 1, 0, psi, 1);
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, K2, kCols, v2_arr, 1, 0, phi, 1);
             
-            f = new double[kRows];
 
             for(unsigned int i = 0; i <(unsigned)kRows; i++)
                 f[i] = rho-psi[i]-phi[i];
@@ -557,11 +573,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
                 }
             }
 
-            dpsi = new double[kRows];
-            dphi = new double[kRows];
-
-            memset(dpsi, 0, sizeof(double)*kRows);
-            memset(dphi, 0, sizeof(double)*kRows);
 
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, dK1, kCols, v2_arr, 1, 0, dpsi, 1);
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1, dK2, kCols, v2_arr, 1, 0, dphi, 1);

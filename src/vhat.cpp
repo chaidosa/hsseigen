@@ -13,7 +13,7 @@
 #include "bsxfun.h"
 #include "vhat.h"
 
-std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& org, std::vector<double>& tau, std::vector<double>& w, double N){
+std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, std::vector<int>& org, std::vector<double>& tau, std::vector<double>& w, double N){
 
     int n = lam.size();
     int r = 50;
@@ -66,8 +66,8 @@ std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, std::
     }
 
     else{
-        // fmm1d_local_shift2()
-        // fmm1d_local_shift()
+        //fmm1d_local_shift2()
+        //fmm1d_local_shift()
     }
 
     delete [] Dlam;

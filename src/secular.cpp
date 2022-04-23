@@ -34,7 +34,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
     SECU *ret = new SECU();
     vector<double> v3_hat;
     vector<double> tau;
-    vector<double> org;
+    vector<int> org;
     vector<double> s3;
     vector<double>d3;
     vector<double>v3;

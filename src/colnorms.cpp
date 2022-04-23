@@ -13,7 +13,7 @@ extern "C"
     #include<cblas.h>
 }
 
-std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& tau, std::vector<double>& org, std::vector<double>& v, double N){
+std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& tau, std::vector<int>& org, std::vector<double>& v, double N){
 /*
 %%% Input:
 %%% d, lam, tau, org, v : from secular.m and rootfinder.m

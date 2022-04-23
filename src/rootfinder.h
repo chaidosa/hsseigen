@@ -4,7 +4,7 @@
 class Root{
     public:
         std::vector<double> tau;
-        std::vector<double> org;
+        std::vector<int> org;
         std::vector<double> x;
         double percent;
 };

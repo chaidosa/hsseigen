@@ -557,7 +557,7 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
     std::pair<int,int>* l = new std::pair<int,int>[N];
 
     for(int k = 0; k < N; k++)
-		l[k] = std::make_pair(0,0);    
+		l[k] = std::make_pair(0,0);
 
     l[0]                  = {0,m[0] - 1};
     int it                = 0;
@@ -572,6 +572,7 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
             lt   = l[k].second + 1;
             it   = it + 1;
         }
+
         else
         {
             l[k] = {l[ch[0] - 1].first,l[ch[1] - 1].second};
@@ -603,7 +604,8 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
     {
         std::vector<int> ch = bt->GetChildren(i + 1);
         //if current index i is a leaf node
-        if(ch.size() == 0){
+        if(ch.size() == 0)
+        {
             double *E = new double[resDvd->dSizes[i].first];
             double *EV = new double[resDvd->dSizes[i].first*resDvd->dSizes[i].second];
             int *Isuppz = new int[2*resDvd->dSizes[i].second];
@@ -676,11 +678,13 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
             double *temp_d   = Lam[i];
             int temp_d_size = LamSizes[i];
 
-            for(int j = 0; j < r; j++){                
+            for(int j = 0; j < r; j++)
+            {                
                 //Z{:, j}                
                 double *tempZ = new double[resDvd->zSizes[i].first];
 
-                for(int row = 0; row < resDvd->zSizes[i].first; row++){
+                for(int row = 0; row < resDvd->zSizes[i].first; row++)
+                {
                     tempZ[row] = resDvd->Z[i][j + row * r];
                 }
 
@@ -720,7 +724,8 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
        
 
     }
-     gettimeofday(&timeEnd, 0);
+
+    gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
         printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
     /*

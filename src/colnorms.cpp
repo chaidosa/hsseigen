@@ -13,7 +13,7 @@ extern "C"
     #include<cblas.h>
 }
 
-std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& tau, std::vector<int>& org, std::vector<double>& v, double N){
+std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, std::vector<double>& tau, const int *org, int org_size, std::vector<double>& v, double N){
 /*
 %%% Input:
 %%% d, lam, tau, org, v : from secular.m and rootfinder.m
@@ -27,13 +27,13 @@ std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, s
     double *S, *s;
     int sSize;
     if(n < N){
-        int sRows = org.size();
+        int sRows = org_size;
         int sCols = d.size();
         S = new double[sRows*sCols];
 
         for(int row = 0; row < sRows; row++){
             for(int col = 0; col < sCols; col++){
-                S[col + row *sCols] = d[(int)org[row]] - d[col];
+                S[col + row *sCols] = d[org[row]] - d[col];
             }
         }
 
@@ -72,6 +72,6 @@ std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, s
     
     std::vector<double>result(s, s+sSize);
     
-    delete [] s;
+    delete[] s;
     return result;
 }

@@ -69,7 +69,7 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         
         memcpy(X+(Q->n1 * xSize.second), tempXX, sizeof(double)*((xSize.first - Q->n1) * xSize.second));
         delete[] tempXX;
-
+        
         int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
         double **Qc = Q->QC;
         //tempXX = X + (Q->n1 + Q->n2 + 1) * xSize.second;

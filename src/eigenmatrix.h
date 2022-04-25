@@ -4,8 +4,10 @@
 #include<iostream>
 class nonleaf{
         public:
-        double *QC[6];
-        std::pair<int,int>qcSizes[6];
+        double *QC[5];
+        std::pair<int,int>qcSizes[6];        
+        int *Org;
+        
         double *J;
         std::pair<int,int>JSize;
         double *G;
@@ -24,7 +26,7 @@ class nonleaf{
                 delete[] QC[2];
                 delete[] QC[3];
                 delete[] QC[4];
-                delete[] QC[5];
+                delete[] Org;
                 delete[] J;
                 delete[] G;
                 delete[] I;

@@ -1,6 +1,7 @@
 #include "cauchylikematvec.h"
 #include "bsxfun.h"
 #include <string.h>
+#include "fmm1d_local_shift_2.h"
 #ifndef OPENBLAS 
 extern "C"
 {
@@ -34,7 +35,8 @@ void cauchylikematvec(double ***Qcd, std::pair<int,int>*qcSizes,double **Xx, std
     double *d    = Qc[2];
     double *lam  = Qc[3];
     double *tau  = Qc[4];
-    double *org  = Qc[5];
+    double *org  = ; //here change to be made
+    int *orgd; // change the above org
     int n        = qcSizes[0].first;
     int r        = 50;
 
@@ -94,6 +96,18 @@ void cauchylikematvec(double ***Qcd, std::pair<int,int>*qcSizes,double **Xx, std
 
     else{
         //FMM
+        if(ifTrans == 0){
+
+
+        }
+        else{
+
+            bsxfun('T', &X, xSize, v, qcSizes[0]);
+            double * Y = fmm1d_local_shift(r, lam, d, X, tau, orgd, 1, qcSizes[3].first, qcSizes[2].first, 1);
+            
+            //bsxfun('T', &Y,)
+        }
+
     }
 
 }

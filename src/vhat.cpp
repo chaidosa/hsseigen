@@ -13,7 +13,7 @@
 #include "bsxfun.h"
 #include "vhat.h"
 
-std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, std::vector<int>& org, std::vector<double>& tau, std::vector<double>& w, double N){
+std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, const int *org, int org_size, std::vector<double>& tau, std::vector<double>& w, double N){
 
     int n = lam.size();
     int r = 50;
@@ -22,12 +22,12 @@ std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, std::
 
     if(n < N){
         int dRows = d.size();
-        int dCols = org.size();
+        int dCols = org_size;
         Dlam = new double[dRows*dCols];
         
         for(int row = 0; row < dRows; row++)
             for(int col = 0; col < dCols; col++)
-                Dlam[col + row*dCols] = d[row] - d[(int)org[col]];
+                Dlam[col + row*dCols] = d[row] - d[org[col]];
 
                 
         //bsxfun('M','R', &Dlam, {dRows, dCols}, &tau[0], {1, tau.size()});

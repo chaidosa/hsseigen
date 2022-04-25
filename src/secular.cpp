@@ -12,7 +12,7 @@
 #include  "colnorms.h"
 using namespace std;
 
-SECU* secular(double *d, int dSize, double *v, int vSize,double N){
+SECU* secular(double *d, int dSize, double *v, int vSize, double N){
 /*    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% roots of secular equation w/ deflation %%%%%
@@ -34,13 +34,14 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
     SECU *ret = new SECU();
     vector<double> v3_hat;
     vector<double> tau;
-    vector<int> org;
+    int *org;
+    int org_size;
     vector<double> s3;
-    vector<double>d3;
-    vector<double>v3;
+    vector<double> d3;
+    vector<double> v3;
     vector<double> J,G;
     double *I;
-    std::vector<double>v2c;
+    std::vector<double> v2c;
     int n2;
     int n3;
     double percent;
@@ -55,7 +56,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
     double tol = 1.0e-10;
     int n      = vSize;
     //step 1: deflate small vi
-    std::vector<double> Tempt;        
+    std::vector<double> Tempt;
     std::vector<int> zero_2_n;
 
     for(int i = 0; i < vSize; ++i)
@@ -204,12 +205,13 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
             Lam3 = rf_res->x;
             tau = rf_res->tau;
             org = rf_res->org;
+            org_size = rf_res->org_size;
             percent = rf_res->percent;
             //V hat call
-            v3_hat = vhat(d3, Lam3, org, tau, v3);
+            v3_hat = vhat(d3, Lam3, org, org_size, tau, v3);
 
             //Colnorms call
-            s3 = colnorms(d3, Lam3, tau, org, v3_hat); 
+            s3 = colnorms(d3, Lam3, tau, org, org_size, v3_hat); 
 
         }
         
@@ -229,76 +231,78 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
 
     if(n1 < n){    
     
-    double *v3_h = new double[v3_hat.size()];
-    memcpy(v3_h, &v3_hat[0],sizeof(double)*v3_hat.size());
-    res->QC[0] = v3_h;
-    res->qcSizes[0] = make_pair(v3_hat.size(), 1);
+        double *v3_h = new double[v3_hat.size()];
+        memcpy(v3_h, &v3_hat[0],sizeof(double)*v3_hat.size());
+        res->QC[0] = v3_h;
+        res->qcSizes[0] = make_pair(v3_hat.size(), 1);
 
 
-    double *s33 = new double[s3.size()];
-    memcpy(s33, &s3[0], sizeof(double)*s3.size());
-    res->QC[1] = s33;
-    res->qcSizes[1] = make_pair(s3.size(), 1);
+        double *s33 = new double[s3.size()];
+        memcpy(s33, &s3[0], sizeof(double)*s3.size());
+        res->QC[1] = s33;
+        res->qcSizes[1] = make_pair(s3.size(), 1);
 
 
-    double *d33 = new double[d3.size()];
-    memcpy(d33, &d3[0], sizeof(double)*d3.size());
-    res->QC[2] = d33;
-    res->qcSizes[2] = {d3.size(), 1};
+        double *d33 = new double[d3.size()];
+        memcpy(d33, &d3[0], sizeof(double)*d3.size());
+        res->QC[2] = d33;
+        res->qcSizes[2] = {d3.size(), 1};
 
 
-    double *Lam33 = new double[Lam3.size()];
-    memcpy(Lam33, &Lam3[0], sizeof(double)*Lam3.size());
-    res->QC[3] = Lam33;
-    res->qcSizes[3] = {Lam3.size(), 1};
+        double *Lam33 = new double[Lam3.size()];
+        memcpy(Lam33, &Lam3[0], sizeof(double)*Lam3.size());
+        res->QC[3] = Lam33;
+        res->qcSizes[3] = {Lam3.size(), 1};
 
 
-    double *tau1 = new double[tau.size()];
-    memcpy(tau1, &tau[0], sizeof(double)*tau.size());
-    res->QC[4] = tau1;
-    res->qcSizes[4] = {tau.size(), 1};
+        double *tau1 = new double[tau.size()];
+        memcpy(tau1, &tau[0], sizeof(double)*tau.size());
+        res->QC[4] = tau1;
+        res->qcSizes[4] = {tau.size(), 1};
 
 
-    double *org1 = new double[org.size()];
-    memcpy(org1, &org[0], sizeof(double)*org.size());
-    res->QC[5] = org1;
-    res->qcSizes[5] = {org.size(), 1};
+        //double *org1 = new double[org.size()];
+        //memcpy(org1, org.data(), sizeof(double)*org.size());
+        //res->QC[5] = org1;
+        res->Org = org;
+        res->qcSizes[5] = {org_size, 1};
 
-    res->I = I;
-    res->ISize = {d2.size(),1};
+        res->I = I;
+        res->ISize = {d2.size(),1};
     
-    double *G1 = new double[G.size()];
-    memcpy(G1, &G[0], sizeof(double)*G.size());
-    res->G = G1;    
-    res->GSize = {G.size(), 1};
+        double *G1 = new double[G.size()];
+        memcpy(G1, &G[0], sizeof(double)*G.size());
+        res->G = G1;    
+        res->GSize = {G.size(), 1};
 
-    double *J1 = new double[J.size()];
-    memcpy(J1, &J[0], sizeof(double)*J.size());
-    res->J = J1;
-    res->JSize = {J.size(), 1};
+        double *J1 = new double[J.size()];
+        memcpy(J1, &J[0], sizeof(double)*J.size());
+        res->J = J1;
+        res->JSize = {J.size(), 1};
 
-    double *T = new double[Tempt.size()];
-    memcpy(T, Tempt.data(), sizeof(double)*Tempt.size());
-    res->T = T;
-    res->TSize = {Tempt.size(), 1};
+        double *T = new double[Tempt.size()];
+        memcpy(T, Tempt.data(), sizeof(double)*Tempt.size());
+        res->T = T;
+        res->TSize = {Tempt.size(), 1};
 
-    double *V2C = new double[v2c.size()];
-    memcpy(V2C, &v2c[0], sizeof(double)*v2c.size());
-    res->v2c = V2C;
-    res->v2cSize = {v2c.size(),1};   
+        double *V2C = new double[v2c.size()];
+        memcpy(V2C, &v2c[0], sizeof(double)*v2c.size());
+        res->v2c = V2C;
+        res->v2cSize = {v2c.size(),1};   
 
 
-    res->n = n;
-    res->n1 = n1;
-    res->n2 = n2;
-    res->n3 = n3;
-    ret->Q = res;
-    ret->Lam = Lam;
+        res->n = n;
+        res->n1 = n1;
+        res->n2 = n2;
+        res->n3 = n3;
+        ret->Q = res;
+        ret->Lam = Lam;
     
-    return ret;
+        return ret;
     }
 
-    else{        
+    else
+    {        
         res->JSize = {0,0};
         res->GSize = {0,0};
         res->ISize = {0,0};
@@ -309,6 +313,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize,double N){
         res->v2cSize = make_pair(0,0);
         double *T = new double[Tempt.size()];
         memcpy(T, &Tempt[0], sizeof(double)*Tempt.size());
+        
         res->T = T;
         res->TSize = {Tempt.size(), 1};
         res->n = n;

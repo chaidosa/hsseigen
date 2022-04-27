@@ -29,7 +29,7 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
     //@times
     case 'T':
         if(xSize.first != ySize.first){
-            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+            std::cout<<"Error using bsxfun (Times) Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(unsigned int row = 0 ; row < xSize.first; row++){
@@ -41,7 +41,7 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
     //@plus
     case 'P':
         if(xSize.first != ySize.first){
-            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+            std::cout<<"Error using bsxfun (Plus) Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(unsigned int row = 0 ; row < xSize.first; row++){
@@ -53,7 +53,7 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
     //@plus column-wise: adding A+B, where A is a matrix and B is a vector. Num cols of A and B must match.
     case 'p':
         if(xSize.second != ySize.second){
-            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+            std::cout<<"Error using bsxfun (p column wise) Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(unsigned int row = 0 ; row < xSize.first; row++){
@@ -66,7 +66,7 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
     //@minus
     case 'M':
         if(xSize.first != ySize.first){
-            std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+            std::cout<<"Error using bsxfun (Minus) Non-singleton\n dimensions of the two input arrays must match each other\n";
             assert(false);
         }
         for(unsigned int row = 0 ; row < xSize.first; row++){
@@ -78,7 +78,7 @@ void bsxfun(char method, double **tempX, std::pair<int,int>xSize, double *Y, std
     //@minus column-wise: subtracting A-B, where A is a matrix and B is a vector. Num cols of A and B must match.
     case 'm':
 		if(xSize.second != ySize.second){
-		    std::cout<<"Error using bsxfun Non-singleton\n dimensions of the two input arrays must match each other\n";
+		    std::cout<<"Error using bsxfun (Minus columnwise) Non-singleton\n dimensions of the two input arrays must match each other\n";
 		    assert(false);
 		}
 		for(unsigned int row = 0 ; row < xSize.first; row++){
@@ -111,11 +111,11 @@ void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std
 }
 
 //used for arranging  arrays
-void arrange_elements2(double **Xc, std::pair<int,int>XSize,int **Tt, std::pair<int,int>tSize){
+void arrange_elements2(double *Xc, std::pair<int,int>XSize,int *Tt, std::pair<int,int>tSize){
     if(XSize.first == 1)
         return;
     assert(XSize.first == tSize.first);
-     LAPACKE_dlapmr(LAPACK_ROW_MAJOR,true, XSize.first, XSize.second, *Xc, XSize.second, *Tt);
+     LAPACKE_dlapmr(LAPACK_ROW_MAJOR,true, XSize.first, XSize.second, Xc, XSize.second, Tt);
 }
 
 

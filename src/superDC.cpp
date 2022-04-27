@@ -1,5 +1,5 @@
 
-/*
+
 #include<bits/stdc++.h>
 #include<string.h>
 #include "BinTree.h"
@@ -61,7 +61,7 @@ void Eig_func(int i){
     Eig_func(right-1);   
     
     //compute
-    superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);           
+    superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);           
     Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
     std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
@@ -127,7 +127,7 @@ std::pair<double *, nonleaf**> r_RankOneUpdate(double* Lam, int lamSize, std::pa
             for(int row = 0; row < zSize.first; row++)
                 memcpy(tempZi + row*(r-(j+1)), Z + (j + 1) + row * (zSize.second), sizeof(double) * (r - (j + 1)) );
                     
-            superdcmv_cauchy(&(n_leaf[j]), {1, 7}, &tempZi, {zSize.first, (r- ( j + 1)) }, 1);
+            superdcmv_cauchy((n_leaf[j]), {1, 7}, tempZi, {zSize.first, (r- ( j + 1)) }, 1);
 
             for(int row = 0; row < zSize.first; row++)
                 memcpy(Z + j + 1 + row * (zSize.second), tempZi + row*(r - (j + 1)), sizeof(double) * (r - (j + 1)));
@@ -155,7 +155,7 @@ std::pair<double*, double*> computeLeafEig(std::pair<int, int> dSize, double *D,
             
     double abstol = 1.234e-27;
         
-    cout << "Computing eigenvalues and eigenvectors for node: "<<(i+1)<<"\n";
+    //cout << "Computing eigenvalues and eigenvectors for node: "<<(i+1)<<"\n";
     int info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', dSize.first, D, dSize.second, NULL, NULL, NULL, NULL,abstol, &dSize.first, E, EV, dSize.second, Isuppz);
             
     if(info > 0){
@@ -180,11 +180,11 @@ SDC* superDC(GEN *A, BinTree* btree, int* m, int mSize, int nProc)
 
       
 bt = btree;
-    cout<<"Reached superDC\n";
+   // cout<<"Reached superDC\n";
     //Dividing Stage
     resDvd = divide2(A, bt, m, mSize);
     
-    cout<<"Success Divide\n";
+   // cout<<"Success Divide\n";
     //Conquering stage
     N  = bt->GetNumNodes();
 
@@ -233,7 +233,7 @@ bt = btree;
     vector<int> counter(N+1, 0);
     std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
 
-    cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
+   // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
     omp_set_num_threads(nProc);
     #pragma omp parallel
@@ -241,7 +241,7 @@ bt = btree;
 
         //omp_set_num_threads(omp_get_num_procs());
        // cout<<"In Parallel:"<<omp_in_parallel()<<endl;
-        cout<<"Number of threads:"<<omp_get_num_threads()<<endl;
+      //  cout<<"Number of threads:"<<omp_get_num_threads()<<endl;
         #pragma omp for
         for(int thr = 0; thr < WorkQueue.size(); thr++){
           // cout<<"iteration:"<<thr<<"thread:"<<omp_get_thread_num()<<endl;            
@@ -285,7 +285,7 @@ bt = btree;
                     int left = ch[0];
                     int right = ch[1];
                     int i = node - 1;
-                    superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);
+                    superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);
                     Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
                     std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
@@ -367,7 +367,7 @@ bt = btree;
                 int left = ch[0];
                 int right = ch[1];
                 int i = node - 1;
-                superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);
+                resDvd->Z[i] = superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);
                 Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
                 std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
                 std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
@@ -389,114 +389,17 @@ bt = btree;
                 Lam[i] = result.first;
                 Q0[i]->Q0_nonleaf = result.second;
                 Q0[i]->n_non_leaf = r;
-                 q0Sizes[i] = {1, r};
-
+                q0Sizes[i] = {1, r};
         }
 }
 #endif
 
-    
-    
-
-/*
-    omp_set_num_threads(4);
-    #pragma omp parallel
-    {
-
-        //omp_set_num_threads(omp_get_num_procs());
-       // cout<<"In Parallel:"<<omp_in_parallel()<<endl;
-        cout<<"Number of threads:"<<omp_get_num_threads()<<endl;
-        #pragma omp for
-        for(int thr = 0; thr < WorkQueue.size(); thr++){
-           cout<<"iteration:"<<thr<<"thread:"<<omp_get_thread_num()<<endl;            
-            while(true){
-                int node;
-                vector<int> ch;
-                #pragma omp critical
-                {
-                    if(!WorkQueue.empty()){
-                        node = WorkQueue.back();
-                        WorkQueue.pop_back();
-                    }
-                    else{
-                        node = -1;
-                    }
-                }
-                
-                if(node != -1 && bt->GetChildren(node).empty()){
-                    int i = node - 1;
-                    std::pair<double*, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
-                    Lam[i] = E.first;         
-                    LamSizes[i] = resDvd->dSizes[i].first;
-
-                    Q0[i] = new EIG_MAT();
-                    Q0[i]->Q0_leaf = E.second;            
-                    Q0[i]->Q0_nonleaf = NULL;
-                    q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};                  
-
-                    #pragma omp critical
-                    {
-                        counter[bt->tr[node - 1]]++;
-                        if(counter[bt->tr[node - 1]] == 2){
-                                WorkQueue.push_back(bt->tr[node - 1]);
-                            }
-                    }
-                }
-
-                else if (node != -1 && !bt->GetChildren(node).empty()){
-                    cout<<"Computing Internal node: "<<node<<"\n";
-                    ch = bt->GetChildren(node);
-                    int left = ch[0];
-                    int right = ch[1];
-                    int i = node - 1;
-                    superdcmv_desc(Q0,q0Sizes,&(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);           
-                    Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
-
-                    std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
-                    std::copy(Lam[right-1], Lam[right-1] + LamSizes[right-1], Lam[i] + LamSizes[left - 1]);
-            
-                    LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
-                    //std::sort(Lam[i], Lam[i]+LamSizes[i]);
-
-                    delete [] Lam[left - 1];
-                    delete [] Lam[right - 1];
-
-                    LamSizes[left - 1]  = 0;
-                    LamSizes[right - 1] = 0;
-
-                    int r             = resDvd->zSizes[i].second;
-
-                    Q0[i]             = new EIG_MAT();
-                    Q0[i]->Q0_leaf    = NULL;
-
-                    nonleaf **n_leaf    = new nonleaf*[r];
-            
-                    std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
-                    Lam[i] = result.first;
-                    Q0[i]->Q0_nonleaf = result.second;
-                    Q0[i]->n_non_leaf = r;
-                    q0Sizes[i] = {1, r};   
-
-                    #pragma omp critical
-                    {
-                        counter[bt->tr[node - 1]]++;
-                        if(counter[bt->tr[node - 1]] == 2){
-                                WorkQueue.push_back(bt->tr[node - 1]);
-                        }
-        
-                    } 
-                }
-                else if(node == -1)
-                    break;
-            }
-            
-        }
-    }
-
+ 
     gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
-        //printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
+        printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
 
+    
     std::ofstream txtOut;
     txtOut.open("output.txt", std::ofstream::out);
     txtOut <<setprecision(10)<<elapsed/(double)1000000<<" seconds"<<endl;
@@ -511,6 +414,7 @@ bt = btree;
         txtOut<<setprecision(20)<<tempeig[k]<<endl;
     }
     cout << count;
+    
     SDC *resSDC = new SDC();
 
     resSDC->Q = Q0;
@@ -519,7 +423,9 @@ bt = btree;
     return resSDC;
 } 
 
-*/
+
+
+/*
 #include<bits/stdc++.h>
 #include<string.h>
 #include "BinTree.h"
@@ -579,11 +485,11 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
 
         }
     }
-    /*
+    
         Q0 = cell(k,1);         
         Lam = cell(k,1);
         rho = cell(k,1);
-    */
+    
     EIG_MAT **Q0 = new EIG_MAT*[N]; //Nikhil: [] not necessary (multiple places).
     //double **Q0 = new double*[N];    
     std::pair<int, int>* q0Sizes = new std::pair<int, int>[N]; 
@@ -719,28 +625,28 @@ SDC* superDC(GEN *A,  BinTree* bt, int* m, int mSize, int nProc)
             Q0[i]->Q0_nonleaf = n_leaf;
             Q0[i]->n_non_leaf = r;
             q0Sizes[i] = {1, r};
-        }
-
-       
+        }      
 
     }
 
     gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec-timeStart.tv_sec)*1000000LL + timeEnd.tv_usec-timeStart.tv_usec;
         printf ("\nDone. %f usecs\n",elapsed/(double)1000000);
-    /*
-    vector<double> tempeig;
-    for(int k = 0; k < LamSizes[N-1]; k++)
-        tempeig.push_back(Lam[N-1][k]);
+    
+        vector<double> tempeig;
+        for(int k = 0; k < LamSizes[N-1]; k++)
+            tempeig.push_back(Lam[N-1][k]);
 
-    sort(tempeig.begin(), tempeig.end());
-    int count = 0;
-    for(int k = 0; k < LamSizes[N-1]; k++){
-        count++;
-        cout<<setprecision(16)<<tempeig[k]<<endl;
-    }
-	cout << count;
-    */
+        sort(tempeig.begin(), tempeig.end());
+        int count = 0;
+        for(int k = 0; k < LamSizes[N-1]; k++){
+            count++;
+            cout<<setprecision(16)<<tempeig[k]<<endl;
+        }
+	    cout << count;
+    
     return NULL;
 
 } 
+
+*/

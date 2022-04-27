@@ -15,7 +15,7 @@
 }
 */
 
-void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pair<int, int>xSize,int ifTrans,double N){
+void superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
 /*
 %%% Input:
 %%% Q: hss sturctured cauchylike eigenmatrix
@@ -28,8 +28,8 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
 %%% ifTrans = 0: X = Q * X 
 %%% ifTrans = 1: X = Q^T * X;
 */
-    nonleaf *Q = *Qq;
-    double *X = *Xx;
+    nonleaf *Q = Qq;
+    double *X = Xx;
     if(ifTrans == 0){
 
     }
@@ -40,7 +40,7 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         for(int i = 0; i < Q->TSize.first; i++)
             temp[i] = (Q->T[i]) + 1;        
        
-        arrange_elements2(&X, xSize, &(temp), Q->TSize);
+        arrange_elements2(X, xSize, (temp), Q->TSize);
         delete [] temp;      
 
         //double *tempX = X + (Q->n1)*xSize.second;
@@ -54,7 +54,7 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         for(int row = 0; row < Q->ISize.first; row++)
             tempI[row] = Q->I[row] + 1;
 
-        arrange_elements2(&tempXX, {xSize.first - Q->n1, xSize.second}, &(tempI), Q->ISize);
+        arrange_elements2(tempXX, {xSize.first - Q->n1, xSize.second}, (tempI), Q->ISize);
 
         delete[] tempI;
         // Givens rotation
@@ -65,7 +65,7 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         for(int i = 0; i < Q->JSize.first; i++)
             tempJ[i] = Q->J[i] + 1;
 
-        arrange_elements2(&tempXX, {xSize.first - Q->n1, xSize.second}, &(tempJ), Q->JSize);
+        arrange_elements2(tempXX, {xSize.first - Q->n1, xSize.second}, (tempJ), Q->JSize);
         
         memcpy(X+(Q->n1 * xSize.second), tempXX, sizeof(double)*((xSize.first - Q->n1) * xSize.second));
         delete[] tempXX;
@@ -77,7 +77,7 @@ void superdcmv_cauchy(nonleaf **Qq,std::pair<int, int>qSize, double **Xx,std::pa
         //for(int row = (Q->n1 + Q->n2), curr = 0; row < Q->n, curr < rowSize; row++, curr++)
         //    memcpy(tempXX + curr*(xSize.second), X+row*(xSize.second), sizeof(double)*(xSize.second));
         memcpy(tempXX, X+(Q->n1 + Q->n2)*xSize.second, sizeof(double)*(rowSize * xSize.second));
-        cauchylikematvec(&Qc, (Q->qcSizes), &(tempXX), {rowSize, xSize.second}, 1);
+        cauchylikematvec(Qc, (Q->qcSizes), Q->Org, (tempXX), {rowSize, xSize.second}, 1);
         memcpy(X+(Q->n1 + Q->n2)*xSize.second, tempXX, sizeof(double)*(rowSize * xSize.second));
         delete[] tempXX;
        

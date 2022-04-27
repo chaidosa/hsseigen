@@ -36,15 +36,13 @@ std::vector<double> colnorms(std::vector<double>& d, std::vector<double>& lam, s
                 S[col + row *sCols] = d[org[row]] - d[col];
             }
         }
-
-
-        bsxfun('P',&S,{sRows, sCols}, &tau[0], {tau.size(), 1});
-
+        
+        bsxfun('P',&S,{sRows, sCols}, &tau[0], {tau.size(), 1});        
 
         for(int row_col = 0; row_col < (sRows*sCols); row_col++)
             S[row_col] = 1 / (S[row_col]*S[row_col]);
 
-
+        
         s = new double[sRows];
         sSize = sRows;
         memset(s, 0 ,sizeof(double)*sRows);

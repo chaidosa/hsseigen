@@ -16,7 +16,7 @@ extern "C"
 #endif
 using namespace std;
 
-void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,std::pair<int,int>* indexRange,double N){
+double *superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double *X,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,std::pair<int,int>* indexRange,double N){
 /*
 %%% Input:
 %%% Q: hss structured cauchylike eigenmatrix of descendants of i
@@ -32,7 +32,7 @@ void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<
 %%% ifTrans = 1: X = Q^T * X;
 */
     //smallest desendent of each node
-    double * X_req = *X;
+    double *X_req = X;
     std::vector<int> desc = bt->GetTreeDesc();  
     int k = desc[index+1];
     std::pair<int, int>rg[bt->GetNumNodes()];
@@ -56,13 +56,14 @@ void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<
             
             std::pair<int,int>tempXSize = {K,columns};
 
-            superdcmv_node(&Q[j],qSize[j],&tempX,tempXSize,bt,j,1,N);
+            tempX = superdcmv_node(Q[j],qSize[j],tempX,tempXSize,bt,j,1,N);
 
             memcpy(X_req+(rg[j].first * columns),tempX,sizeof(double)*K*columns);     
             delete [] tempX;       
         }
     }
-    *X = X_req;
+    X = X_req;
     desc.clear();
     desc.shrink_to_fit();
+    return X;
 }

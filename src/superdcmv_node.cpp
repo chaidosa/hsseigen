@@ -15,7 +15,7 @@ extern "C"
 }
 #endif
 
-void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
+double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
 /*
 %%% Input:
 %%% Q: hss sturctured cauchylike eigenmatrix of descendants of i
@@ -29,8 +29,8 @@ void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::p
 %%% ifTrans = 0: X = Qi * X 
 %%% ifTrans = 1: X = Qi^T * X;
 */
-    EIG_MAT *Q = *Qt;
-    double *X = *tempX;
+    EIG_MAT *Q = Qt;
+    double *X = tempX;
     double alpha = 1;
     double beta  = 0;
     std::vector<int> ch = bt->GetChildren(index+1);
@@ -44,11 +44,13 @@ void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::p
 
             double *tempQX = new double[qSize.first*xSize.second];
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qSize.first,xSize.second,qSize.second,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second); //Nikhil: memory for Q0_leaf seems to have not been allocated (multiple places). Confirm.
-            delete [] X;
-            *tempX = tempQX;
+            //delete [] X;
+            tempX = tempQX;
             tempQX = NULL;
         }
-        else{
+
+        else
+        {
             if(qSize.first != xSize.first){
                 cout<<"Multiplication is not possible";
                 assert(false);
@@ -56,8 +58,8 @@ void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::p
 
             double *tempQX = new double[qSize.second*xSize.second];
             cblas_dgemm(CblasRowMajor,CblasTrans,CblasNoTrans,qSize.second,xSize.second,qSize.first,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second);
-            delete [] X;
-            *tempX = tempQX;
+            //delete [] X;
+            tempX = tempQX;
             tempQX = NULL;
         }
     }
@@ -76,10 +78,11 @@ void superdcmv_node(EIG_MAT **Qt,std::pair<int, int>qSize, double **tempX,std::p
             {
               double *tempXX = new double[xSize.first * xSize.second];
               memcpy(tempXX, X, sizeof(double)*(xSize.first * xSize.second));
-              superdcmv_cauchy(&Q->Q0_nonleaf[j],{7 , 1}, &tempXX, xSize, 1, 1024);
+              superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, tempXX, xSize, 1, 1024);
               memcpy(X, tempXX, sizeof(double)*(xSize.first * xSize.second));  
             }
-            *tempX = X;
+            tempX = X;
         }
     }
+    return tempX;
 }

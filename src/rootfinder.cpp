@@ -180,7 +180,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     Root * results = new Root();
 
 
-    double N = 1024;    
+    double N = 37000;    
     int dSize = d.size();
     int n = v.size();
     if(dSize != n)
@@ -240,12 +240,12 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         org[i] = 1;
     
 
-   int kRows = n-1;
+   int kRows = org_size;
    int kCols  = dSize; 
    double *f0;
    f0 = new double[kRows]; 
    int f0_size = kRows;
-   memset(f0, 0, sizeof(double)*kRows);
+   
    
    //sqares of vector v so that v^2 isn't computed again
    double *v2_arr;   
@@ -286,14 +286,13 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         
         
 
-        //  K = bsxfun(@plus, K, d0/2);
-        bsxfun('P', &K, {kRows,kCols}, tempD, {dSize - 1, 1});
-        
+        //  K = bsxfun(@plus, K, d0/2);       
+        bsxfun('P', &K, make_pair(kRows,kCols), tempD, make_pair(dSize - 1, 1));        
         //  K = 1 ./ K;
         for(unsigned int row_col = 0; row_col <(unsigned)(kRows*kCols); ++row_col)
             K[row_col] = 1 / K[row_col];
         
-
+        memset(f0, 0, sizeof(double)*kRows);
         // f0 = rho - K * v.^2;
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1.0, K, kCols, v2_arr, 1, 0.0, f0, 1);
 
@@ -324,10 +323,11 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     }
 
     // org = [1:n-1]' + (f0<0);
-    for(unsigned int i = 0; i <(unsigned)org_size; ++i)
+    for(unsigned int i = 0; i <(unsigned)org_size; ++i){
+        org[i] = i;
         if(f0[i] < 0)
             org[i] = org[i] + 1;        
-    
+    }
 
 
 
@@ -526,7 +526,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
                 }
             }
             
-            bsxfun('P', &K, {kRows,kCols}, &tau[0], {tau.size(), 1});
+            bsxfun('P', &K, {kRows,kCols}, &tau[0], {tau.size(), 1});            
 
             for(unsigned int i = 0; i <(unsigned)(kRows*kCols); ++i)
                 K[i] = 1/K[i];
@@ -901,10 +901,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
                 for(unsigned int col=0; col <(unsigned)kCols; ++col){
                     K[col+row*(kCols)] = d[org[row]] - d[col];
                 }
-            }          
-
+            }    
+            
             bsxfun('P',&K,{kRows,kCols},&tau[0],{tau.size(),1});
-
+        
             for(unsigned int i = 0; i <(unsigned)(kRows*kCols); ++i)
                 K[i] = 1/K[i];
 
@@ -948,7 +948,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
         residual.clear(); residual.resize(0); residual.shrink_to_fit();
         J2.clear(); J2.resize(0); J2.shrink_to_fit();
-        for(unsigned int i = 0; i <(unsigned)pd_size; i++){
+        for(unsigned int i = 0; i < (unsigned)pd_size; i++){
 
             residual.push_back(std::abs(f[i]));
 
@@ -1092,7 +1092,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
         if(stop_criteria == 0);
              
-        
         else  if(stop_criteria == 1)
             erretm = C * n * (rho + std::abs(psi0) + std::abs(phi0));
 
@@ -1135,7 +1134,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
             double eta;
             if(swtch_2 == 0)
                 c = - (delta[current_i+1] - x0) * DPSI_1(v,x0,current_i,delta) - (delta[current_i+1] - x0) * DPHI_1(v, x0, current_i, n, delta) + w ;
-            else if (swtch_2 == 1){
+            else if (swtch_2 == 1)
+            {
                 if(org0 == current_i)
                     c = -(delta[current_i+1] - x0) * dw - (tempvSqr[current_i]) *(delta[current_i] -delta[current_i+1])/std::pow((delta[current_i] - x0), 2) + w;
                 else if(org0 == current_i + 1)
@@ -1326,7 +1326,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
 
         
         // **check if updated root lies in the [lb, ub]**
-        if((x0 + eta) < lb || ((x0 + eta) > ub) || ((x0 + eta) <= lb0)){
+        if((x0 + eta) < lb || ((x0 + eta) > ub) || ((x0 + eta) <= lb0))
+        {
              if(w >= 0)
                 eta = (lb-x0) / 2;
             else
@@ -1368,10 +1369,11 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     //**n^th root and eigenvector**
     tau.push_back(x0);
     org[n-1] = n-1;
+    org_size++;;
     x.push_back(x0 + d[n-1]);
     results->tau = tau;
     results->org = org;
-    results->org_size = n;
+    results->org_size = org_size;
     results->x   = x;
     results->percent = percent;
     return results;

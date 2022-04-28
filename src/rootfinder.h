@@ -6,8 +6,13 @@ class Root{
         std::vector<double> tau;
         int *org;
         int org_size;
-        std::vector<double> x;
+        double* x;
         double percent;
+	Root(int p_OrgSize) {
+		org_size=p_OrgSize;
+		x=NULL;
+		org=NULL;
+	}
 };
 Root *rootfinder(std::vector<double>& d, std::vector<double>& v);
 #endif

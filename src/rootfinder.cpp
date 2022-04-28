@@ -177,10 +177,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     %%% org: shifts for each root
     */
 
-    Root * results = new Root();
 
+    Root * results;
 
-    double N = 37000;    
+    double N = 1024;    
     int dSize = d.size();
     int n = v.size();
     if(dSize != n)
@@ -191,16 +191,18 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     //edge case
     if(n == 1)
     {
-        double temp = (v[0]*v[0]) + d[0];
-        results->x.push_back(temp);
-        results->org = new int[1];
-        results->org[0] = 0;
-        temp = temp - d[0];
-        results->tau.push_back(temp);        
-        results->percent = 1;
-        return results;
+	    results = new Root(1);
+	    double temp = (v[0]*v[0]) + d[0];
+	    results->x=new double(temp);
+            results->org = new int(0);
+            temp = temp - d[0];
+            results->tau.push_back(temp);        
+            results->percent = 1;
+            return results;
     }
-   
+
+    results = new Root(n);
+    
     double C = 64;
     int record = 1;
     double alpha = 0;
@@ -226,11 +228,13 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     
     std::vector<double> d0 = diff_vec(d);
 
-    std::vector<double> x;
+    results->x=new double[n];
+    double* x=results->x;
+
     for(unsigned int i = 0; i <(unsigned)n-1; ++i)
     {
         double temp = (d[i] + d[i+1]) / 2;
-        x.push_back(temp);
+        x[i]=temp;
     }
 
     //std::vector<int> org;
@@ -260,11 +264,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
    for(unsigned int i = 0; i <(unsigned)dSize - 1; ++i)
     tempD[i] = d0[i] / 2;
    
-   assert(org_size == x.size());
    if(n >= N)
    {
 	   
-        double* z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tempD, org, 1, x.size(), dSize, 1);
+        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tempD, org, 1, org_size, dSize, 1);
         //f0 = rho - fl - fu;
         for(unsigned int i = 0; i <(unsigned)kRows; ++i)
             f0[i] = rho - z[i] - z[kRows+i];
@@ -398,7 +401,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         b.push_back(temp_first_part);
     }
 
-    std::vector<double>tau(n-1, 0);    
+    std::vector<double>tau(org_size, 0);    
     //clearnig previous allocations
     I1.clear(); I1.resize(0); I1.shrink_to_fit();I2.clear(); I2.resize(0); I2.shrink_to_fit();
 
@@ -502,12 +505,12 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
         if(n >= N)
         {
             //fmm
-	        double* z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org, 1, x.size(), dSize, 1);
+	        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
             //psi = z; phi = z+kRows; 
 
-            double *zd = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org, 1, x.size(), dSize, 2);
+            double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 2);
             //dpsi = zd; dphi = zd+kRows;
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               df[i] = zd[i] + zd[kRows+i];
@@ -886,7 +889,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     if(FMM_ITER){
         if(n >=N){
             //trifmm1dlocal shift
-            double * z = trifmm1d_local_shift(r, x.data(), d.data(), v2_arr, tau.data(), org, 1, x.size(), dSize, 1);
+            double * z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];       
            
@@ -1370,7 +1373,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v)
     tau.push_back(x0);
     org[n-1] = n-1;
     org_size++;;
-    x.push_back(x0 + d[n-1]);
+    x[n-1]=x0 + d[n-1];
     results->tau = tau;
     results->org = org;
     results->org_size = org_size;

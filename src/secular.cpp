@@ -30,13 +30,14 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
 
     //Return values and global initializations
     nonleaf *res = new nonleaf();
-    Root *rf_res = new Root();
+    Root *rf_res=NULL; 
     SECU *ret = new SECU();
     vector<double> v3_hat;
     vector<double> tau;
     int *org;
     int org_size;
-    vector<double> s3;
+    double* s3;
+    int s3_size=0;
     vector<double> d3;
     vector<double> v3;
     vector<double> J,G;
@@ -79,7 +80,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
     }
 
     std::vector<double> Lam2;
-    std::vector<double> Lam3;
+    double* Lam3=NULL;
 
     std::vector<double>d2;
     for(int i = 0; i < diff.size(); ++i){
@@ -212,19 +213,20 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
 
             //Colnorms call
             s3 = colnorms(d3, Lam3, tau, org, org_size, v3_hat); 
-
+	    s3_size=org_size;
         }
         
     }
 
-    int lamSize = Lam1.size() + Lam2.size() + Lam3.size();
+    int lamSize = Lam1.size() + Lam2.size() + org_size;
     double *Lam = new double[lamSize];
     
     vector<double> Lam_F;
     Lam_F.reserve(lamSize);
     Lam_F.insert(Lam_F.end(), Lam1.begin(), Lam1.end());
     Lam_F.insert(Lam_F.end(), Lam2.begin(), Lam2.end());
-    Lam_F.insert(Lam_F.end(), Lam3.begin(), Lam3.end());
+    if(Lam3)
+	    Lam_F.insert(Lam_F.end(), Lam3, Lam3+org_size);
 
     memcpy(Lam, Lam_F.data(), sizeof(double)*lamSize);
     
@@ -237,10 +239,12 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
         res->qcSizes[0] = make_pair(v3_hat.size(), 1);
 
 
-        double *s33 = new double[s3.size()];
+        /*double *s33 = new double[s3.size()];
         memcpy(s33, &s3[0], sizeof(double)*s3.size());
         res->QC[1] = s33;
-        res->qcSizes[1] = make_pair(s3.size(), 1);
+        res->qcSizes[1] = make_pair(s3.size(), 1);*/
+	res->QC[1] = s3;
+        res->qcSizes[1] = make_pair(s3_size, 1);
 
 
         double *d33 = new double[d3.size()];
@@ -249,10 +253,16 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
         res->qcSizes[2] = {d3.size(), 1};
 
 
-        double *Lam33 = new double[Lam3.size()];
+        /*double *Lam33 = new double[Lam3.size()];
         memcpy(Lam33, &Lam3[0], sizeof(double)*Lam3.size());
         res->QC[3] = Lam33;
-        res->qcSizes[3] = {Lam3.size(), 1};
+        res->qcSizes[3] = {Lam3.size(), 1};*/
+	res->QC[3]=Lam3;
+	if(Lam3)
+        	res->qcSizes[3] = std::make_pair(org_size,1);
+	else
+        	res->qcSizes[3] = std::make_pair(0,1);
+
 
 
         double *tau1 = new double[tau.size()];

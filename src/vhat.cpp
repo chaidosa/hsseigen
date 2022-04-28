@@ -13,9 +13,9 @@
 #include "bsxfun.h"
 #include "vhat.h"
 
-std::vector<double> vhat(std::vector<double>& d, std::vector<double>& lam, const int *org, int org_size, std::vector<double>& tau, std::vector<double>& w, double N){
+std::vector<double> vhat(std::vector<double>& d, double* lam, const int *org, int org_size, std::vector<double>& tau, std::vector<double>& w, double N){
 
-    int n = lam.size();
+    int n = org_size;
     int r = 50;
     double *Dlam,*D;
     std::vector<double>v(n);

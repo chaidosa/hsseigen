@@ -7,224 +7,140 @@
 #include "QR.h"
 #include "superDC.h"
 #include "band2hss.h"
+#include "Generators.h"
 #include <sys/time.h>
 #include<assert.h>
+#include <fstream>
 
-char* testFile="sparseOut.txt";
-
-int main(int argc, char* argv[])
+int main()
 {
-	int n=126, band_width=2;
-	int r=32;
+	int n=4096, band_width=2;
+	int r=256;
 	int MorB = 1; // to select which routine to use Band2HSS (2) or Mat2HSSsymm (1).
 	int w = 0;	//  band of the matrix, can be changes according to the requirement.
-	int nProc = 1;
-	if(argc!=7){
-		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth>\n");
-		printf("Default values will be used: filename=sparseOut.txt, n=126, diagblock_size=32, Mat2hsssym, 0\n");
-	}else{
-		testFile=argv[1];
-		n=atoi(argv[2]);
-		r=atoi(argv[3]);
-		MorB = atoi(argv[4]);
-		w = atoi(argv[5]);
-		nProc = atoi(argv[6]);
-	}
 
 	BinTree* bt=NULL;
-	double * A=NULL;
-	//create a banded matrix
-	int status = MakeBand(n,band_width,&A);
-	if(status) 
-		exit(-1);
 	
 	
 	int numNodes = 0;
 	
-#ifdef DEBUG
-	//Testing makeband
-	cout<<"========Input Matrix================"<<endl;
-	if(A)
-	{
-		for(int i=0;i<n;i++)
-		{
-			for(int j=0;j<n;j++)
-			{
-				printf("%1.2f ",A[j+i*n]);
-			}
-			printf("\n");
-		}
-	}
-	cout<<"========Input Matrix================"<<endl;
-	//Testing BinTree
-	numNodes = 15;
-	bt = new BinTree(numNodes);
-	if(bt->GetNumNodes() == 0)
-		exit(-1);
-	bt->Print();
-	cout<<"Sibling of 7: "<<bt->GetSibling(7)<<endl;
-	cout<<"Sibling of 14: "<<bt->GetSibling(14)<<endl;
-	cout<<"Sibling of 6: "<<bt->GetSibling(6)<<endl;
-	cout<<"Sibling of 4: "<<bt->GetSibling(4)<<endl;
-	cout<<"Sibling of 1: "<<bt->GetSibling(1)<<endl;
-	
-	cout<<"========================"<<endl;
-	std::vector<int> children = bt->GetChildren(7);
-	if(children.size() == 2)
-		cout<<"children of 7: "<<children[0]<<", "<<children[1]<<endl;
-	else
-		cout<<"No children found for 7"<<endl;
-
-	children.clear();
-	children = bt->GetChildren(14);
-	if(children.size() == 2)
-		cout<<"children of 14: "<<children[0]<<", "<<children[1]<<endl;
-	else
-		cout<<"No children found for 14"<<endl;
-
-	children.clear();
-	children = bt->GetChildren(6);
-	if(children.size() == 2)
-		cout<<"children of 6: "<<children[0]<<", "<<children[1]<<endl;
-	else
-		cout<<"No children found for 6"<<endl;
-
-	children.clear();
-	children = bt->GetChildren(5);
-	if(children.size() == 2)
-		cout<<"children of 5: "<<children[0]<<", "<<children[1]<<endl;
-	else
-		cout<<"No children found for 5"<<endl;
-
-	children.clear();
-	children = bt->GetChildren(1);
-	if(children.size() == 2)
-		cout<<"children of 1: "<<children[0]<<", "<<children[1]<<endl;
-	else
-		cout<<"No children found for 1"<<endl;
-	
-	cout<<"========================"<<endl;
-	cout<<"Left most child of 15: "<<bt->GetLeftMostChild(15)<<endl;
-	cout<<"Left most child of 14: "<<bt->GetLeftMostChild(14)<<endl;
-	cout<<"Left most child of 7: "<<bt->GetLeftMostChild(7)<<endl;
-	cout<<"Left most child of 10: "<<bt->GetLeftMostChild(10)<<endl;
-	cout<<"Left most child of 2: "<<bt->GetLeftMostChild(2)<<endl;
-	cout<<"========================"<<endl;
-	
-	cout<<"Right most child of 15: "<<bt->GetRightMostChild(15)<<endl;
-	cout<<"Right most child of 14: "<<bt->GetRightMostChild(14)<<endl;
-	cout<<"Right most child of 7: "<<bt->GetRightMostChild(7)<<endl;
-	cout<<"Right most child of 10: "<<bt->GetRightMostChild(10)<<endl;
-	cout<<"Right most child of 2: "<<bt->GetRightMostChild(2)<<endl;
-	cout<<"========================"<<endl;
-
-	std::vector<int> desc = bt->GetDescendents(15);
-	if(desc.size() > 0) {
-		cout<<"descendants of 15: ";
-		for(int i=0;i<desc.size();i++) {
-			cout<<desc[i];
-			if(i != desc.size()-1)
-				cout<<" ";
-			else
-				cout<<endl;
-		}
-	}
-	else
-		cout<<"No descendants found for 15"<<endl;
-	
-	desc.clear();
-	desc = bt->GetDescendents(14);
-	if(desc.size() > 0) {
-		cout<<"descendants of 14: ";
-		for(int i=0;i<desc.size();i++) {
-			cout<<desc[i];
-			if(i != desc.size()-1)
-				cout<<" ";
-			else
-				cout<<endl;
-		}
-	}
-	else
-		cout<<"No descendants found for 14"<<endl;
-
-	desc.clear();
-	desc = bt->GetDescendents(6);
-	if(desc.size() > 0) {
-		cout<<"descendants of 6: ";
-		for(int i=0;i<desc.size();i++) {
-			cout<<desc[i];
-			if(i != desc.size()-1)
-				cout<<" ";
-			else
-				cout<<endl;
-		}
-	}
-	else
-		cout<<"No descendants found for 6"<<endl;
-
-	desc.clear();
-	desc = bt->GetDescendents(7);
-	if(desc.size() > 0) {
-		cout<<"descendants of 7: ";
-            //std::copy(E, E+resDvd->dSizes[i].first, ee);
-		for(int i=0;i<desc.size();i++) {
-			cout<<desc[i];
-			if(i != desc.size()-1)
-				cout<<" ";
-			else
-				cout<<endl;
-		}
-	}
-	else
-		cout<<"No descendants found for 7"<<endl;
-	
-	desc.clear();
-	desc = bt->GetDescendents(2);
-	if(desc.size() > 0) {
-		cout<<"descendants of 2: ";
-		for(int i=0;i<desc.size();i++) {
-			cout<<desc[i];
-			if(i != desc.size()-1)
-				cout<<" ";
-			else
-				cout<<endl;
-		}
-	}
-	else
-		cout<<"No descendants found for 2"<<endl;
-	cout<<"========================"<<endl;
-#endif
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.
 	 * Arguments of NPart: n is the number of rows/columns in an input matrix. r is the number of rows in a partition (horizontal) of the matrix 
 	 * Number of leaves = n/r. Num nodes in the tree = num leaves* 2 - 1*/
 	int *m=NULL;
 	int mSize;
 	NPart(n, r, &bt, &m, mSize, numNodes);
+	int N = bt->numNodes;
+	GEN *hss = new GEN();
+	double **D = new double*[bt->numNodes];
+	std::pair<int, int>*dSizes = new std::pair<int, int>[N];
 
-#if DEBUG	
-	//Testing NPart
-	if(bt && m)
-	{
-		if(numNodes == 0)
-			bt->Print();
-		cout<<"========partition sizes==============="<<endl;
-		for(int i=0;i<mSize;i++) {
-			cout<<m[i];
-			if(i!=mSize-1)
-				cout<<" ";
-			else
-				cout<<endl;
-		}
-		cout<<"========partition sizes==============="<<endl;
+	double **U = new double*[bt->numNodes];
+	std::pair<int, int>*uSizes = new std::pair<int, int>[N];
+
+	double **R = new double*[bt->numNodes];
+	std::pair<int, int>*rSizes = new std::pair<int, int>[N];
+
+	double **B = new double*[bt->numNodes];
+	std::pair<int, int>*bSizes = new std::pair<int, int>[N];
+	
+	std::ifstream ifD ("genD4.txt", std::ifstream::in);
+	if(!ifD.is_open()){
+		cout << "Error in opening test file"<<endl;
+		assert(false);
 	}
-#endif
+	while(!ifD.eof()){
+		int i, row, col;
+		ifD >> i;
+		ifD >> row;
+		ifD >> col;
+		dSizes[i-1] = make_pair(row, col);
+		D[i-1] = new double[row * col];
 
-	GEN *hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+		for(int r = 0; r < row; r++){
+			for(int c = 0; c < col; c++){
+				ifD >> D[i-1][c + r*col];
+			}
+		}	
+	}
 	
-	
-	SDC* res = superDC(hss, bt, m, mSize, nProc);
-	//res->~SDC();
-	delete[] m;
+	 std::ifstream ifU ("genU4.txt", std::ifstream::in);
+        if(!ifU.is_open()){
+                cout << "Error in opening test file"<<endl;
+                assert(false);
+        }
+        while(!ifU.eof()){
+                int i, row, col;
+                ifU >> i;
+                ifU >> row;
+                ifU >> col;
+                uSizes[i-1] = make_pair(row, col);
+                U[i-1] = new double[row * col];
+
+                for(int r = 0; r < row; r++){
+                        for(int c = 0; c < col; c++){
+                                ifU >> U[i-1][c + r*col];
+                        }
+                }
+        }
+      	
+	 std::ifstream ifR ("genR4.txt", std::ifstream::in);
+        if(!ifR.is_open()){
+                cout << "Error in opening test file"<<endl;
+                assert(false);
+        }
+        while(!ifR.eof()){
+                int i, row, col;
+                ifR >> i;
+                ifR >> row;
+                ifR >> col;
+                rSizes[i-1] = make_pair(row, col);
+                R[i-1] = new double[row * col];
+
+                for(int r = 0; r < row; r++){
+                        for(int c = 0; c < col; c++){
+                                ifR >> R[i-1][c + r*col];
+                        }
+                }
+        }
+
+
+
+	 std::ifstream ifB ("genB4.txt", std::ifstream::in);
+        if(!ifB.is_open()){
+                cout << "Error in opening test file"<<endl;
+                assert(false);
+        }
+        while(!ifB.eof()){
+                int i, row, col;
+                ifB >> i;
+                ifB >> row;
+                ifB >> col;
+                bSizes[i-1] = make_pair(row, col);
+                B[i-1] = new double[row * col];
+
+                for(int r = 0; r < row; r++){
+                        for(int c = 0; c < col; c++){
+                                ifB >> B[i-1][c + r*col];
+                        }
+                }
+        }
+
+	hss->D = D;
+	hss->dSizes = dSizes;
+
+	hss->B = B;
+        hss->bSizes = bSizes;
+
+	hss->R = R;
+        hss->rSizes = rSizes;
+
+	hss->U = U;
+        hss->uSizes = uSizes;
+
+	SDC* res = superDC(hss, bt, m, mSize, 1);
+///	res->~SDC();
+//	delete[] m;
 	
 	return 0;
 }

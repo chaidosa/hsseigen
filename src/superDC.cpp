@@ -229,7 +229,7 @@ bt = btree;
    // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
 
-#if 1
+#if 0
     vector<int> counter(N+1, 0);
     std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
 

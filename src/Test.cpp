@@ -10,14 +10,14 @@
 #include <sys/time.h>
 #include<assert.h>
 
-char* testFile="Band5.txt"; // Pritesh: Band5.txt is there in Pnk system inside /hsseigen/ directory
+char* testFile="tBand_m_2.txt"; // Pritesh: Band5.txt is there in Pnk system inside /hsseigen/ directory
 
 int main(int argc, char* argv[])
 {
-	int n=32768, band_width=2;
+	int n=4096, band_width=2;
 	int r=256;
 	int MorB = 2; // to select which routine to use Band2HSS (2) or Mat2HSSsymm (1).
-	int w = 2;	//  band of the matrix, can be changes according to the requirement.
+	int w = 5;	//  band of the matrix, can be changes according to the requirement.
 	int nProc = 1; // no of procs to use
 	if(argc!=7){
 		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth>\n");

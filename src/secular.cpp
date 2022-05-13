@@ -202,7 +202,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
 
         if(n3){
             //Rootfinder call            
-            rf_res = rootfinder(d3, v3);
+            rf_res = rootfinder(d3, v3, N);
             Lam3 = rf_res->x;
             tau = rf_res->tau;
             org = rf_res->org;

@@ -14,5 +14,5 @@ class Root{
 		org=NULL;
 	}
 };
-Root *rootfinder(std::vector<double>& d, std::vector<double>& v);
+Root *rootfinder(std::vector<double>& d, std::vector<double>& v, double N = 1024);
 #endif

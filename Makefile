@@ -16,7 +16,7 @@ endif
 CC = g++ 
 CXXFLAGS += -std=c++11 
 LDFLAGS = -lblas -llapacke
-CXXFLAGS+= -fopenmp
+#CXXFLAGS+= -fopenmp
 #LDFLAGS+= -fopencilk
 #CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)
@@ -69,7 +69,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
 # Cleans complete project
 .PHONY: clean
 clean:
-	$(RM) -f $(DELOBJ) $(DEP) $(APPNAME)
+	$(RM) -rf $(DELOBJ) $(DEP) $(APPNAME)
 
 # Cleans only all files with the extension .d
 .PHONY: cleandep

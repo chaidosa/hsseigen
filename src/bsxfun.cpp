@@ -120,7 +120,7 @@ void arrange_elements2(double *Xc, std::pair<int,int>XSize,int *Tt, std::pair<in
 }
 
 
-double vec_norm(std::vector<double> v){
+double vec_norm(std::vector<double> &v){
     double result = 0;
     for(unsigned int i = 0; i <(int)v.size(); ++i){
         result +=v[i]*v[i];

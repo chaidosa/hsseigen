@@ -4,6 +4,7 @@
 #include "superdcmv_node.h"
 #include<string.h>
 #include "eigenmatrix.h"
+#include <assert.h>
 #ifndef OPENBLAS 
 extern "C"
 {
@@ -43,6 +44,7 @@ double *superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double *X,std::pai
 
     if(ifTrans == 0){
         //X = Q*X;
+        assert(false);
     }
     
     else{

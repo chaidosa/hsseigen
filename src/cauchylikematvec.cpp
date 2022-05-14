@@ -44,7 +44,7 @@ void cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *org, 
     if(n < N)
     {
         if(ifTrans == 0){
-
+            assert(false);
         }
 
         else

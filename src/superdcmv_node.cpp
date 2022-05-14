@@ -69,6 +69,7 @@ double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::
         int r = qSize.second;
         if(ifTrans == 0)
         {
+            assert(false);
             //for j = r:-1:1
             //    [X, nflops1] = superdcmv_cauchy(Qi{j}, X, t, N);
         }

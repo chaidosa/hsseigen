@@ -14,7 +14,7 @@ extern "C"
     #include<cblas.h>
 }
 
-double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, const int *org, int org_size, std::vector<double>& v, double N){
+double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, const int *org, int org_size, double *v, double N){
 /*
 %%% Input:
 %%% d, lam, tau, org, v : from secular.m and rootfinder.m
@@ -28,8 +28,8 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
     double *S, *s;
     int sSize;
 
-    double *temp_vSqr = new double[v.size()];
-    for(int i = 0; i < v.size(); ++i)        
+    double *temp_vSqr = new double[org_size];
+    for(int i = 0; i < org_size; ++i)        
        temp_vSqr[i] = v[i]*v[i];
     
     if(n < N){
@@ -64,14 +64,14 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
     else{
 
         //FMM 1D local shift
-	s=fmm1d_local_shift(r,lam,d.data(),temp_vSqr,tau.data(), org, 2, org_size, d.size());
-	for(int i=0;i<org_size;i++){
-		s[i]=1/sqrt(s[i]);
-	}
+	    s=fmm1d_local_shift(r,lam,d.data(),temp_vSqr,tau.data(), org, 2, org_size, d.size());
+	    for(int i=0;i<org_size;i++){
+		    s[i]=1/sqrt(s[i]);
+	    }
     }
 
     
-    std::vector<double>result(s, s+sSize);
+    //std::vector<double>result(s, s+sSize);
     
     delete [] temp_vSqr;
     return s;

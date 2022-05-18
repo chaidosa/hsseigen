@@ -39,14 +39,15 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
 
         for(int row = 0; row < sRows; row++){
             for(int col = 0; col < sCols; col++){
-                S[col + row *sCols] = d[org[row]] - d[col];
+                double temp = d[org[row]] - d[col] + tau[row];
+                S[col + row *sCols] = 1 / (temp * temp);
             }
         }
         
-        bsxfun('P',&S,{sRows, sCols}, &tau[0], {tau.size(), 1});        
+        //bsxfun('P',&S,{sRows, sCols}, &tau[0], {tau.size(), 1});        
 
-        for(int row_col = 0; row_col < (sRows*sCols); row_col++)
-            S[row_col] = 1 / (S[row_col]*S[row_col]);
+        //for(int row_col = 0; row_col < (sRows*sCols); row_col++)
+        //    S[row_col] = 1 / (S[row_col]*S[row_col]);
 
         
         s = new double[sRows];

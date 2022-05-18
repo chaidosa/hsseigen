@@ -202,7 +202,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     }
 
     results = new Root(n-1);
-    
+    //N = 1024;
     double C = 64;
     int record = 1;
     double alpha = 0;
@@ -307,18 +307,13 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
        //  K = d(org) - d.';   
         double *K = new double[kRows*kCols];
 
-        for(unsigned int row = 0; row <(unsigned)kRows; ++row)
-            for(unsigned int col=0; col <(unsigned)kCols; ++col)
-                K[col+row*(kCols)] = d[org[row]] - d[col];          
-        
-        //  K = bsxfun(@plus, K, d0/2);       
-        bsxfun('P', &K, make_pair(kRows,kCols), tempD, make_pair(dSize - 1, 1));        
-        
-        //  K = 1 ./ K;
-        for(unsigned int row_col = 0; row_col <(unsigned)(kRows*kCols); ++row_col)
-            K[row_col] = 1 / K[row_col];
-        
-        memset(f0, 0, sizeof(double)*kRows);
+        for(unsigned int row = 0; row <(unsigned)kRows; ++row){
+            for(unsigned int col=0; col <(unsigned)kCols; ++col){
+                double temp = d[org[row]] - d[col] + d[row];          
+                K[col+row*(kCols)] = 1 / temp;            
+            }        
+        f0[row] = 0;
+        }
         // f0 = rho - K * v.^2;
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, kRows, 1, kCols, 1.0, K, kCols, v2_arr, 1, 0.0, f0, 1);
 
@@ -326,7 +321,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             f0[i] = rho - f0[i];
         
         delete[] K;
-        K = NULL;
+        //K = NULL;
     }
     
     delete[] tempD;
@@ -369,7 +364,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     std::vector<int> I2;
     I2.reserve(n-1);
     //find (f0 >= 0) and find(f0 < 0)
-    for(unsigned int i = 0; i <(unsigned)f0_size; i++)
+    /*for(unsigned int i = 0; i <(unsigned)f0_size; i++)
     {
         if(f0[i]>=0)
             I1.push_back(i);
@@ -384,6 +379,15 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     for(unsigned int i = 0; i <(unsigned)I2.size(); ++i)
         xlb[I2[i]] = (d1[I2[i]] - d2[I2[i]]) / 2;  
     
+    */
+
+    for(unsigned int i = 0; i <(unsigned)f0_size; i++)
+    {
+        if(f0[i]>=0)
+            xub[i] = (d2[i] - d1[i]) / 2;
+        else
+            xlb[i] = (d1[i] - d2[i]) / 2;
+    }
 
     //std::vector<double>xlb0(xlb); //only referenced
     //std::vector<double>xub0(xub);
@@ -424,7 +428,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     std::vector<double>tau(org_size, 0);    
     //clearnig previous allocations
     I1.clear(); I2.clear(); 
-
+    /*
     for(unsigned int i = 0; i <(unsigned)a.size(); i++)
     {
 
@@ -446,23 +450,36 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     {
         tau[I2[i]] = (a[I2[i]] - std::sqrt(std::abs( (a[I2[i]]* a[I2[i]]) - (4 * b[I2[i]]*g[I2[i]]) ))) / (2* g[I2[i]]);
     }
+    */
 
+    for(unsigned int i = 0; i <(unsigned)a.size(); i++)
+    {
+
+        if(a[i]>0)
+            tau[i] = (2*b[i]) / (a[i] + std::sqrt(std::abs( (a[i]*a[i]) - (4*b[i]) * (g[i]))));    
+        else
+            tau[i] = (a[i] - std::sqrt(std::abs( (a[i]* a[i]) - (4 * b[i]*g[i]) ))) / (2* g[i]);
+        
+    }
 
     // **bound check**
     //this vector is same as I in matlab version
     std::vector<int>I_B;
     I_B.reserve(org_size);
-    for(unsigned int i = 0; i <(unsigned)tau.size(); i++)
-        if((tau[i]<=xlb[i]) | (tau[i]>=xub[i]))
-            I_B.push_back(i);
 
-    if(!I_B.empty())
+    for(unsigned int i = 0; i <(unsigned)tau.size(); i++){
+        if((tau[i]<=xlb[i]) | (tau[i]>=xub[i]))
+            tau[i] = (xub[i] + xlb[i])/2;      
+    
+        x[i] = tau[i] + d[org[i]];        //I_B.push_back(i);
+    }
+   /* if(!I_B.empty())
         for(unsigned int i = 0; i <(unsigned)I_B.size(); ++i)
             tau[I_B[i]] = (xub[I_B[i]] + xlb[I_B[i]])/2;      
-    
+    */
 
-    for(unsigned int i = 0; i <(unsigned)tau.size(); ++i)
-        x[i] = tau[i] + d[org[i]];
+    //for(unsigned int i = 0; i <(unsigned)tau.size(); ++i)
+     //   x[i] = tau[i] + d[org[i]];
 
 
 
@@ -488,7 +505,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         psi = new double[kRows];
         dphi = new double[kRows];        
         phi = new double[kRows];
-        K = new double[kRows*kCols];
+        //K = new double[kRows*kCols];
         K1 = new double[kRows*kCols];
         K2 = new double[kRows*kCols];  
     }
@@ -502,14 +519,18 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         }
     
         // **bound check with bisection safeguard**
-        I_B.clear();
+        //I_B.clear();
         for(unsigned int i = 0; i <(unsigned)tau.size(); i++)
         {
             if((tau[i] == 0) | ((tau[i]*xub[i]) < 0) | ((tau[i]*xlb[i]) < 0) | (std::isnan(tau[i])) | (tau[i] < xlb0[i]) | (tau[i] > xub0[i]))
-                I_B.push_back(i);
+            {
+                tau[i] = (xub[i] + xlb[i]) / 2;
+                x[i] = tau[i] + d[org[i]];
+            }    
+                //I_B.push_back(i);
         }
 
-        if(!I_B.empty())
+      /*  if(!I_B.empty())
         {
             for(unsigned int i = 0; i <(unsigned)I_B.size(); ++i)
             {
@@ -517,7 +538,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
                 x[I_B[i]] = tau[I_B[i]] + d[org[I_B[i]]];
             }
         }
-
+    */
 
 
         kRows = org_size;
@@ -539,12 +560,12 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         if(n >= N)
         {
             //fmm
-	        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
+	        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
             psi = z; phi = z+kRows; 
 
-            double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 2);
+            double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize);
             dpsi = zd; dphi = zd+kRows;
             
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
@@ -561,23 +582,28 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             memset(psi, 0, sizeof(double)*kRows);
             memset(phi, 0, sizeof(double)*kRows);  
             
-            memset(K, 0, sizeof(double)*kRows*kCols);
+            //memset(K, 0, sizeof(double)*kRows*kCols);
 
             for(unsigned int row = 0; row <(unsigned)kRows; ++row)
             {
                 for(unsigned int col = 0; col <(unsigned)kCols; ++col)
                 {
-                    K[col+row*(kCols)] = d[org[row]] - d[col];
+                    double temp = d[org[row]] - d[col] + tau[row];                    
+                    temp = 1 / temp;
+                    //K[col+row*(kCols)] = temp
+                    K1[col+row*(kCols)] = temp; 
+                    K2[col+row*(kCols)] = temp;
                 }
+                
             }
             
-            bsxfun('P', &K, {kRows,kCols}, tau.data(), {tau.size(), 1});            
+            //bsxfun('P', &K, {kRows,kCols}, tau.data(), {tau.size(), 1});            
 
-            for(unsigned int i = 0; i <(unsigned)(kRows*kCols); ++i)
-                K[i] = 1/K[i];            
+            //for(unsigned int i = 0; i <(unsigned)(kRows*kCols); ++i)
+            //    K[i] = 1/K[i];            
 
-            memcpy(K1, K, sizeof(double)*kRows*kCols);
-            memcpy(K2, K, sizeof(double)*kRows*kCols);
+            //memcpy(K1, K, sizeof(double)*kRows*kCols);
+            //memcpy(K2, K, sizeof(double)*kRows*kCols);
 
             //K1 = tril(K), K2 = triu(K,1)
             for(unsigned int row = 0; row <(unsigned)kRows; row++)
@@ -869,24 +895,27 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         //end of while loop
     }
    
-    delete[] psi;	
-	delete[] dpsi;
-    delete[] f;
-    delete[] df;
-	psi=NULL;
-	phi=NULL;
-	dpsi=NULL;
-	dphi=NULL;
-	f=NULL;
-	df=NULL; 
+    
+	 
     if(n < N){
-        delete [] K;
-        delete [] K1;
-        delete [] K2;
-        delete [] phi;
+        //delete [] K;
+        if(!FMM_ITER){
+            delete [] K1;
+            delete [] K2;
+            delete [] phi;
+            delete [] psi;
+        }
+        //delete [] phi;
+        delete[] dpsi;
         delete[] dphi;
     }
-
+    else{
+        delete[] psi;	
+	    delete[] dpsi;
+        delete[] f;
+        delete[] df;
+    }
+    
 
     // **check residual after MAX_ITER iterations**
     //psi = new double[kRows];
@@ -909,24 +938,28 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         else{
             int kRows = org_size;
             int kCols  = dSize;             
-            double *K = new double[kRows*kCols];
+            //double *K = new double[kRows*kCols];
 
             for(unsigned int row = 0; row <(unsigned)kRows; ++row){
                 for(unsigned int col=0; col <(unsigned)kCols; ++col){
-                    K[col+row*(kCols)] = d[org[row]] - d[col];
+                    double temp = d[org[row]] - d[col] + tau[row];
+                    temp  = 1 / temp;
+                    K1[col+row*(kCols)] = temp;
+                    K2[col+row*(kCols)] = temp;
+                
                 }
             }    
             
-            bsxfun('P',&K,{kRows,kCols},&tau[0],{tau.size(),1});
+            //bsxfun('P',&K,{kRows,kCols},&tau[0],{tau.size(),1});
         
-            for(unsigned int i = 0; i <(unsigned)(kRows*kCols); ++i)
-                K[i] = 1/K[i];
+            //for(unsigned int i = 0; i <(unsigned)(kRows*kCols); ++i)
+             //   K[i] = 1/K[i];
 
-            double *K1 = new double[kRows*kCols];
-            double *K2 = new double[kRows*kCols];
+            //double *K1 = new double[kRows*kCols];
+            //double *K2 = new double[kRows*kCols];
 
-            memcpy(K1,K,sizeof(double)*kRows*kCols);
-            memcpy(K2,K,sizeof(double)*kRows*kCols);
+            //memcpy(K1,K,sizeof(double)*kRows*kCols);
+           // memcpy(K2,K,sizeof(double)*kRows*kCols);
 
             //K1 = tril(K), K2 = triu(K,1)
             for(unsigned int row = 0; row <(unsigned)kRows; row++){
@@ -936,13 +969,15 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
                     else
                         K2[col + row*(kCols)] = 0;
                 }
+                psi[row] = 0;
+                phi [row] = 0;
             }
 
-            psi = new double[kRows];
-            phi = new double[kRows];
+            //psi = new double[kRows];
+            //phi = new double[kRows];
 
-            memset(psi,0,sizeof(double)*kRows);
-            memset(phi,0,sizeof(double)*kRows);
+            //memset(psi,0,sizeof(double)*kRows);
+            //memset(phi,0,sizeof(double)*kRows);
 
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K1,kCols,v2_arr,1,0,psi,1);
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,kRows,1,kCols,1,K2,kCols,v2_arr,1,0,phi,1);            
@@ -953,7 +988,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 
             pd_size = kRows;
 
-            delete[] K;
+            //delete[] K;
 	        delete[] K1;
 	        delete[] K2;
          //end of inner else block   
@@ -1205,11 +1240,11 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
    
    //delta = d - d(n);
     vector<double> delta;
+    delta.reserve(dSize);
     for(unsigned int iter = 0; iter < dSize; iter++){
         double temp = d[iter] - d[dSize - 1];
         delta.push_back(temp);
     }
-
 
     //initial guess
     double x0 = 1 / (2 * rho);

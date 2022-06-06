@@ -8,5 +8,5 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 **TO RUN Programs** <br/>
 -> **Make sure you've created a directory name `obj` in the project** <br/>
 -> **In the terminal write the command `make` for compiling and creating all the object files** </br>
--> **aftter compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth>` to run the code**</br>
+-> **after compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth>` to run the code**</br>
 -> **by default Mat2HSSsym is used.**

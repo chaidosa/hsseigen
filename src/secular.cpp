@@ -231,6 +231,7 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
     pointLam = Lam + Lam1.size();
     memcpy(pointLam, Lam2.data(), sizeof(double)*Lam2.size());
     pointLam = Lam + Lam1.size() + Lam2.size();
+    if(Lam3)
     memcpy(pointLam, Lam3, sizeof(double)*org_size); 
 
     if(n1 < n){    

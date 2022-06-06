@@ -16,7 +16,7 @@ endif
 CC = g++ 
 CXXFLAGS += -std=c++11 
 LDFLAGS = -lblas -llapacke
-#CXXFLAGS+= -fopenmp
+CXXFLAGS+= -fopenmp
 #LDFLAGS+= -fopencilk
 #CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)

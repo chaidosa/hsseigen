@@ -10,7 +10,7 @@
 #include "eigenmatrix.h"
 #include "secular.h"
 #include "Generators.h"
-//#include "omp.h"
+#include "omp.h"
 
 #include <sys/time.h>
 
@@ -229,7 +229,7 @@ bt = btree;
    // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
 
-#if 0
+#if 1
     vector<int> counter(N+1, 0);
     std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
 
@@ -285,7 +285,7 @@ bt = btree;
                     int left = ch[0];
                     int right = ch[1];
                     int i = node - 1;
-                    superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,17000);
+                    resDvd->Z[i] = superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,17000);
                     Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
                     std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);

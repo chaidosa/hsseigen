@@ -46,6 +46,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
         }              
     }
     else{
+        assert(false);
         //fmm1d_local_shift2()
         //fmm1d_local_shift()
     }

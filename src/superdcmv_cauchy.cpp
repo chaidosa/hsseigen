@@ -6,16 +6,16 @@
 #include "bsxfun.h"
 #include "cauchylikematvec.h"
 
-/*extern "C"{
+extern "C"{
 
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
 
 }
-*/
 
-void superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
+
+double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
 /*
 %%% Input:
 %%% Q: hss sturctured cauchylike eigenmatrix
@@ -48,7 +48,7 @@ void superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair
         memcpy(tempXX, X+(Q->n1 * xSize.second), sizeof(double)*((xSize.first - Q->n1) * xSize.second));
 
         bsxfun('T',&tempXX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
-
+       
         //eigenvalue sorting permutation
         int *tempI = new int[Q->ISize.first];        
         for(int row = 0; row < Q->ISize.first; row++)
@@ -58,8 +58,31 @@ void superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair
 
         delete[] tempI;
         // Givens rotation
+        
+        double *tempArr = new double[2*xSize.second];
+        double *MulR = new double[2*xSize.second];
+        for(int l = 0; l < (Q->GSize.first); l = l + 4){
+            int p =(int)Q->G[l];
+            int j =(int)Q->G[l+1];
+            double c = Q->G[l+2];
+            double s = Q->G[l+3];            
+           
+           for(int cpy = 0; cpy < 2; cpy++){
+               memcpy(tempArr+cpy*xSize.second, tempXX + (p + cpy)*xSize.second, sizeof(double)*(xSize.second));
+           }
+           double GivensArr[2*2] = {c, -s, s, c};
+           
+           cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 2, xSize.second, 2, 1, GivensArr, 2, tempArr, xSize.second, 0.0, MulR, xSize.second);
+            
+           for(int cpy = 0; cpy < 2; cpy++){
+               memcpy(tempXX + (p + cpy)*xSize.second, MulR + cpy*(xSize.second), sizeof(double)*(xSize.second));
+           }
+          
+        }
 
-
+        delete [] tempArr;
+        delete [] MulR;
+ 
         // second deflation permutation
         int *tempJ = new int[Q->JSize.first];
         for(int i = 0; i < Q->JSize.first; i++)
@@ -71,19 +94,17 @@ void superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair
         delete[] tempXX;
         
         int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
-        double **Qc = Q->QC;
-        //tempXX = X + (Q->n1 + Q->n2 + 1) * xSize.second;
+        double **Qc = Q->QC;        
         tempXX = new double[rowSize * xSize.second];
-        //for(int row = (Q->n1 + Q->n2), curr = 0; row < Q->n, curr < rowSize; row++, curr++)
-        //    memcpy(tempXX + curr*(xSize.second), X+row*(xSize.second), sizeof(double)*(xSize.second));
+        
         memcpy(tempXX, X+(Q->n1 + Q->n2)*xSize.second, sizeof(double)*(rowSize * xSize.second));
-        cauchylikematvec(Qc, (Q->qcSizes), Q->Org, (tempXX), {rowSize, xSize.second}, 1, N);
+        tempXX = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, (tempXX), {rowSize, xSize.second}, 1, N);
         memcpy(X+(Q->n1 + Q->n2)*xSize.second, tempXX, sizeof(double)*(rowSize * xSize.second));
         delete[] tempXX;
        
     }
     
-
+return X;
 }
 
 

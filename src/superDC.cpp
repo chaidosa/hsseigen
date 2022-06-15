@@ -127,7 +127,7 @@ std::pair<double *, nonleaf**> r_RankOneUpdate(double* Lam, int lamSize, std::pa
             for(int row = 0; row < zSize.first; row++)
                 memcpy(tempZi + row*(r-(j+1)), Z + (j + 1) + row * (zSize.second), sizeof(double) * (r - (j + 1)) );
                     
-            superdcmv_cauchy((n_leaf[j]), {1, 7}, tempZi, {zSize.first, (r- ( j + 1)) }, 1, 17000);
+            tempZi = superdcmv_cauchy((n_leaf[j]), {1, 7}, tempZi, {zSize.first, (r- ( j + 1)) }, 1, 17000);
 
             for(int row = 0; row < zSize.first; row++)
                 memcpy(Z + j + 1 + row * (zSize.second), tempZi + row*(r - (j + 1)), sizeof(double) * (r - (j + 1)));
@@ -229,7 +229,7 @@ bt = btree;
    // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
 
-#if 1
+#if 0
     vector<int> counter(N+1, 0);
     std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
 

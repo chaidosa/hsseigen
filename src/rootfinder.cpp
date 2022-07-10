@@ -464,12 +464,12 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         {
             //fmm
             assert(false);
-	        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize);
+	        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
             psi = z; phi = z+kRows; 
 
-            double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize);
+            double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 2, org_size, dSize, 1);
             dpsi = zd; dphi = zd+kRows;
             
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)

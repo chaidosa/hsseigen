@@ -10,6 +10,8 @@
 #include <sys/time.h>
 #include<assert.h>
 
+//define the value that triggers fmm acceleration. TODO: add detailed comment about for what values the acceleration is expected.
+int fmmTrigger=17000; 
 char* testFile="sparseOut.txt"; // Pritesh: Band5.txt is there in Pnk system inside /hsseigen/ directory
 
 int main(int argc, char* argv[])

@@ -49,6 +49,8 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
         assert(false);
         //fmm1d_local_shift2()
         //fmm1d_local_shift()
+	//fmm1d_local_shift_2(int r, double *x, double *y, double * q, const double *p_gap, const int* p_org, const int fun, const int numXElems, int numYElems, const int scaling=1);
+         //double * Y = fmm1d_local_shift(r, lam, d, X, tau, org, 1, qcSizes[3].first, qcSizes[2].first, 1);
     }
  
    

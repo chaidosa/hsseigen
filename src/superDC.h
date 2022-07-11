@@ -20,7 +20,8 @@ public:
     }
 };
 
-SDC* superDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc); 
+extern int fmmTrigger;
 
+SDC* superDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc); 
 
 #endif

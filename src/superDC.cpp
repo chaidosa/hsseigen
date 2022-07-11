@@ -113,7 +113,7 @@ std::pair<double *, nonleaf**> r_RankOneUpdate(double* Lam, int lamSize, std::pa
         }
 
         SECU *res_sec;
-        res_sec = secular(temp_d, temp_d_size, tempZ, zSize.first, 17000);
+        res_sec = secular(temp_d, temp_d_size, tempZ, zSize.first,  fmmTrigger);
         n_leaf[j] = res_sec->Q;
                 
         delete [] temp_d;

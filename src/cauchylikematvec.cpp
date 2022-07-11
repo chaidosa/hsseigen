@@ -77,15 +77,16 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
     }
 
     else{
+
+            assert(false);
         //FMM
         if(ifTrans == 0){
 
 
         }
         else{
-            assert(false);
             bsxfun('T', &X, xSize, v, qcSizes[0]);
-            double * Y = fmm1d_local_shift(r, lam, d, X, tau, org, 1, qcSizes[3].first, qcSizes[2].first, 1);
+            Y = fmm1d_local_shift(r, lam, d, X, tau, org, 1, qcSizes[3].first, qcSizes[2].first, 1);
             
             //bsxfun('T', &Y,)
         }

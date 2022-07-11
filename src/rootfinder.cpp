@@ -181,7 +181,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 
     Root * results;
 
-    //double N = 17000;    
     int dSize = d.size();
     int n = v.size();
     if(dSize != n)
@@ -203,7 +202,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     }
 
     results = new Root(n-1);
-    //N = 1024;
     double C = 64;
     int record = 1;
     double alpha = 0;
@@ -265,7 +263,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
    
     if(n >= N)
     {
-        assert(false);
             double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tempD, org, 1, org_size, dSize, 1);
             //f0 = rho - fl - fu;
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
@@ -463,8 +460,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         if(n >= N)
         {
             //fmm
-            assert(false);
-	        double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
+	    double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
             psi = z; phi = z+kRows; 
@@ -823,7 +819,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     {
         if(n >=N){
             //trifmm1dlocal shift
-            assert(false);
             double * z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];       

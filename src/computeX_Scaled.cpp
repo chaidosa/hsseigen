@@ -108,7 +108,7 @@ void ComputeB_Scaled(double** outB, int r, double eta0, double a, double b, doub
 		//Doing B=B*DD;
 		for(int i=0;i<r;i++) {
 			for(int j=0;j<r;j++) {
-				if((j+1)%2)
+				if(j%2)
 					B[r*i+j] *= -1;
 			}
 		}

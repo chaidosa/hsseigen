@@ -25,7 +25,7 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
     %%% t = 0: Y = Q * X 
     %%% t = 1: Y = Q^T * X;
 */
-    double *Y;//return value
+    double *Y=NULL;//return value
 
     double **Qc = Qcd;
     double *X    = Xx;
@@ -77,20 +77,23 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
     }
 
     else{
-
             assert(false);
         //FMM
         if(ifTrans == 0){
-
-
+            bsxfun('T', &X, xSize, s, qcSizes[1]);
+            Y = fmm1d_local_shift_2(r, d, lam, X, tau, org, 1, qcSizes[2].first, qcSizes[3].first, 1);
+            bsxfun('T', &Y, qcSizes[2], v, qcSizes[0]);
         }
         else{
             bsxfun('T', &X, xSize, v, qcSizes[0]);
             Y = fmm1d_local_shift(r, lam, d, X, tau, org, 1, qcSizes[3].first, qcSizes[2].first, 1);
-            
-            //bsxfun('T', &Y,)
-        }
+	    
+	    //Vec:
+	    for(int i=0;i<qcSizes[3].first;i++)
+		    Y[i] = -1 * Y[i];
 
+            bsxfun('T', &Y, qcSizes[3], s, qcSizes[1]);
+        }
     }
     return Y;
 }

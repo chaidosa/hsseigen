@@ -263,6 +263,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
    
     if(n >= N)
     {
+	    //assert(0);
             double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tempD, org, 1, org_size, dSize, 1);
             //f0 = rho - fl - fu;
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
@@ -459,8 +460,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         // **secular function evaluation**     
         if(n >= N)
         {
+		assert(0);
             //fmm
 	    double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
+	    //Vec.
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
             psi = z; phi = z+kRows; 
@@ -468,6 +471,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 2, org_size, dSize, 1);
             dpsi = zd; dphi = zd+kRows;
             
+	    //Vec.
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               df[i] = zd[i] + zd[kRows+i];
         }
@@ -818,6 +822,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     if(FMM_ITER)
     {
         if(n >=N){
+		assert(0);
             //trifmm1dlocal shift
             double * z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)

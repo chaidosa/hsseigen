@@ -613,15 +613,16 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 	PreorderVisitor(node, v);
 	v->result=new double[numXElems];
 	PostorderVisitorLeaf(node, v);
-	delete v;
+	double* ret=v->result;
+	delete v; //v->result is not destroyed.
 	
-	return v->result;
+	return ret;
 }	
 
 void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 	if(node->level >= 2) {
 		for(std::vector<Vertex*>::iterator iter=node->wellSeparatedNodes.begin();iter!=node->wellSeparatedNodes.end();iter++) {
-			double* outB; 
+			double* outB=NULL; 
 			Vertex* wsNode=*iter;
             		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
 			if(node->center > wsNode->center) {
@@ -920,8 +921,9 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 	PreorderVisitor(node, v);
         v->result = new double[numXElems*2];
 	PostorderVisitorLeaf(node, v); 
-	delete v;
-	return v->result;
+	double* ret=v->result;
+	delete v; // v->result is not destroyed
+	return ret;
 
 }
 
@@ -1059,11 +1061,11 @@ double* fmm1d_local_shift(int r, double *x, double *y, double * q, const double 
 	PreorderVisitor(node, v);
         v->result = new double[numXElems];
 	PostorderVisitorLeaf(node, v);
-	delete v;
+	double* ret=v->result;
+	delete v; //v->result is not destroyed
 
-	return v->result;
+	return ret;
 }	
-
 
 
 #ifdef DEBUG

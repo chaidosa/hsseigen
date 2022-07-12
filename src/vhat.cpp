@@ -10,6 +10,7 @@
 #include <iostream>
 #include<fstream>
 #include<iomanip>
+#include "fmm1d_local_shift_2.h"
 #include "bsxfun.h"
 #include "vhat.h"
 
@@ -47,12 +48,25 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
     }
     else{
         assert(false);
-        //fmm1d_local_shift2()
-        //fmm1d_local_shift()
-	//fmm1d_local_shift_2(int r, double *x, double *y, double * q, const double *p_gap, const int* p_org, const int fun, const int numXElems, int numYElems, const int scaling=1);
-         //double * Y = fmm1d_local_shift(r, lam, d, X, tau, org, 1, qcSizes[3].first, qcSizes[2].first, 1);
-    }
+	assert(d.size() == n);
+	assert(w.size() == n);
+        
+	double* ptrD=d.data();
+	double* gap=tau.data();
+	std::vector<double> e1(n,1);
+	std::vector<double> zeros(n,0);
+	//Vec.
+	double* v0 = fmm1d_local_shift_2(r, ptrD, lam, e1.data(), gap, org, 3, d.size(), n);
+        double* vd = fmm1d_local_shift(r, ptrD, ptrD, e1.data(), zeros.data(), org, 3, d.size(), d.size());
+	for(int i=0;i<n;i++)
+		v[i]=pow(0.5, v0[i]-vd[i]);
  
-   
+	//Vec:
+	for(int i=0;i<n;i++)
+		if(w[i] <0)
+			v[i] = -1 * v[i];
+    	delete [] v0;
+	delete [] vd;
+    }
     return v;
 }

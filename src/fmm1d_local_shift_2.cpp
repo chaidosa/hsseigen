@@ -218,15 +218,27 @@ void TreeVisitor::PostorderActions(Vertex* node) {
 				}
 				yNode[j] = temp;
 			}
+			node->res=yNode; //Now first numTerms of res array contain v{i} 
+			if(numElements < numTerms){
+				node->res = new double[numTerms*numTerms];
+				memcpy(node->res,yNode,sizeof(double)*numElements*numTerms);
+				delete [] yNode;
+			}
+#ifdef DEBUG
+			node->resSize=std::max(numTerms * numElements, numTerms*numTerms);
+#endif
 		}
 		else {
-			yNode = new double[numTerms];
+#ifdef DEBUG
+			node->resSize=numTerms*numTerms;
+#endif
+			yNode = new double[numTerms * numTerms];
 			//vec: 
-			for(int i=0;i<numTerms;i++)
+			for(int i=0;i<numTerms*numTerms;i++)
 				yNode[i]=0;
+			node->res=yNode; //Now first numTerms of res array contain v{i} 
 		}
-		node->res=yNode; //Now first numTerms of res array contain v{i} 
-		node->computed=true;
+		//node->computed=true;
 	} else {
 		double* nodeLeftOutput=NULL, *nodeRightOutput=NULL;
 	    	assert(node->left && node->right);
@@ -242,7 +254,10 @@ void TreeVisitor::PostorderActions(Vertex* node) {
 			nodeLeftOutput[j] = temp;
 		}
 		node->res=nodeLeftOutput; //Now first numTerms of res array contain v{i} 
-		node->computed=true;
+#ifdef DEBUG
+			node->resSize=numTerms * numTerms;
+#endif
+		//node->computed=true;
 		delete [] nodeRightOutput;
     	}
     }
@@ -635,6 +650,9 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 			Vertex* wsNode=*iter;
             		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
 			if(node->center > wsNode->center) {
+#ifdef DEBUG
+			assert(node->resSize >= numTerms * numTerms);
+#endif
 				//lower triangular part
 				if(node->computed == false) {
 					//computing ul{i}=Bij * v{j}
@@ -661,7 +679,7 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 				if(node->computedUpper == false) {
 					node->resu = new double[numTerms*numTerms];
 #ifdef DEBUG
-					node->resuSize = node->xRight-node->xLeft;
+					node->resuSize = numTerms * numTerms;
 #endif
 					//computing uu{i}=Bij * v{j}
 					for(int j=0;j<numTerms;j++){
@@ -693,6 +711,9 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 			double *outT=NULL;
 			ComputeT_Scaled(&outT, numTerms, eta0, node->center, parent->center,  2*(node->radius), 2*(parent->radius), scalingLocal);
 			if(parent->computed) {
+#ifdef DEBUG
+			assert(node->resSize >= numTerms * numTerms);
+#endif
 				if(node->computed == false) {
 					//computing ul{i}=Ri * ul{p}
 					for(int j=0;j<numTerms;j++){
@@ -717,9 +738,9 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 			
 			if(parent->computedUpper) {
 				if(node->computedUpper == false) {
-					node->resu = new double[node->xRight-node->xLeft];
+					node->resu = new double[numTerms * numTerms];
 #ifdef DEBUG
-					node->resuSize = node->xRight-node->xLeft;
+					node->resuSize = numTerms*numTerms;
 #endif
 					//computing uu{i}=Ri * uu{p}
 					for(int j=0;j<numTerms;j++){
@@ -830,7 +851,7 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 						}
 					}
 
-					bsxfun('p',&D, std::make_pair(xiVectorSize, xjVectorSize), ti, std::make_pair(1,xjVectorSize)); 
+					bsxfun('p',&D, std::make_pair(xiVectorSize, xjVectorSize), ti, std::make_pair(xiVectorSize, 1)); 
 					switch(funLocal) {
 						case 1: 
 							{
@@ -948,8 +969,8 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 	PostorderVisitorLeaf(node, v); 
 	double* ret=v->result;
 	delete v; // v->result is not destroyed
+	delete markerNode;
 	return ret;
-
 }
 
 void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
@@ -1000,7 +1021,7 @@ void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 					 		D[i*xjVectorSize+j] = yi[i] - dataY[nbr->yLeft+j];
 						}
 					}
-					bsxfun('p',&D, std::make_pair(xiVectorSize, xjVectorSize), ti, std::make_pair(1,xjVectorSize)); 
+					bsxfun('p',&D, std::make_pair(xiVectorSize, xjVectorSize), ti, std::make_pair(xiVectorSize, 1)); 
 					switch(funLocal) {
 						case 1: 
 							{

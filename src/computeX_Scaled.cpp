@@ -40,7 +40,7 @@ void ComputeB_Scaled(double** outB, int r, double eta0, double a, double b, doub
 
 	double ba = b-a;
 	//diagS is used in fun values other than 1 and 3. This is a diagonal matrix (rxr) whose anti-diagonal elements is alternating between -1 and 1 starting from 1 at the position diagS(r, 1).
-	int tempVal = -1;
+	/*int tempVal = -1;
 	double *diagS=new double[r]; //diagonal matrix stored as a 1D array of r non-zero diagonal elements.
 	for(int i=0;i<r;i++) {
 		diagS[i]=(i%2)?-1:1;
@@ -49,7 +49,7 @@ void ComputeB_Scaled(double** outB, int r, double eta0, double a, double b, doub
 	double *diagDD =new double[r];
 	for(int i=0;i<r;i++) {
 		diagDD[i]=(i%2)?-1:1;
-	}
+	}*/
 	
 	double etax = eta0 * 2/dx;
 	double etay = eta0 * 2/dy;

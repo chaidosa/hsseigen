@@ -17,6 +17,7 @@ typedef struct Vertex{
 	int label;
 	std::vector<int> nbrs, il;
 	int resuSize;
+	int resSize;
 #endif
 	short int level;
 	bool isLeaf;
@@ -29,6 +30,7 @@ typedef struct Vertex{
 #ifdef DEBUG
 		label=0;
 		resuSize=0;
+		resSize=0;
 #endif
 	}
 	~Vertex(){
@@ -36,7 +38,7 @@ typedef struct Vertex{
 			delete [] res;
 			res=NULL;
 		}
-		if(resu==NULL) {
+		if(resu) {
 			delete [] resu;
 			resu=NULL;
 		}

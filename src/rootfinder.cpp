@@ -460,7 +460,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         // **secular function evaluation**     
         if(n >= N)
         {
-		assert(0);
+		//assert(0);
             //fmm
 	    double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
 	    //Vec.

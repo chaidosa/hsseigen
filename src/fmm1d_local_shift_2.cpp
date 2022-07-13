@@ -83,7 +83,7 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 					for(int i=0;i<xjVectorSize;i++) {
 						assert(org[i] < orgSize);
 						assert(i < orgSize);
-						xj[i] = dataX[org[nbr->yLeft+i]]; 
+						xj[i] = dataX[org[nbr->yLeft+i]-1]; 
 						tj[i] = gap[nbr->yLeft+i];
 					}
 					int xiVectorSize = node->xRight-node->xLeft;
@@ -832,7 +832,7 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 			for(int i=0;i<xiVectorSize;i++) {
 				assert(org[i] < orgSize);
 				assert(i < orgSize);
-				yi[i] = dataY[org[node->xLeft+i]]; 
+				yi[i] = dataY[org[node->xLeft+i]-1]; 
 				ti[i] = gap[node->xLeft+i];
 			}
 
@@ -1002,7 +1002,7 @@ void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 			for(int i=0;i<xiVectorSize;i++) {
 				assert(org[i] < orgSize);
 				assert(i < orgSize);
-				yi[i] = dataY[org[node->xLeft+i]]; 
+				yi[i] = dataY[org[node->xLeft+i]-1]; 
 				ti[i] = gap[node->xLeft+i];
 			}
 

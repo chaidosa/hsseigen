@@ -1,37 +1,38 @@
 #include<iostream>
 #include<fstream>
 #include<iomanip>
+#include<cassert>
 #include"../fmm1d_local_shift_2.h"
 #include"../fmm_types.h"
 
-//the input file fmminput_ex4_4k.txt contains x,y,number of terms, gap, and q in that order for the input ex4_4k.txt used in the first call to trifmm1d_local_shift in rootfinder.m of MATLAB code.
+//the input file trifmminput_ex4_4k_fun1.txt contains x,y,number of terms, gap, q, and org in that order for the input ex4_4k.txt used in the first call to trifmm1d_local_shift with function 1. in rootfinder.m of MATLAB code.
+//the input file trifmminput_ex4_4k_fun2.txt contains x,y,number of terms, gap, q, and org in that order for the input ex4_4k.txt used in the third call to trifmm1d_local_shift with function 2. in rootfinder.m of MATLAB code.
 void PrintTree(const Vertex* node);
 
 using namespace std;
 int main(int argc, char* argv[]){
 	string header;
-	int numXElems=0, numYElems=0, numQElems=0, numR=0, numGapElems=0; 
-	ifstream ifs("fmminput_ex4_4k.txt",ifstream::in);
+	int numXElems=0, numYElems=0, numQElems=0, numR=0, numGapElems=0, numOrgElems=0; 
+	ifstream ifs("trifmminput_ex4_4k_fun2.txt",ifstream::in);
 	if(!ifs) {
 		cerr<<"Error: unable to open the file fmminput_out_32.txt. exiting."<<endl;
 		exit(1);
 	}
 
 	getline(ifs,header);
-	ifs>>numXElems>>numYElems>>numR>>numGapElems>>numQElems;
+	ifs>>numXElems>>numYElems>>numR>>numGapElems>>numQElems>>numOrgElems;
 	cout<<header<<endl;
-	cout<<"header: numXElems("<<numXElems<<"), numYElems("<<numYElems<<"), numR("<<numR<<"), numGapElems("<<numGapElems<<"), numQElems("<<numQElems<<")"<<endl;
+	cout<<"header: numXElems("<<numXElems<<"), numYElems("<<numYElems<<"), numR("<<numR<<"), numGapElems("<<numGapElems<<"), numQElems("<<numQElems<<"), numOrgElems("<<numOrgElems<<endl;
 
+	assert(numXElems == numOrgElems);
 	double* x= new double[numXElems];
 	double* y= new double[numYElems];
 	double* q= new double[numQElems];
 	double* gap= new double[numGapElems];
-	int* org= new int[numXElems];
+	int* org= new int[numOrgElems];
 	int* r=new int[numR];
 
 
-	for(int i=0;i<numXElems;i++)
-		org[i]=i;
 
 	for(int i=0;i<numXElems;i++)
 		ifs>>x[i];
@@ -48,16 +49,20 @@ int main(int argc, char* argv[]){
 	for(int i=0;i<numQElems;i++)
 		ifs>>q[i];
 
+	for(int i=0;i<numXElems;i++)
+		ifs>>org[i];
+
 	cout<<setprecision(12)<<"x["<<numXElems-1<<"]="<<x[numXElems-1]<<endl;
 	cout<<setprecision(12)<<"y["<<numYElems-1<<"]="<<y[numYElems-1]<<endl;
 	cout<<"r["<<numR-1<<"]="<<r[numR-1]<<endl;
 	cout<<setprecision(12)<<"gap["<<numGapElems-1<<"]="<<gap[numGapElems-1]<<endl;
 	cout<<setprecision(12)<<"q["<<numQElems-1<<"]="<<q[numQElems-1]<<endl;
+	cout<<setprecision(12)<<"org["<<numOrgElems-1<<"]="<<org[numOrgElems-1]<<endl;
 	ifs.close();
 
 	//double* z1=fmm1d_local_shift_2(r[0],x,y,q,gap,org,3,numXElems,numYElems);
 	//double* z2=fmm1d_local_shift(r[0],x,y,q,gap,org,3,numXElems,numYElems);
-	double* z3=trifmm1d_local_shift(r[0],x,y,q,gap,org,1,numXElems,numYElems);
+	double* z3=trifmm1d_local_shift(r[0],x,y,q,gap,org,2,numXElems,numYElems);
 
 	delete [] x;
 	delete [] y;

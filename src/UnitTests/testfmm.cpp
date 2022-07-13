@@ -4,14 +4,14 @@
 #include"../fmm1d_local_shift_2.h"
 #include"../fmm_types.h"
 
-
+//the input file fmminput_ex4_4k.txt contains x,y,number of terms, gap, and q in that order for the input ex4_4k.txt used in the first call to trifmm1d_local_shift in rootfinder.m of MATLAB code.
 void PrintTree(const Vertex* node);
 
 using namespace std;
 int main(int argc, char* argv[]){
 	string header;
 	int numXElems=0, numYElems=0, numQElems=0, numR=0, numGapElems=0; 
-	ifstream ifs("fmminput_out_32.txt",ifstream::in);
+	ifstream ifs("fmminput_ex4_4k.txt",ifstream::in);
 	if(!ifs) {
 		cerr<<"Error: unable to open the file fmminput_out_32.txt. exiting."<<endl;
 		exit(1);

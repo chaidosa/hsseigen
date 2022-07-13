@@ -205,16 +205,25 @@ void TreeVisitor::PostorderActions(Vertex* node) {
     if(node->level >= 2) {
         if((node->left==NULL) && (node->right==NULL)) {
 		double* yNode=NULL;
-		//allocates memory and populates yNode (dimension: (yRb-yLb) x numTerms) 
-		ComputeU_Scaled(&yNode, dataY+node->yLeft, node->yRight-node->yLeft, numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
-		//computing matrix-vector prod of yNode and q to store the result in yNode)
+		//allocates memory and populates yNode (dimension: (yRb-yLb) x numTerms i.e yNode dimensions are transposed) 
+		
 		int numElements=node->yRight-node->yLeft;
-		for(int j=0;j<numTerms;j++){
-            		double temp=0;
-			for(int i=0;i<numElements;i++){
-				temp += yNode[j*numElements+i] * dataQ[node->yLeft+i]; 
+		if(numElements > 0) {
+			ComputeU_Scaled(&yNode, dataY+node->yLeft, numElements, numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+			//computing matrix-vector prod of yNode and q to store the result in yNode)
+			for(int j=0;j<numTerms;j++){
+				double temp=0;
+				for(int i=0;i<numElements;i++){
+					temp += yNode[j*numElements+i] * dataQ[node->yLeft+i]; 
+				}
+				yNode[j] = temp;
 			}
-			yNode[j] = temp;
+		}
+		else {
+			yNode = new double[numTerms];
+			//vec: 
+			for(int i=0;i<numTerms;i++)
+				yNode[i]=0;
 		}
 		node->res=yNode; //Now first numTerms of res array contain v{i} 
 		node->computed=true;
@@ -359,11 +368,11 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		countXLeft=0; countXRight=0; countYLeft=0; countYRight=0;
 		//x and y intervals are empty after the bisected point. Adjust center and rad.
 		if(((xUb-xLb) > 0) && ((yUb-yLb) > 0))
-			mid = (y[yUb]+x[xLb])/2;
+			mid = (y[yUb-1]+x[xLb])/2;
 		else if ((xUb-xLb) > 0)
 			mid = (center+rad+x[xLb]) / 2;
 		else if  ((yUb-yLb) > 0)
-			mid = (center-rad+y[yUb]) / 2;
+			mid = (center-rad+y[yUb-1]) / 2;
 		c = (mid + (center - rad))/2;
 		d = (mid - (center - rad))/2;
 		if(el==1){
@@ -383,17 +392,17 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		}
 
 		if(er==1) {
-			for(k=xLb;k<=xUb;k++)
+			for(k=xLb;k<xUb;k++)
 				if((mid<x[k]) && (x[k]<=(center+rad)))
 					countXRight++;
-			for(l=yLb;l<=yUb;l++)
+			for(l=yLb;l<yUb;l++)
 				if((mid<y[l]) && (y[l]<=(center+rad)))
 					countYRight++;
 		} else if (er == 0) {
-			for(k=xLb;k<=xUb;k++)
+			for(k=xLb;k<xUb;k++)
 				if((mid<x[k]) && (x[k]<(center+rad)))
 					countXRight++;
-			for(l=yLb;l<=yUb;l++)
+			for(l=yLb;l<yUb;l++)
 				if((mid<y[l]) && (y[l]<(center+rad)))
 					countYRight++;
 		}
@@ -650,7 +659,7 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 			} else if(node->center < wsNode->center) {
 				//upper triangular part
 				if(node->computedUpper == false) {
-					node->resu = new double[node->xRight-node->xLeft];
+					node->resu = new double[numTerms*numTerms];
 #ifdef DEBUG
 					node->resuSize = node->xRight-node->xLeft;
 #endif
@@ -742,42 +751,58 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 	if((node->left==NULL) && (node->right==NULL)) {
 		if((node->xRight - node->xLeft) != 0) {
 			double* outU=NULL;
-			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
-			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
-			if(node->computed) {
-                		//compute zl(px, :) = Ui * ul{i};
-				int numElements=node->xRight-node->xLeft;
-				double* z=new double[numElements];
-				for(int j=0;j<numElements;j++){
-					double temp=0;
-					for(int i=0;i<numTerms;i++){
-						temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+
+			int numElements=node->xRight-node->xLeft;
+			if(numElements > 0) {
+				ComputeU_Scaled(&outU, dataX+node->xLeft, numElements, numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+				if(node->computed) {
+					//compute zl(px, :) = Ui * ul{i};
+					double* z=new double[numElements];
+					for(int j=0;j<numElements;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+						}
+						z[j] = temp; 
+						result[node->xLeft+j] = temp;
 					}
-					z[j] = temp; 
-					result[node->xLeft+j] = temp;
+					delete [] node->res;
+					node->res = z;
 				}
-				delete [] node->res;
-				node->res = z;
-			}
-			if(node->computedUpper) {
-                		//compute zu(px, :) = Ui * uu{i};
-				int numElements=node->xRight-node->xLeft;
-				double* z=new double[numElements];
-				for(int j=0;j<numElements;j++){
-					double temp=0;
-					for(int i=0;i<numTerms;i++){
-						temp += outU[j*numTerms+i] * node->resu[i]; 
+				if(node->computedUpper) {
+					//compute zu(px, :) = Ui * uu{i};
+					double* z=new double[numElements];
+					for(int j=0;j<numElements;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += outU[j*numTerms+i] * node->resu[i]; 
+						}
+						z[j] = temp; 
+						result[orgSize+node->xLeft+j] = temp;
 					}
-					z[j] = temp; 
-					result[orgSize+node->xLeft+j] = temp;
-				}
-				delete [] node->resu;
-				node->resu = z;
+					delete [] node->resu;
+					node->resu = z;
 #ifdef DEBUG
-				node->resuSize=numElements;
+					node->resuSize=numElements;
 #endif
+				}
+				delete [] outU;
 			}
-			delete [] outU;
+			else {
+				if(node->computed) {
+						delete [] node->res;
+						node->res = new double[numElements];
+						for(int i=0;i<numElements;i++)
+							node->res[i]=0;
+				}
+				if(node->computedUpper) {
+						delete [] node->resu;
+						node->resu = new double[numElements];
+						for(int i=0;i<numElements;i++)
+							node->resu[i]=0;
+				}
+			}
 			
 			
 			int xiVectorSize = node->xRight-node->xLeft;

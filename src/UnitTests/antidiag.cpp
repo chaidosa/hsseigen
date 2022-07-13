@@ -7,6 +7,7 @@ int r=50;
 double dx=1.7659e+03;
 double dy=882.9454;
 
+void test_fun1_case1();
 void test_fun2_case0();
 void test_fun2_case1();
 
@@ -15,8 +16,56 @@ int main(int argc, char*argv[]){
 	//TODO: write code to match expected values and indicate if the test passed. Currently, this is done manually by running through gdb
 	test_fun2_case0();
 	test_fun2_case1();
+	test_fun1_case1();
 	
 	return 0;
+
+}
+
+void test_fun1_case1(){
+	double* B=new double[r*r];
+	double eta0 = pow(2*pi*r, 0.5/r) / exp(1);
+	double etax = eta0 * 2/dx;
+	double etay = eta0 * 2/dy;
+
+	double temp=-1/(double)ba;
+	B[0]=temp;
+	B[1]=temp/(ba*etay);
+	B[r]=temp/(ba*etax);
+	B[r+1]=2/(ba*etay)*B[r];
+	double* temppower = new double[r];
+	for(int i=2;i<r;i++)
+		temppower[i]=pow(1 - 1/((double)i), i-1);
+
+	//completing first row of B
+	for(int i=2;i<r;i++)
+		B[i]=1/(double)(ba * etay) * B[i-1] * temppower[i];
+	//completing second row of B
+	for(int i=2;i<r-1;i++)
+		B[r+i]=(i+1)/(double)(ba * etay * i) * B[r+i-1] * temppower[i];
+
+	//completing first column of B
+	for(int i=2;i<r;i++)
+		B[r*i]=1/(double)(ba * etax) * B[r*(i-1)] * temppower[i];
+
+	//completing second column of B
+	for(int i=2;i<r-1;i++)
+		B[r*i+1]=(i+1)/(double)(ba * etax * i) * B[r*(i-1)+1] * temppower[i];
+
+	//completing rest of B
+	for(int k = 2;k<r-2;k++)
+		for(int i = 2;i<r-k+1;i++)
+			B[k*r+i] = (k+i)/(double)(ba*etay *i)*B[k*r+i-1]*temppower[i];
+
+
+	//Doing B=B*DD;
+	for(int i=0;i<r;i++) {
+		for(int j=0;j<r;j++) {
+			if(j%2)
+				B[r*i+j] *= -1;
+		}
+	}
+	delete [] temppower;
 
 }
 

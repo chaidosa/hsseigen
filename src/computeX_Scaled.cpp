@@ -9,6 +9,8 @@ using namespace std;
 //function computes local expansion.
 //x is the vector of elements in the cell, r is the number of terms in taylor expansion, eta is a per-node term computed as ((2*pi*r)^(0.5/r))/exp(1), a is the center of the cell, dx is the diameter of the cell.
 void ComputeU_Scaled(double** UTrans, const double* x, int numXElems, int r, double eta0, double a, double dx, const int scaling) {
+	
+	assert(numXElems);
 
 	*UTrans = new double[numXElems*r];
 	double* temp=*UTrans;

@@ -41,9 +41,6 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
     int org_size;
     double* s3;
     int s3_size=0;
-    vector<double> d3;
-    vector<double> v3;    
-    vector<double> J,G;
     double *I;
     
     int n2;
@@ -60,47 +57,44 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
     double tol = 1.0e-6;
     int n      = vSize;
     //step 1: deflate small vi
-    std::vector<double> Tempt;
+    std::vector<int> Tempt;
     Tempt.reserve(vSize);
-    std::vector<int> zero_2_n;
-    zero_2_n.reserve(vSize);
-
-    for(int i = 0; i < vSize; ++i)
-    {
-
-        if(std::abs(v[i]) < tol){
-            Tempt.push_back(i);
-        }
-        //creating another array having indices 1:n
-        zero_2_n.push_back(i);
-
-    }
-
+    int j=0,k=0;
     std::vector<int>diff;
     diff.reserve(vSize);
-    std::set_difference(zero_2_n.begin(),zero_2_n.end(),Tempt.begin(),Tempt.end(),std::inserter(diff, diff.begin()));
-
     std::vector<double> Lam1;
-    Lam1.reserve(Tempt.size());
-
-    for(int i = 0 ; i < Tempt.size() ; ++i){
-        Lam1.push_back(d[(int)Tempt[i]]);
-    }
-
     std::vector<double> Lam2;
+    std::vector<double> v3;    
+    std::vector<int> Jc;
+    std::vector<int> J,G;
+    std::vector<double> d3;
     double* Lam3=NULL;
-
     std::vector<double>d2;
-    d2.reserve(diff.size());
     std::vector<double>v2;
-    v2.reserve(diff.size());
-    int n1 = Tempt.size();
-
-    for(int i = 0; i < diff.size(); ++i){
-        d2.push_back(d[diff[i]]);
-        v2.push_back(v[diff[i]]);    
-        Tempt.push_back(diff[i]);
+    for(int i = 0; i < vSize; ++i)
+    {
+        if(std::abs(v[i]) < tol){
+            Tempt[j++]=i;
+	    assert(i < dSize);
+	    Lam1.push_back(d[i]);
+        }
+	else{
+		diff[k++]=i;
+		d2.push_back(d[i]);
+		v2.push_back(v[i]);
+	}
     }
+
+
+    int n1 = j;
+    
+    assert(j+k == vSize);
+	
+    for(int i = 0; i < diff.size(); ++i)
+        Tempt[j++]=diff[i];
+
+    assert(j == vSize);
+    assert((n-n1) == d2.size());
 
 // step 2: deflate  close eigenvalue
     double *v2c = new double[v2.size()];
@@ -133,17 +127,25 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
             d2[i] = vP[i].first;
             I[i] = vP[i].second;
         }
-
+	
         vector<double> tempV2(v2);
         for(int i = 0 ;i < v2.size(); ++i)
             v2[i] = tempV2[vP[i].second];        
 
+	vP.clear();
+
+	J.reserve(n-n1);
+	Jc.reserve(n-n1);
+	G.reserve(n-n1);
+
+	j=0;k=0;
+	int l=0; //j, k, and l are used as counters to index into vectors J, G, and Jc 
         int p=0;        
-        for(int j = 1; j < d2.size(); j++){
+        for(int i = 1; i < d2.size(); i++){
             double s   = v2[p];
-            double c   = v2[j];
+            double c   = v2[i];
             double tau = sqrt((c*c)+(s*s));
-            double t   = d2[j] - d2[p];
+            double t   = d2[i] - d2[p];
             c          = c / tau;
             s          = s / tau;
 
@@ -151,59 +153,35 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
             if(abs(t*c*s) < tol){
 
                 v2[p] = 0;
-                v2[j] = tau;
-                t     = ((c*c)*(d2[p])) + ((s*s)*(d2[j]));
-                d2[j] = (s*s)*(d2[p]) + (c*c)*(d2[j]);
+                v2[i] = tau;
+                t     = ((c*c)*(d2[p])) + ((s*s)*(d2[i]));
+                d2[i] = (s*s)*(d2[p]) + (c*c)*(d2[i]);
                 d2[p] = t;
-
                 // Givens rotation
-                G.push_back(p);
-                G.push_back(j);
-                G.push_back(c);
-                G.push_back(s);
-                J.push_back(p);
-                p = j;
+		G[k++]=p;
+		G[k++]=i;
+		G[k++]=c;
+		G[k++]=s;
+                J[j++]=p;
+                p = i;
+		Lam2.push_back(d2[p]);
             }
             else{
-                p = j;
+		Jc[l++]=p;
+		d3.push_back(d2[p]);
+		v3.push_back(v2[p]);
+                p = i;
             }
         }
    
-        
-        vector<int> n_sub_n1;
-        n_sub_n1.reserve(n-n1);
-        for(int i = 0; i < (n-n1); ++i){
-            n_sub_n1.push_back(i);
-        }
-        
-        std::vector<int>Jc;
-        Jc.reserve(n-n1);
-        std::set_difference(n_sub_n1.begin(),n_sub_n1.end(),J.begin(),J.end(),std::inserter(Jc, Jc.begin())); 
-
-        // Lam2 = d2(J);
-        for(int i = 0; i < J.size(); ++i){
-            double temp = d2[J[i]];
-            Lam2.push_back(temp);
-        }
-
-        // d3 = d2(Jc); 
-        
-        d3.reserve(Jc.size());
-        v3.reserve(Jc.size());   
-        
-        n2 = J.size();
+        n2 = j;
         n3 = n-n1-n2;
         
-        for(int i = 0; i < Jc.size(); ++i){
-            double temp = d2[Jc[i]];
-            d3.push_back(temp);
-            
-            temp = v2[Jc[i]];
-            v3.push_back(temp);
-            J.push_back(Jc[i]);
-        }
-        // J = [J, Jc];
+    	for(int i = 0; i < d2.size(); ++i)
+        	J[j++]=Jc[i];
 
+        assert(j == (n-n1));
+        
         if(n3){
             //Rootfinder call            
             rf_res = rootfinder(d3, v3, N);
@@ -287,8 +265,9 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
         res->J = J1;
         res->JSize = {J.size(), 1};
 
-        double *T = new double[Tempt.size()];
-        memcpy(T, Tempt.data(), sizeof(double)*Tempt.size());
+
+        int *T = new int[vSize];
+        memcpy(T, Tempt.data(), sizeof(int)*vSize);
         res->T = T;
         res->TSize = {Tempt.size(), 1};
 
@@ -318,8 +297,8 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
             res->qcSizes[i] = make_pair(0,0);
         
         res->v2cSize = make_pair(0,0);
-        double *T = new double[Tempt.size()];
-        memcpy(T, &Tempt[0], sizeof(double)*Tempt.size());
+        int *T = new int[Tempt.size()];
+        memcpy(T, &Tempt[0], sizeof(int)*Tempt.size());
         
         res->T = T;
         res->TSize = {Tempt.size(), 1};

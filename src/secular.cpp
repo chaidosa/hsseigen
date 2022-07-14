@@ -74,26 +74,24 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
     for(int i = 0; i < vSize; ++i)
     {
         if(std::abs(v[i]) < tol){
-            Tempt[j++]=i;
+            Tempt.push_back(i);
 	    assert(i < dSize);
 	    Lam1.push_back(d[i]);
         }
 	else{
-		diff[k++]=i;
+		diff.push_back(i);
 		d2.push_back(d[i]);
 		v2.push_back(v[i]);
 	}
     }
 
 
-    int n1 = j;
+    int n1 = Tempt.size();
     
-    assert(j+k == vSize);
-	
     for(int i = 0; i < diff.size(); ++i)
-        Tempt[j++]=diff[i];
+        Tempt.push_back(diff[i]);
 
-    assert(j == vSize);
+    assert(Tempt.size() == vSize);
     assert((n-n1) == d2.size());
 
 // step 2: deflate  close eigenvalue
@@ -138,8 +136,6 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
 	Jc.reserve(n-n1);
 	G.reserve(n-n1);
 
-	j=0;k=0;
-	int l=0; //j, k, and l are used as counters to index into vectors J, G, and Jc 
         int p=0;        
         for(int i = 1; i < d2.size(); i++){
             double s   = v2[p];
@@ -158,30 +154,28 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
                 d2[i] = (s*s)*(d2[p]) + (c*c)*(d2[i]);
                 d2[p] = t;
                 // Givens rotation
-		G[k++]=p;
-		G[k++]=i;
-		G[k++]=c;
-		G[k++]=s;
-                J[j++]=p;
+		G.push_back(p);
+		G.push_back(i);
+		G.push_back(c);
+		G.push_back(s);
+		J.push_back(p);
                 p = i;
 		Lam2.push_back(d2[p]);
             }
             else{
-		Jc[l++]=p;
+		Jc.push_back(p);
 		d3.push_back(d2[p]);
 		v3.push_back(v2[p]);
                 p = i;
             }
         }
    
-        n2 = j;
+        n2 = J.size();
         n3 = n-n1-n2;
         
-    	for(int i = 0; i < d2.size(); ++i)
-        	J[j++]=Jc[i];
+    	for(int i = 0; i < Jc.size(); ++i)
+        	J.push_back(Jc[i]);
 
-        assert(j == (n-n1));
-        
         if(n3){
             //Rootfinder call            
             rf_res = rootfinder(d3, v3, N);

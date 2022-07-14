@@ -16,7 +16,7 @@ class nonleaf{
         std::pair<int,int>ISize;
         double *v2c;
         std::pair<int,int>v2cSize;
-        double *T;
+        int *T;
         std::pair<int,int>TSize;
         int n,n1,n2,n3;
 

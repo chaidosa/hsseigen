@@ -95,13 +95,9 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
         
         int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
         double **Qc = Q->QC;        
-        tempXX = new double[rowSize * xSize.second];
-        
-        memcpy(tempXX, X+(Q->n1 + Q->n2)*xSize.second, sizeof(double)*(rowSize * xSize.second));
-        tempXX = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, (tempXX), {rowSize, xSize.second}, 1, N);
-        memcpy(X+(Q->n1 + Q->n2)*xSize.second, tempXX, sizeof(double)*(rowSize * xSize.second));
-        delete[] tempXX;
-       
+        double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, 1, N);
+        memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));
+	delete[] ret;
     }
     
 return X;

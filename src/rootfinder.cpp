@@ -176,7 +176,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     %%% tau: gaps
     %%% org: shifts for each root
     */
-    if(d.size() == 0)
+    if((d.size() == 0) || (v.size()==0))
         assert(false);
 
     Root * results;
@@ -265,6 +265,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     {
 	    //assert(0);
             double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tempD, org, 1, org_size, dSize, 1);
+	    assert(kRows == org_size);
             //f0 = rho - fl - fu;
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
                 f0[i] = rho - z[i] - z[kRows+i];
@@ -415,13 +416,13 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     std::vector<double> f_prev;
     std::vector<double> J2;
     double *f = new double[org_size];
+    double *df = new double[kRows];            
 
-    double  *psi=NULL, *phi=NULL, *dpsi=NULL, *dphi=NULL, *df=NULL;
+    double  *psi=NULL, *phi=NULL, *dpsi=NULL, *dphi=NULL;
     double *K=NULL, *K1=NULL, *K2=NULL;
 
     int pd_size = 0;
     if(n < N){
-        df = new double[kRows];            
         dpsi = new double[kRows];
         psi = new double[kRows];
         dphi = new double[kRows];        
@@ -463,6 +464,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 		//assert(0);
             //fmm
 	    double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
+	    assert(f != NULL);
 	    //Vec.
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               f[i] = rho - z[i] - z[kRows+i];
@@ -548,13 +550,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
                 df[i] = dpsi[i] + dphi[i];
             }
 
-            pd_size = kRows;           
-                    
-            
         // end of else statement
         }
-
-
+        
+	pd_size = kRows;           
 
         // **adaptive FMM iterations**        
         std::vector<double> res(pd_size);
@@ -637,6 +636,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         {
             std::vector<double> c0(pd_size);
             std::vector<double> c1(pd_size);
+            assert(swtch.size() == pd_size);
             for(unsigned int i = 0; i < (unsigned)pd_size; ++i)
             {
 
@@ -653,7 +653,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
                 c1[i] =temp;
 
             }
-            
             for(unsigned int i = 0; i <(unsigned)swtch.size(); ++i)
             {
                 if(swtch[i] == 0)
@@ -804,9 +803,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         delete[] dphi;
     }
     else{
-        delete[] psi;	
-	    delete[] dpsi;
-        delete[] f;
+	delete[] psi;	
+	delete[] dpsi; //if n>=N, need not delete phi and dphi because they are offsets into psi and dpsi
         delete[] df;
     }
     
@@ -817,12 +815,10 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 
     //memset(psi,0,sizeof(double)*kRows);
     //memset(phi,0,sizeof(double)*kRows);
-    f = new double[kRows];
 
     if(FMM_ITER)
     {
         if(n >=N){
-		assert(0);
             //trifmm1dlocal shift
             double * z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 1, org_size, dSize, 1);
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
@@ -867,7 +863,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             for(unsigned int i = 0; i <(unsigned)kRows; i++)
                 f[i] = rho-psi[i]-phi[i];
 
-            pd_size = kRows;
 
             //delete[] K;
 	        delete[] K1;
@@ -875,7 +870,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
          //end of inner else block   
         }
         
-        residual.clear(); 
+        pd_size = kRows;
+        
+	residual.clear(); 
         J2.clear();
         std::vector<double> res(pd_size);
         for(unsigned int i = 0; i <(unsigned)pd_size; ++i){
@@ -888,9 +885,11 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         if(n > N0)
             printf("Roofinder: continue to iterate");
           
-            
         delete[] psi;
-	    delete[] phi;
+        if(n<N)    
+		delete[] phi;
+	//if n>=N, need not delete phi because it is an offset into psi
+	
     //end of outer if block    
     }
 
@@ -1176,7 +1175,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     dw = dpsi0 + dphi0;
 
     if(stop_criteria == 0){
-        //later
+        //TODO:later
     }
 
     else if(stop_criteria == 1)

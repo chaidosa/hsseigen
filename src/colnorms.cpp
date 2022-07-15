@@ -25,12 +25,12 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
 */ 
     int n = org_size;
     int r = 50; 
-    double *S, *s;
-    int sSize;
+    double *S=NULL, *s=NULL;
+    int sSize=0;
 
     double *temp_vSqr = new double[org_size];
     for(int i = 0; i < org_size; ++i)        
-       temp_vSqr[i] = v[i]*v[i];
+	temp_vSqr[i] = v[i]*v[i];
     
     if(n < N){
         int sRows = org_size;
@@ -63,18 +63,14 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
     }
 
     else{
-
         //FMM 1D local shift
-        assert(false);
-	    s=fmm1d_local_shift(r,lam,d.data(),temp_vSqr,tau.data(), org, 2, org_size, d.size());
-	    for(int i=0;i<org_size;i++){
-		    s[i]=1/sqrt(s[i]);
-	    }
+    	s=fmm1d_local_shift(r,lam,d.data(),temp_vSqr,tau.data(), org, 2, org_size, d.size());
+    	for(int i=0;i<org_size;i++){
+	    s[i]=1/sqrt(s[i]);
+    	}
     }
-
-    
-    //std::vector<double>result(s, s+sSize);
-    
     delete [] temp_vSqr;
+
+    //std::vector<double>result(s, s+sSize);
     return s;
 }

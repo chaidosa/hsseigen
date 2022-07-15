@@ -47,7 +47,6 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
         }              
     }
     else{
-        assert(false);
 	assert(d.size() == n);
 	assert(w.size() == n);
         
@@ -59,7 +58,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
 	double* v0 = fmm1d_local_shift_2(r, ptrD, lam, e1.data(), gap, org, 3, d.size(), n);
         double* vd = fmm1d_local_shift(r, ptrD, ptrD, e1.data(), zeros.data(), org, 3, d.size(), d.size());
 	for(int i=0;i<n;i++)
-		v[i]=pow(0.5, v0[i]-vd[i]);
+		v[i]=exp(0.5 *(v0[i]-vd[i]));
  
 	//Vec:
 	for(int i=0;i<n;i++)

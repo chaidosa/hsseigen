@@ -50,7 +50,6 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
 
         else
         {
-            
             double *S = new double[(qcSizes[5].first)*(qcSizes[2].first)];  
             int sRows = qcSizes[2].first;
             int sCols = qcSizes[5].first;
@@ -71,13 +70,11 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
             //memset(Y,0,sizeof(double)*(qcSizes[5].first*xSize.second));
             
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qcSizes[5].first,xSize.second,qcSizes[2].first,alpha,S,qcSizes[2].first,X,xSize.second,beta,Y,xSize.second);           
-            delete [] X;            
-            delete [] S;
+            delete [] S; 
         }
     }
 
     else{
-            assert(false);
         //FMM
         if(ifTrans == 0){
             bsxfun('T', &X, xSize, s, qcSizes[1]);

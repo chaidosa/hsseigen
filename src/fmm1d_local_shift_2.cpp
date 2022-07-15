@@ -324,7 +324,7 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		return NULL;
 
 	int sizex = xUb-xLb, sizey = yUb-yLb; //calculate number of elements in the interval
-	if ((sizex <= MAX_POINTS_IN_CELL) || (sizey <= MAX_POINTS_IN_CELL)){
+	if ((sizex <= MAX_POINTS_IN_CELL) && (sizey <= MAX_POINTS_IN_CELL)){
 		//if this function is called with arguments such that the number of elements in an interval is below a threshold, then stop subdividing the interval.
 		node = new Vertex();
 		node->parent = parent;
@@ -444,9 +444,7 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		d = ((center + rad) - mid)/2; 
 	}
 	
-	assert(node);
-	assert(xLb+countXLeft == xUb-countXRight);
-	assert(yLb+countYLeft == yUb-countYRight);
+	assert(node != NULL);
 	rightChild = ConstructSpatialTree(x,y,xLb+countXLeft,xUb,yLb+countYLeft,yUb, c, d, 0, er, node); 
 	node->left = leftChild;
 	node->right = rightChild;

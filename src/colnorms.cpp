@@ -66,7 +66,8 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
         //FMM 1D local shift
     	s=fmm1d_local_shift(r,lam,d.data(),temp_vSqr,tau.data(), org, 2, org_size, d.size());
     	for(int i=0;i<org_size;i++){
-	    s[i]=1/sqrt(s[i]);
+		assert(s[i] >=0);
+	    s[i]=1/std::sqrt(s[i]);
     	}
     }
     delete [] temp_vSqr;

@@ -146,26 +146,25 @@ double DPHI_1(vector<double>& v, double x, int iter, int n, vector<double>& delt
  
 
 // This for testing the output of matrix
-void printArray(double **Arr, int row, int col)
+void printArray(double **Arr, int row, int col, const char* filename="output.txt")
 {
     ofstream txtOut;
-    txtOut.open("output.txt", std::ofstream::out | std::ofstream::app);
+    txtOut.open(filename, std::ofstream::out | std::ofstream::app);
     double *A = *Arr;
     for(unsigned int i = 0; i <(unsigned)row; i++)
     {
         for(int j=0; j < col; j++)
         {
-            txtOut<<A[j+i*col]<<"\t";
+            txtOut<<A[j+i*col]<<"\n";
         }
-        txtOut<<"\n";
     }
-    txtOut<<"\n";
     txtOut.close();
 }
 
 
 Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 {
+	static int fmmcallcount=1;
     /*
     %%% Input:
     %%% d, v: as in secular equation
@@ -243,6 +242,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         d0[i] = d[i+1] - d[i];
         
         x[i] = (d[i] + d[i+1]) / 2;
+	if((std::isnan(x[i])))
+		printf("FMMCallCount:%d HIT %d: x[i]:%lf d[i]:%lf d[i+1]:%lf dsize:%lu\n",fmmcallcount,i,x[i],d[i],d[i+1], d.size());
         
         org[i] = i;
 
@@ -257,18 +258,39 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     int kRows = org_size;
     int kCols  = dSize; 
     double *f0;
-    f0 = new double[kRows]; 
+    f0 = new double[kRows];
+    memset(f0, 0, sizeof(double)*kRows);
     int f0_size = kRows;   
  
    
+    printf("fmmcallcount:%d\n",fmmcallcount++);
     if(n >= N)
     {
-	    //assert(0);
-            double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tempD, org, 1, org_size, dSize, 1);
+	    /*if(fmmcallcount==1) {
+    		ofstream txtOut;
+    		txtOut.open("trifmminput_ex4_cpp.txt", std::ofstream::out | std::ofstream::app);
+		string str("r, x, y, gap, q, org\n");
+		txtOut<<str;
+		int xLen=org_size, yLen=dSize, rLen=1, gapLen=org_size, qLen=org_size+1, orgLen=org_size;
+		txtOut<<rLen<<" "<<xLen<<" "<<yLen<<" "<<gapLen<<" "<<qLen<<" "<<orgLen<<"\n";
+		txtOut<<r<<"\n";
+		txtOut.close();
+		printArray(&x,1,org_size,"trifmminput_ex4_cpp.txt");
+		double* tempddata=d.data();
+		printArray(&tempddata,1,dSize,"trifmminput_ex4_cpp.txt");
+		printArray(&(tempD),1,org_size,"trifmminput_ex4_cpp.txt");
+		printArray(&(v2_arr),1,org_size+1,"trifmminput_ex4_cpp.txt");
+    		txtOut.open("trifmminput_ex4_cpp.txt", std::ofstream::out | std::ofstream::app);
+		for(int i=0;i<org_size;i++)
+			txtOut<<org[i]<<"\n";
+		txtOut.close();
+	    }*/
+            double* z = trifmm1d_local_shift(r, x, d.data(), v2_arr, tempD, org, 1, org_size, dSize, 1); 
 	    assert(kRows == org_size);
             //f0 = rho - fl - fu;
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
                 f0[i] = rho - z[i] - z[kRows+i];
+	    delete [] z;
     }
     else
     {
@@ -292,7 +314,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             //K = NULL;
         }
     
-    delete[] tempD;
+    delete [] tempD;
 
     // h = 2 * diff(v.^2) ./ d0;
 
@@ -470,12 +492,22 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
               f[i] = rho - z[i] - z[kRows+i];
             psi = z; phi = z+kRows; 
 
+	    /*if(fmmcallcount==2) {
+		printArray(&(f),1,kRows,"trifmmoutput_f0_call2.txt");
+	    }*/
+
             double *zd = trifmm1d_local_shift(r, x, d.data(), v2_arr, tau.data(), org, 2, org_size, dSize, 1);
             dpsi = zd; dphi = zd+kRows;
             
 	    //Vec.
             for(unsigned int i = 0; i <(unsigned)kRows; ++i)
               df[i] = zd[i] + zd[kRows+i];
+
+	    //assert(0);
+	    /*if(fmmcallcount==2) {
+		printArray(&(df),1,kRows,"trifmmoutput_f0_call3.txt");
+	    	assert(0);
+	    }*/
         }
 
         else
@@ -526,6 +558,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             for(unsigned int i = 0; i <(unsigned)kRows; i++)
                 f[i] = rho-psi[i]-phi[i];
             
+	    /*if(fmmcallcount==2) {
+		printArray(&(f),1,kRows,"notrifmmoutput_f0_call2.txt");
+	    }*/
             double *dK1 = K1;
             double *dK2 = K2;
 
@@ -549,11 +584,15 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
             {
                 df[i] = dpsi[i] + dphi[i];
             }
+	    /*if(fmmcallcount==2) {
+		printArray(&(df),1,kRows,"notrifmmoutput_f0_call3.txt");
+		assert(0);
+	    }*/
 
         // end of else statement
         }
-        
 	pd_size = kRows;           
+        
 
         // **adaptive FMM iterations**        
         std::vector<double> res(pd_size);
@@ -825,6 +864,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
               f[i] = rho - z[i] - z[kRows+i];       
            
             psi = z; phi = z+kRows;
+	    //assert(0);
         }
         else{
             int kRows = org_size;

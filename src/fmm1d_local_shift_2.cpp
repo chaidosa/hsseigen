@@ -52,25 +52,28 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 	if((node->left==NULL) && (node->right==NULL)) {
 		if((node->xRight - node->xLeft) != 0) {
 			double* outU=NULL;
-			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
-			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
-			if(node->computed) {
-                		//compute z(px, :) = Ui * u{i};
-				int numElements=node->xRight-node->xLeft;
-				double* z=new double[numElements];
-				for(int j=0;j<numElements;j++){
-					double temp=0;
-					for(int i=0;i<numTerms;i++){
-						temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+			int numElements=node->xRight-node->xLeft;
+			if(numElements > 0) {
+				ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+				if(node->computed) {
+					//compute z(px, :) = Ui * u{i};
+					int numElements=node->xRight-node->xLeft;
+					node->zl=new double[numElements];
+					for(int j=0;j<numElements;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += outU[j*numTerms+i] * node->ul[i]; 
+						}
+						node->zl[j] = temp; 
+						assert((node->xLeft+j) < orgSize);
+						result[node->xLeft+j]=temp;
 					}
-					z[j] = temp; 
-					result[node->xLeft+j]=temp;
 				}
-				delete [] node->res;
-				node->res = z;
+				delete [] outU;
+			} else{
+				assert(0);
 			}
-			delete [] outU;
-
 			//Union(i, neighbor{i})
 			bool isSelf=true; 
 			node->neighbors.insert(node->neighbors.begin(), node);
@@ -81,9 +84,9 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 					double* tj = new double[xjVectorSize];
 					double* xj = new double[xjVectorSize];
 					for(int i=0;i<xjVectorSize;i++) {
-						assert(org[i] < orgSize);
+						assert((nbr->yLeft+i) < rootNode->yRight);
 						assert(i < orgSize);
-						xj[i] = dataX[org[nbr->yLeft+i]-1]; 
+						xj[i] = dataX[org[nbr->yLeft+i]]; 
 						tj[i] = gap[nbr->yLeft+i];
 					}
 					int xiVectorSize = node->xRight-node->xLeft;
@@ -147,13 +150,15 @@ void TreeVisitor::PreorderActions(Vertex* node) {
 			Vertex* wsNode=*iter;
             		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
 			if(node->computed == false) {
+				assert(wsNode->res);
 				//computing u{i}=Bij * v{j}
+				node->ul=new double[numTerms];
 				for(int j=0;j<numTerms;j++){
 					double temp=0;
 					for(int i=0;i<numTerms;i++){
 						temp += (outB[j*numTerms+i] * wsNode->res[i]); 
 					}
-					node->res[numTerms+j] = temp;
+					node->ul[j] = temp;
 				}
 				node->computed=true;
 			} else {
@@ -163,7 +168,7 @@ void TreeVisitor::PreorderActions(Vertex* node) {
 					for(int i=0;i<numTerms;i++){
 						temp += (outB[j*numTerms+i] * wsNode->res[i]); 
 					}
-					node->res[numTerms+j] += temp;
+					node->ul[j] += temp;
 				}
 			}
 			delete [] outB;
@@ -173,16 +178,19 @@ void TreeVisitor::PreorderActions(Vertex* node) {
 		if(node->level > 3) {
 		    Vertex* parent = node->parent;
 		    if(parent->computed) {
+			assert(parent->ul != NULL);
 			double *outT=NULL;
 			ComputeT_Scaled(&outT, numTerms, eta0, node->center, parent->center,  2*(node->radius), 2*(parent->radius), scalingLocal);
 			if(node->computed == false) {
+				assert(node->ul == NULL);
 				//computing u{i}=Ri * u{p}
+				node->ul=new double[numTerms];
 				for(int j=0;j<numTerms;j++){
 					double temp=0;
 					for(int i=0;i<numTerms;i++){
-						temp += (outT[j*numTerms+i] * parent->res[numTerms+i]); 
+						temp += (outT[j*numTerms+i] * parent->ul[i]); 
 					}
-					node->res[numTerms+j] = temp;
+					node->ul[j] = temp;
 				}
 				node->computed=true;
 			} else {
@@ -190,9 +198,9 @@ void TreeVisitor::PreorderActions(Vertex* node) {
 				for(int j=0;j<numTerms;j++){
 					double temp=0;
 					for(int i=0;i<numTerms;i++){
-						temp += (outT[j*numTerms+i] * parent->res[numTerms+i]); 
+						temp += (outT[j*numTerms+i] * parent->ul[i]); 
 					}
-					node->res[numTerms+j] += temp;
+					node->ul[j] += temp;
 				}
 			}
 			delete [] outT;
@@ -211,32 +219,26 @@ void TreeVisitor::PostorderActions(Vertex* node) {
 		if(numElements > 0) {
 			ComputeU_Scaled(&yNode, dataY+node->yLeft, numElements, numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
 			//computing matrix-vector prod of yNode and q to store the result in yNode)
+			node->res = new double[numTerms];
 			for(int j=0;j<numTerms;j++){
 				double temp=0;
 				for(int i=0;i<numElements;i++){
 					temp += yNode[j*numElements+i] * dataQ[node->yLeft+i]; 
 				}
-				yNode[j] = temp;
+				node->res[j] = temp;
 			}
-			node->res=yNode; //Now first numTerms of res array contain v{i} 
-			if(numElements < numTerms){
-				node->res = new double[numTerms*numTerms];
-				memcpy(node->res,yNode,sizeof(double)*numElements*numTerms);
-				delete [] yNode;
-			}
-#ifdef DEBUG
-			node->resSize=std::max(numTerms * numElements, numTerms*numTerms);
-#endif
+			delete [] yNode;
 		}
 		else {
-#ifdef DEBUG
-			node->resSize=numTerms*numTerms;
-#endif
-			yNode = new double[numTerms * numTerms];
+			node->res = new double[numTerms];
+			for(int i=0;i<numTerms;i++)
+				node->res[i]=0;
+			/*yNode = new double[numTerms* numTerms];
 			//vec: 
 			for(int i=0;i<numTerms*numTerms;i++)
 				yNode[i]=0;
-			node->res=yNode; //Now first numTerms of res array contain v{i} 
+			node->res=yNode; //Now first numTerms of res array contain v{i} */
+			//assert(0);
 		}
 		//node->computed=true;
 	} else {
@@ -246,19 +248,20 @@ void TreeVisitor::PostorderActions(Vertex* node) {
 	    	ComputeT_Scaled(&nodeRightOutput, numTerms, eta0, node->right->center, node->center, 2*(node->right->radius), 2*(node->radius), scalingLocal);
 		GetTransposeInPlace(nodeLeftOutput, numTerms, numTerms);
 		GetTransposeInPlace(nodeRightOutput, numTerms, numTerms);
+		assert(node->res == NULL);
+		node->res=new double[numTerms];
 		for(int j=0;j<numTerms;j++){
             		double temp=0;
 			for(int i=0;i<numTerms;i++){
+				assert(node->left && node->left->res);
+				assert(node->right && node->right->res);
 				temp += (nodeLeftOutput[j*numTerms+i] * node->left->res[i]) + (nodeRightOutput[j*numTerms+i] * node->right->res[i]); 
 			}
-			nodeLeftOutput[j] = temp;
+			node->res[j] = temp;
 		}
-		node->res=nodeLeftOutput; //Now first numTerms of res array contain v{i} 
-#ifdef DEBUG
-			node->resSize=numTerms * numTerms;
-#endif
 		//node->computed=true;
 		delete [] nodeRightOutput;
+		delete [] nodeLeftOutput;
     	}
     }
 }
@@ -435,6 +438,7 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
 	}
 	else {
+		printf("xLb:%d xUb:%d yLb:%d yUb:%d mid:%lf center:%lf radius:%lf\n",xLb, xUb, yLb, yUb, mid, center, rad);
 		assert(0); //should not come here.
 	}
 	
@@ -646,20 +650,20 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 		for(std::vector<Vertex*>::iterator iter=node->wellSeparatedNodes.begin();iter!=node->wellSeparatedNodes.end();iter++) {
 			double* outB=NULL; 
 			Vertex* wsNode=*iter;
-            		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
+			//printf("ComputeB called with eta0:%lf a:%lf b:%lf, dx:%lf, dy:%lf, fun:%d, scaling:%d\n",eta0, node->center, wsNode->center, 2*(node->radius),2*(wsNode->radius),funLocal, scalingLocal); 
+			ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
 			if(node->center > wsNode->center) {
-#ifdef DEBUG
-			assert(node->resSize >= numTerms * numTerms);
-#endif
+				assert(wsNode->res);
 				//lower triangular part
 				if(node->computed == false) {
 					//computing ul{i}=Bij * v{j}
+					node->ul=new double[numTerms];
 					for(int j=0;j<numTerms;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
 							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
 						}
-						node->res[numTerms+j] = temp;
+						node->ul[j] = temp;
 					}
 					node->computed = true;
 				} else {
@@ -669,23 +673,20 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 						for(int i=0;i<numTerms;i++){
 							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
 						}
-						node->res[numTerms+j] += temp;
+						node->ul[j] += temp;
 					}
 				}
 			} else if(node->center < wsNode->center) {
 				//upper triangular part
 				if(node->computedUpper == false) {
-					node->resu = new double[numTerms*numTerms];
-#ifdef DEBUG
-					node->resuSize = numTerms * numTerms;
-#endif
 					//computing uu{i}=Bij * v{j}
+					node->uu = new double[numTerms];
 					for(int j=0;j<numTerms;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
 							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
 						}
-						node->resu[j] = temp;
+						node->uu[j] = temp;
 					}
 					node->computedUpper = true;
 				} else {
@@ -695,7 +696,7 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 						for(int i=0;i<numTerms;i++){
 							temp += (outB[j*numTerms+i] * wsNode->res[i]); 
 						}
-						node->resu[j] += temp;
+						node->uu[j] += temp;
 					}
 				}
 			}
@@ -709,17 +710,16 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 			double *outT=NULL;
 			ComputeT_Scaled(&outT, numTerms, eta0, node->center, parent->center,  2*(node->radius), 2*(parent->radius), scalingLocal);
 			if(parent->computed) {
-#ifdef DEBUG
-			assert(node->resSize >= numTerms * numTerms);
-#endif
+				assert(parent->ul);
 				if(node->computed == false) {
 					//computing ul{i}=Ri * ul{p}
+					node->ul=new double[numTerms];
 					for(int j=0;j<numTerms;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
-							temp += (outT[j*numTerms+i] * parent->res[numTerms+i]); 
+							temp += (outT[j*numTerms+i] * parent->ul[i]); 
 						}
-						node->res[numTerms+j] = temp;
+						node->ul[j] = temp;
 					}
 					node->computed = true;
 				} else {
@@ -727,26 +727,24 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 					for(int j=0;j<numTerms;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
-							temp += (outT[j*numTerms+i] * parent->res[numTerms+i]); 
+							temp += (outT[j*numTerms+i] * parent->ul[i]); 
 						}
-						node->res[numTerms+j] += temp;
+						node->ul[j] += temp;
 					}
 				}
 			}
 			
 			if(parent->computedUpper) {
+				assert(parent->uu);
 				if(node->computedUpper == false) {
-					node->resu = new double[numTerms * numTerms];
-#ifdef DEBUG
-					node->resuSize = numTerms*numTerms;
-#endif
 					//computing uu{i}=Ri * uu{p}
+					node->uu=new double[numTerms];
 					for(int j=0;j<numTerms;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
-							temp += (outT[j*numTerms+i] * parent->resu[i]); 
+							temp += (outT[j*numTerms+i] * parent->uu[i]); 
 						}
-						node->resu[j] = temp;
+						node->uu[j] = temp;
 					}
 					node->computedUpper=true;
 				} else {
@@ -754,9 +752,9 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 					for(int j=0;j<numTerms;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
-							temp += (outT[j*numTerms+i] * parent->resu[i]); 
+							temp += (outT[j*numTerms+i] * parent->uu[i]); 
 						}
-						node->resu[j] += temp;
+						node->uu[j] += temp;
 					}
 				}
 			}
@@ -777,60 +775,59 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
 				if(node->computed) {
 					//compute zl(px, :) = Ui * ul{i};
-					double* z=new double[numElements];
+					assert(node->zl == NULL);
+					node->zl=new double[numElements];
 					for(int j=0;j<numElements;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
-							temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+							temp += outU[j*numTerms+i] * node->ul[i]; 
 						}
-						z[j] = temp; 
+						node->zl[j] = temp; 
+						assert((node->xLeft+j) < orgSize);
 						result[node->xLeft+j] = temp;
 					}
-					delete [] node->res;
-					node->res = z;
 				}
 				if(node->computedUpper) {
 					//compute zu(px, :) = Ui * uu{i};
-					double* z=new double[numElements];
+					assert(node->zu == NULL);
+					node->zu=new double[numElements];
 					for(int j=0;j<numElements;j++){
 						double temp=0;
 						for(int i=0;i<numTerms;i++){
-							temp += outU[j*numTerms+i] * node->resu[i]; 
+							temp += outU[j*numTerms+i] * node->uu[i]; 
 						}
-						z[j] = temp; 
+						node->zu[j] = temp; 
+						assert((orgSize+node->xLeft+j) < 2*orgSize);
 						result[orgSize+node->xLeft+j] = temp;
 					}
-					delete [] node->resu;
-					node->resu = z;
-#ifdef DEBUG
-					node->resuSize=numElements;
-#endif
 				}
 				delete [] outU;
 			}
 			else {
-				if(node->computed) {
+				/*if(node->computed) {
 						delete [] node->res;
-						node->res = new double[numElements];
+						node->res = new double[orgSize];
 						for(int i=0;i<numElements;i++)
 							node->res[i]=0;
 				}
 				if(node->computedUpper) {
 						delete [] node->resu;
-						node->resu = new double[numElements];
+						node->resu = new double[orgSize];
 						for(int i=0;i<numElements;i++)
 							node->resu[i]=0;
-				}
+				}*/
+				assert(0);
 			}
 			
 			
 			int xiVectorSize = node->xRight-node->xLeft;
+			assert(xiVectorSize);
 			double* ti = new double[xiVectorSize];
 			double* yi = new double[xiVectorSize];
 			for(int i=0;i<xiVectorSize;i++) {
-				assert(org[i] < orgSize);
+				assert((node->xLeft+i) < orgSize);
 				assert(i < orgSize);
-				yi[i] = dataY[org[node->xLeft+i]-1]; 
+				yi[i] = dataY[org[node->xLeft+i]]; 
 				ti[i] = gap[node->xLeft+i];
 			}
 
@@ -895,13 +892,6 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 						for(int j=0;j<xjVectorSize;j++)
 							D[i*xjVectorSize+j]=D[i*xjVectorSize+j]-Dl[i*xjVectorSize+j];
 
-					/*if(node->resu == NULL) {
-						node->resu=new double[xiVectorSize];
-					}*/
-						
-#ifdef DEBUG
-					printf("node %d: px size (xiVectorSize):%d (%d) resuSize:%d\n",node->label, node->xRight-node->xLeft, xiVectorSize, node->resuSize);
-#endif
 					//zl(px, :) = zl(px, :) + Dl * q(py, :);
                     			//zu(px, :) = zu(px, :) + D * q(py, :);
 					//cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans, xiVectorSize, 1, xjVectorSize, 1, Dl, xjVectorSize, dataQ+nbr->yLeft, 1, 1, node->res, 1);
@@ -964,6 +954,7 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 	PostorderVisitor(node,v);
 	PreorderVisitor(node, v);
         v->result = new double[numXElems*2];
+	memset(v->result, 0, sizeof(double)*numXElems*2);
 	PostorderVisitorLeaf(node, v); 
 	double* ret=v->result;
 	delete v; // v->result is not destroyed
@@ -975,32 +966,42 @@ void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 	if((node->left==NULL) && (node->right==NULL)) {
 		if((node->xRight - node->xLeft) != 0) {
 			double* outU=NULL;
-			ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
-			GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
-			if(node->computed) {
-                		//compute z(px, :) = Ui * u{i};
-				int numElements=node->xRight-node->xLeft;
-				double* z=new double[numElements];
-				for(int j=0;j<numElements;j++){
-					double temp=0;
-					for(int i=0;i<numTerms;i++){
-						temp += outU[j*numTerms+i] * node->res[numTerms+i]; 
+			int numElements=node->xRight-node->xLeft;
+			if(numElements > 0) {
+				ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+				if(node->computed) {
+					//compute z(px, :) = Ui * u{i};
+					int numElements=node->xRight-node->xLeft;
+					node->zl=new double[numElements];
+					for(int j=0;j<numElements;j++){
+						double temp=0;
+						for(int i=0;i<numTerms;i++){
+							temp += outU[j*numTerms+i] * node->ul[i]; 
+						}
+						node->zl[j] = temp;
+						assert((node->xLeft+j) < orgSize);
+					       result[node->xLeft+j] = temp; 	
 					}
-					z[j] = temp;
-				       result[node->xLeft+j] = temp; 	
 				}
-				delete [] node->res;
-				node->res = z;
+				delete [] outU;
+			} else{
+				assert(0);
+				/*if(node->computed) {
+						delete [] node->res;
+						node->res = new double[orgSize];
+						for(int i=0;i<numElements;i++)
+							node->res[i]=0;
+				}*/
 			}
-			delete [] outU;
-			
 			int xiVectorSize = node->xRight-node->xLeft;
+			assert(xiVectorSize);
 			double* ti = new double[xiVectorSize];
 			double* yi = new double[xiVectorSize];
 			for(int i=0;i<xiVectorSize;i++) {
-				assert(org[i] < orgSize);
+				assert((node->xLeft+i) < orgSize);
 				assert(i < orgSize);
-				yi[i] = dataY[org[node->xLeft+i]-1]; 
+				yi[i] = dataY[org[node->xLeft+i]]; 
 				ti[i] = gap[node->xLeft+i];
 			}
 

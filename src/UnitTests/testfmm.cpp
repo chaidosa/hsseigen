@@ -11,16 +11,20 @@ void PrintTree(const Vertex* node);
 
 using namespace std;
 int main(int argc, char* argv[]){
+	if(argc!=2){
+		printf("usage:./fmm testfilename\n");
+		return 0;
+	}
 	string header;
 	int numXElems=0, numYElems=0, numQElems=0, numR=0, numGapElems=0, numOrgElems=0; 
-	ifstream ifs("trifmminput_ex4_4k_fun2.txt",ifstream::in);
+	ifstream ifs(argv[1],ifstream::in);
 	if(!ifs) {
 		cerr<<"Error: unable to open the file fmminput_out_32.txt. exiting."<<endl;
 		exit(1);
 	}
 
 	getline(ifs,header);
-	ifs>>numXElems>>numYElems>>numR>>numGapElems>>numQElems>>numOrgElems;
+	ifs>>numR>>numXElems>>numYElems>>numGapElems>>numQElems>>numOrgElems;
 	cout<<header<<endl;
 	cout<<"header: numXElems("<<numXElems<<"), numYElems("<<numYElems<<"), numR("<<numR<<"), numGapElems("<<numGapElems<<"), numQElems("<<numQElems<<"), numOrgElems("<<numOrgElems<<endl;
 
@@ -34,14 +38,13 @@ int main(int argc, char* argv[]){
 
 
 
+	for(int i=0;i<numR;i++)
+		ifs>>r[i];
 	for(int i=0;i<numXElems;i++)
 		ifs>>x[i];
 
 	for(int i=0;i<numYElems;i++)
 		ifs>>y[i];
-	
-	for(int i=0;i<numR;i++)
-		ifs>>r[i];
 	
 	for(int i=0;i<numGapElems;i++)
 		ifs>>gap[i];

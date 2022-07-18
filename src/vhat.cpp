@@ -20,7 +20,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
     int r = 50;   
     //std::vector<double>v(n);
     double *v = new double[n];
-    if(n < N){
+    if(n < N) {
         int dRows = d.size();
         int dCols = org_size;
         for(int row = 0; row < dRows; row++){

@@ -225,7 +225,6 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
             percent = rf_res->percent;
             //V hat call
             v3_hat = vhat(d3, Lam3, org, org_size, tau, v3, N);
-
             //Colnorms call
             s3 = colnorms(d3, Lam3, tau, org, org_size, v3_hat,N); 
 	        s3_size=org_size;

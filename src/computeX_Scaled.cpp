@@ -15,11 +15,10 @@ void ComputeU_Scaled(double** UTrans, const double* x, int numXElems, int r, dou
 	*UTrans = new double[numXElems*r];
 	double* temp=*UTrans;
 	double eta = eta0*2/dx;
-		if(scaling == 1) {
-		
-		//1st term in the multipole expansion ia 1.
-		for(int i=0;i<numXElems;i++) temp[i]=1;
-		
+	//1st term in the multipole expansion is 1. U=ones(n,r)
+	for(int i=0;i<numXElems*r;i++) temp[i]=1;
+	
+	if(scaling == 1) {
 		//2nd term in the multipole expansion
 		for(int i=0;i<numXElems;i++)
 			temp[i+numXElems]=eta * (x[i] - a); 
@@ -29,7 +28,6 @@ void ComputeU_Scaled(double** UTrans, const double* x, int numXElems, int r, dou
 				temp[numXElems*(k+1)+i]=pow(1+1/(double)(k), k) * eta * (x[i]-a) * temp[numXElems*k+i] ; 
 	}
 	else if(scaling ==0) {
-		for(int i=0;i<numXElems*r;i++) temp[i]=1;
 		for(int k=0;k<r-1;k++)
 			for(int i=0;i<numXElems;i++)
 				temp[numXElems*(k+1)+i]= 1/(double)(k+1) * (x[i]-a) * temp[numXElems*k+i] ; 
@@ -166,7 +164,7 @@ void ComputeB_Scaled(double** outB, int r, double eta0, double a, double b, doub
 				//completing rest of B
 				for(int k = 2;k<r-2;k++)
 					for(int i = 2;i<r-k+1;i++)
-						B[k*r+i] = (k+i)/(double)(ba*etay*i)*B[k*r+i-1]*temppower[i];
+						B[k*r+i] = (k+i+1)/(double)(ba*etay*i)*B[k*r+i-1]*temppower[i];
 				//Doing B=B*DD;
 				for(int i=0;i<r;i++) {
 					for(int j=0;j<r;j++) {
@@ -237,7 +235,7 @@ void ComputeB_Scaled(double** outB, int r, double eta0, double a, double b, doub
 				//completing rest of B
 				for(int k = 2;k<r-2;k++)
 					for(int i = 2;i<r-k+1;i++)
-						B[k*r+i] = (k+i-2)/(double)(ba*etay*i)*B[k*r+i-1]*temppower[i];
+						B[k*r+i] = (k+i-1)/(double)(ba*etay*i)*B[k*r+i-1]*temppower[i];
 				//Doing B=B*DD;
 				for(int i=0;i<r;i++) {
 					for(int j=0;j<r;j++) {

@@ -144,7 +144,7 @@ double DPHI_1(vector<double>& v, double x, int iter, int n, vector<double>& delt
 
 }
  
-
+/*
 // This for testing the output of matrix
 void printArray(double **Arr, int row, int col, const char* filename="debugoutput.txt")
 {
@@ -162,7 +162,7 @@ void printArray(double **Arr, int row, int col, const char* filename="debugoutpu
     txtOut.close();
 #endif
 }
-
+*/
 
 Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 {
@@ -177,7 +177,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 	txtOut<<setprecision(12)<<v[i]<<"\n";
     txtOut.close();*/
 
-	//static int fmmcallcount=1;
+	static int fmmcallcount=1;
     /*
     %%% Input:
     %%% d, v: as in secular equation
@@ -255,8 +255,8 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         d0[i] = d[i+1] - d[i];
         
         x[i] = (d[i] + d[i+1]) / 2;
-	/*if((std::isnan(x[i])))
-		printf("FMMCallCount:%d HIT %d: x[i]:%lf d[i]:%lf d[i+1]:%lf dsize:%lu\n",fmmcallcount,i,x[i],d[i],d[i+1], d.size());*/
+	if((std::isnan(x[i])))
+		printf("FMMCallCount:%d HIT %d: x[i]:%lf d[i]:%lf d[i+1]:%lf dsize:%lu\n",fmmcallcount,i,x[i],d[i],d[i+1], d.size());
         
         org[i] = i;
 
@@ -276,7 +276,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     int f0_size = kRows;   
  
    
-    //printf("fmmcallcount:%d\n",fmmcallcount++);
+    printf("fmmcallcount:%d\n",fmmcallcount++);
     if(n >= N)
     {
 		/*char fname[64];
@@ -485,7 +485,6 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         {
             if((tau[i] == 0) | ((tau[i]*xub[i]) < 0) | ((tau[i]*xlb[i]) < 0) | (std::isnan(tau[i])) | (tau[i] < xlb0[i]) | (tau[i] > xub0[i]))
             {
-		    printf("doesnt come here in first run\n");
                 tau[i] = (xub[i] + xlb[i]) / 2;
                 x[i] = tau[i] + d[org[i]];
             }    

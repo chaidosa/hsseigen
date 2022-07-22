@@ -3,7 +3,7 @@
 #include<cmath>
 #include<set>
 #include<fstream>
-//#include<cfloat>
+#include<iomanip>
 #include"computeX_Scaled.h"
 #include"fmm_types.h"
 #include "QR.h"
@@ -49,6 +49,47 @@ class TreeVisitor{
 	virtual void PostorderActions(Vertex* node);
 	virtual ~TreeVisitor();
 };
+
+/*
+template<typename T>
+void PrintArray(T *A, int row, int col, const char* filename="debugoutput.txt")
+{
+#if 1
+    ofstream txtOut;
+    txtOut.open(filename, std::ofstream::out | std::ofstream::app);
+    for(unsigned int i = 0; i <(unsigned)row; i++)
+    {
+        for(int j=0; j < col; j++)
+        {
+            txtOut<<std::setprecision(12)<<A[j+i*col]<<"\n";
+        }
+    }
+    txtOut.close();
+#endif
+}
+
+template<typename T>
+void PrintArray2(T *A, int row, int col, const char* filename="debugoutput.txt")
+{
+#if 1
+    ofstream txtOut;
+    txtOut.open(filename, std::ofstream::out | std::ofstream::app);
+    for(unsigned int i = 0; i <(unsigned)row; i++)
+    {
+        for(int j=0; j < col; j++)
+        {
+            txtOut<<std::setprecision(12)<<A[j+i*col];
+		if(j != col-1)
+			txtOut<<" ";
+        }
+	if(i != row-1)
+		txtOut<<"\n";
+    }
+    txtOut.close();
+#endif
+}
+
+*/
 
 void TreeVisitor::LeafNodeActions(Vertex* node) {
 	if((node->left==NULL) && (node->right==NULL)) {
@@ -120,7 +161,7 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 								for(int i=0;i<xiVectorSize;i++) { 
 									for(int j=0;j<xjVectorSize;j++) {
 					 					D[i*xjVectorSize+j] = std::log(std::abs(D[i*xjVectorSize+j]));
-										if(isSelf && isnan(D[i*xjVectorSize+j]))
+										if(isSelf && isinf(D[i*xjVectorSize+j]))
 											D[i*xjVectorSize+j] = 0;
 									}
 								}
@@ -148,7 +189,18 @@ void TreeVisitor::PreorderActions(Vertex* node) {
 		for(std::vector<Vertex*>::iterator iter=node->wellSeparatedNodes.begin();iter!=node->wellSeparatedNodes.end();iter++) {
 			double* outB; 
 			Vertex* wsNode=*iter;
+			//printf("ComputeB called with eta0:%lf a:%lf b:%lf, dx:%lf, dy:%lf, fun:%d, scaling:%d\n",eta0, node->center, wsNode->center, 2*(node->radius),2*(wsNode->radius),funLocal, scalingLocal); 
+			/*PrintArray<double>(&eta0, 1, 1, "fmminput_Bscaled.txt");
+			PrintArray<double>(&(node->center), 1, 1, "fmminput_Bscaled.txt");
+			PrintArray<double>(&(wsNode->center), 1, 1, "fmminput_Bscaled.txt");
+			double arg1=2*(node->radius);
+			double arg2=2*(wsNode->radius);
+			PrintArray<double>(&arg1, 1, 1, "fmminput_Bscaled.txt");
+			PrintArray<double>(&arg2, 1, 1, "fmminput_Bscaled.txt");
+			PrintArray<int>(&funLocal, 1, 1, "fmminput_Bscaled.txt");
+			PrintArray<int>(&scalingLocal, 1, 1, "fmminput_Bscaled.txt");*/
             		ComputeB_Scaled(&outB, numTerms, eta0, node->center, wsNode->center, 2*(node->radius), 2*(wsNode->radius), funLocal, scalingLocal);
+			//PrintArray2<double>(outB, numTerms, numTerms, "fmmoutput_Bscaled.txt");
 			if(node->computed == false) {
 				assert(wsNode->res);
 				//computing u{i}=Bij * v{j}
@@ -313,6 +365,309 @@ void DestroyTree(Vertex* node)
 	return;
 }
 
+Vertex* ConstructSpatialTree_fmm1d_local_shift(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
+
+	double c = center - rad/2; //new center
+	double d = rad/2; //new radius
+	double mid;
+	bool flag=false;
+	int i, j, k, l, countXLeft=0, countXRight=0, countYLeft=0, countYRight=0;
+	Vertex* leftChild=NULL, *rightChild=NULL, *node=NULL;
+
+	if((xLb > xUb) || (yLb > yUb)) {
+		assert(0);
+		return NULL;
+	}
+
+	int sizex = xUb-xLb, sizey = yUb-yLb; //calculate number of elements in the interval
+	if ((sizex <= MAX_POINTS_IN_CELL) && (sizey <= MAX_POINTS_IN_CELL)){
+		//if this function is called with arguments such that the number of elements in an interval is below a threshold, then stop subdividing the interval.
+		node = new Vertex();
+		node->parent = parent;
+		node->xLeft = xLb;
+		node->xRight = xUb;
+		node->yLeft = yLb;
+		node->yRight = yUb;
+		node->isLeaf = true;
+		node->level = parent->level + 1;
+		node->center = center; //note: not the new center.
+		node->radius = rad; //note: not the new radius
+		//node->eta = eta0/rad;
+		return node;
+	}
+
+	//el is the flag indicating if left boundary is to be included. get count of how many elements end up in the left interval (after division of the current interval) 
+	if(el==1){
+		for(i=xLb;i<xUb;i++) {
+			if(((center-rad)<=x[i]) && (x[i]<=center))
+				countXLeft++;
+		}
+		for(j=yLb;j<yUb;j++) {
+			if(((center-rad)<=y[j]) && (y[j]<=center))
+				countYLeft++;
+
+		}
+	} else if (el == 0) {
+		for(i=xLb;i<xUb;i++) {
+			if(((center-rad)<x[i]) && (x[i]<=center))
+				countXLeft++;
+		}
+		for(j=yLb;j<yUb;j++){
+			if(((center-rad)<y[j]) && (y[j]<=center))
+				countYLeft++;
+		}
+	}
+
+	//el is the flag indicating if left boundary is to be included. get count of how many elements end up in the right interval (after division of the current interval) 
+	if(er==1) {
+		for(k=xLb;k<xUb;k++)
+			if((center<x[k]) && (x[k]<=(center+rad)))
+				countXRight++;
+		for(l=yLb;l<yUb;l++)
+			if((center<y[l]) && (y[l]<=(center+rad)))
+				countYRight++;
+	} else if (er == 0) {
+		for(k=xLb;k<xUb;k++)
+			if(((center<x[k]) && (x[k]<(center+rad))))
+				countXRight++;
+		for(l=yLb;l<yUb;l++);
+			if((center<y[l]) && (y[l]<(center+rad)))
+				countYRight++;
+	}
+	
+	if((countXLeft == 0) || (countYLeft == 0) || (countXRight == 0) || (countYRight == 0)){
+		countXLeft=0; countXRight=0; countYLeft=0; countYRight=0;
+		//x and y intervals are empty after the bisected point. Adjust center and rad.
+		if(((xUb-xLb) > 0) && ((yUb-yLb) > 0))
+			mid = (x[xUb-1]+y[yLb])/2;
+		else if ((xUb-xLb) > 0)
+			mid = (center+rad+x[xLb]) / 2;
+		else if  ((yUb-yLb) > 0)
+			mid = (center-rad+y[yUb-1]) / 2;
+		c = (mid + (center - rad))/2;
+		d = (mid - (center - rad))/2;
+		if(el==1){
+			for(i=xLb;i<xUb;i++)
+				if(((center-rad)<=x[i]) && (x[i]<=mid))
+					countXLeft++;
+			for(j=yLb;j<yUb;j++)
+				if(((center-rad)<=y[j]) && (y[j]<=mid))
+					countYLeft++;
+		} else if (el == 0) {
+			for(i=xLb;i<xUb;i++)
+				if(((center-rad)<x[i]) && (x[i]<=mid))
+					countXLeft++;
+			for(j=yLb;j<yUb;j++)
+				if(((center-rad)<y[j]) && (y[j]<=mid))
+					countYLeft++;
+		}
+
+		if(er==1) {
+			for(k=xLb;k<xUb;k++)
+				if((mid<x[k]) && (x[k]<=(center+rad)))
+					countXRight++;
+			for(l=yLb;l<yUb;l++)
+				if((mid<y[l]) && (y[l]<=(center+rad)))
+					countYRight++;
+		} else if (er == 0) {
+			for(k=xLb;k<xUb;k++)
+				if((mid<x[k]) && (x[k]<(center+rad)))
+					countXRight++;
+			for(l=yLb;l<yUb;l++)
+				if((mid<y[l]) && (y[l]<(center+rad)))
+					countYRight++;
+		}
+		flag=true;
+	}
+
+#if 1
+	if((countXLeft > 0) || (countYLeft > 0)) {
+		node = new Vertex();
+		node->parent = parent;
+		node->level = parent->level + 1;
+		/*node->xLeft = xLb;
+		node->xRight = xUb;
+		node->yLeft = yLb;
+		node->yRight = yUb;*/
+		leftChild = ConstructSpatialTree_fmm1d_local_shift(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
+	}
+	else {
+		printf("xLb:%d xUb:%d yLb:%d yUb:%d mid:%lf center:%lf radius:%lf\n",xLb, xUb, yLb, yUb, mid, center, rad);
+		assert(0); //should not come here.
+	}
+#endif
+/*	node = new Vertex();
+	node->parent = parent;
+	node->level = parent->level + 1;
+	leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); */
+
+	c = center + rad/2; //if(!flag) then the value of c.
+	if(flag) {
+		c = (mid + (center + rad))/2; //overwrite the value of c if flag is true.
+		d = ((center + rad) - mid)/2; 
+	}
+	
+	assert(node != NULL);
+	rightChild = ConstructSpatialTree_fmm1d_local_shift(x,y,xLb+countXLeft,xUb,yLb+countYLeft,yUb, c, d, 0, er, node); 
+	node->left = leftChild;
+	node->right = rightChild;
+	node->center = center;
+	node->radius = rad;
+	//node->eta = eta0/rad;
+	return node;
+}
+
+Vertex* ConstructSpatialTree_trifmm_local_shift(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
+
+	double c = center - rad/2; //new center
+	double d = rad/2; //new radius
+	double mid;
+	bool flag=false;
+	int i, j, k, l, countXLeft=0, countXRight=0, countYLeft=0, countYRight=0;
+	Vertex* leftChild=NULL, *rightChild=NULL, *node=NULL;
+
+	if((xLb > xUb) || (yLb > yUb)) {
+		assert(0);
+		return NULL;
+	}
+
+	int sizex = xUb-xLb, sizey = yUb-yLb; //calculate number of elements in the interval
+	if ((sizex <= MAX_POINTS_IN_CELL) && (sizey <= MAX_POINTS_IN_CELL)){
+		//if this function is called with arguments such that the number of elements in an interval is below a threshold, then stop subdividing the interval.
+		node = new Vertex();
+		node->parent = parent;
+		node->xLeft = xLb;
+		node->xRight = xUb;
+		node->yLeft = yLb;
+		node->yRight = yUb;
+		node->isLeaf = true;
+		node->level = parent->level + 1;
+		node->center = center; //note: not the new center.
+		node->radius = rad; //note: not the new radius
+		//node->eta = eta0/rad;
+		return node;
+	}
+
+	//el is the flag indicating if left boundary is to be included. get count of how many elements end up in the left interval (after division of the current interval) 
+	if(el==1){
+		for(i=xLb;i<xUb;i++) {
+			if(((center-rad)<=x[i]) && (x[i]<=center))
+				countXLeft++;
+		}
+		for(j=yLb;j<yUb;j++) {
+			if(((center-rad)<=y[j]) && (y[j]<=center))
+				countYLeft++;
+
+		}
+	} else if (el == 0) {
+		for(i=xLb;i<xUb;i++) {
+			if(((center-rad)<x[i]) && (x[i]<=center))
+				countXLeft++;
+		}
+		for(j=yLb;j<yUb;j++){
+			if(((center-rad)<y[j]) && (y[j]<=center))
+				countYLeft++;
+		}
+	}
+
+	//el is the flag indicating if left boundary is to be included. get count of how many elements end up in the right interval (after division of the current interval) 
+	if(er==1) {
+		for(k=xLb;k<xUb;k++)
+			if((center<x[k]) && (x[k]<=(center+rad)))
+				countXRight++;
+		for(l=yLb;l<yUb;l++)
+			if((center<y[l]) && (y[l]<=(center+rad)))
+				countYRight++;
+	} else if (er == 0) {
+		for(k=xLb;k<xUb;k++)
+			if(((center<x[k]) && (x[k]<(center+rad))))
+				countXRight++;
+		for(l=yLb;l<yUb;l++);
+			if((center<y[l]) && (y[l]<(center+rad)))
+				countYRight++;
+	}
+	
+	if((countXLeft == 0) || (countYLeft == 0) || (countXRight == 0) || (countYRight == 0)){
+		countXLeft=0; countXRight=0; countYLeft=0; countYRight=0;
+		//x and y intervals are empty after the bisected point. Adjust center and rad.
+		if(((xUb-xLb) > 0) && ((yUb-yLb) > 0))
+			mid = (y[yUb-1]+y[yLb])/2;
+		else if ((xUb-xLb) > 0)
+			mid = (center+rad+x[xLb]) / 2;
+		else if  ((yUb-yLb) > 0)
+			mid = (center-rad+y[yUb-1]) / 2;
+		c = (mid + (center - rad))/2;
+		d = (mid - (center - rad))/2;
+		if(el==1){
+			for(i=xLb;i<xUb;i++)
+				if(((center-rad)<=x[i]) && (x[i]<=mid))
+					countXLeft++;
+			for(j=yLb;j<yUb;j++)
+				if(((center-rad)<=y[j]) && (y[j]<=mid))
+					countYLeft++;
+		} else if (el == 0) {
+			for(i=xLb;i<xUb;i++)
+				if(((center-rad)<x[i]) && (x[i]<=mid))
+					countXLeft++;
+			for(j=yLb;j<yUb;j++)
+				if(((center-rad)<y[j]) && (y[j]<=mid))
+					countYLeft++;
+		}
+
+		if(er==1) {
+			for(k=xLb;k<xUb;k++)
+				if((mid<x[k]) && (x[k]<=(center+rad)))
+					countXRight++;
+			for(l=yLb;l<yUb;l++)
+				if((mid<y[l]) && (y[l]<=(center+rad)))
+					countYRight++;
+		} else if (er == 0) {
+			for(k=xLb;k<xUb;k++)
+				if((mid<x[k]) && (x[k]<(center+rad)))
+					countXRight++;
+			for(l=yLb;l<yUb;l++)
+				if((mid<y[l]) && (y[l]<(center+rad)))
+					countYRight++;
+		}
+		flag=true;
+	}
+
+#if 1
+	if((countXLeft > 0) || (countYLeft > 0)) {
+		node = new Vertex();
+		node->parent = parent;
+		node->level = parent->level + 1;
+		/*node->xLeft = xLb;
+		node->xRight = xUb;
+		node->yLeft = yLb;
+		node->yRight = yUb;*/
+		leftChild = ConstructSpatialTree_trifmm_local_shift(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
+	}
+	else {
+		printf("xLb:%d xUb:%d yLb:%d yUb:%d mid:%lf center:%lf radius:%lf\n",xLb, xUb, yLb, yUb, mid, center, rad);
+		assert(0); //should not come here.
+	}
+#endif
+/*	node = new Vertex();
+	node->parent = parent;
+	node->level = parent->level + 1;
+	leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); */
+
+	c = center + rad/2; //if(!flag) then the value of c.
+	if(flag) {
+		c = (mid + (center + rad))/2; //overwrite the value of c if flag is true.
+		d = ((center + rad) - mid)/2; 
+	}
+	
+	assert(node != NULL);
+	rightChild = ConstructSpatialTree_trifmm_local_shift(x,y,xLb+countXLeft,xUb,yLb+countYLeft,yUb, c, d, 0, er, node); 
+	node->left = leftChild;
+	node->right = rightChild;
+	node->center = center;
+	node->radius = rad;
+	//node->eta = eta0/rad;
+	return node;
+}
 /* x and y contain elements at indices [xLb,xUb) [yLb,yUb). center is the absolute value of coordinate of the center of the interval. rad is the radius if the interval is bisected. */
 Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
 
@@ -323,8 +678,10 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 	int i, j, k, l, countXLeft=0, countXRight=0, countYLeft=0, countYRight=0;
 	Vertex* leftChild=NULL, *rightChild=NULL, *node=NULL;
 
-	if((xLb > xUb) || (yLb > yUb))
+	if((xLb > xUb) || (yLb > yUb)) {
+		assert(0);
 		return NULL;
+	}
 
 	int sizex = xUb-xLb, sizey = yUb-yLb; //calculate number of elements in the interval
 	if ((sizex <= MAX_POINTS_IN_CELL) && (sizey <= MAX_POINTS_IN_CELL)){
@@ -427,6 +784,7 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		flag=true;
 	}
 
+#if 1
 	if((countXLeft > 0) || (countYLeft > 0)) {
 		node = new Vertex();
 		node->parent = parent;
@@ -441,7 +799,12 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		printf("xLb:%d xUb:%d yLb:%d yUb:%d mid:%lf center:%lf radius:%lf\n",xLb, xUb, yLb, yUb, mid, center, rad);
 		assert(0); //should not come here.
 	}
-	
+#endif
+/*	node = new Vertex();
+	node->parent = parent;
+	node->level = parent->level + 1;
+	leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); */
+
 	c = center + rad/2; //if(!flag) then the value of c.
 	if(flag) {
 		c = (mid + (center + rad))/2; //overwrite the value of c if flag is true.
@@ -613,10 +976,10 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 	orgSize=numXElems;*/
 	std::qsort(x, numXElems, sizeof(double), compare);  
 	std::qsort(y, numYElems, sizeof(double), compare); 
-	double z2 = max(x[numXElems-1], y[numYElems-1]);
-	double z1 = min(x[0], y[0]);
-	z2 += 0.1 * abs(z2);
-	z1 -= 0.1 * abs(z1);
+	double z2 = std::max(x[numXElems-1], y[numYElems-1]);
+	double z1 = std::min(x[0], y[0]);
+	z2 += 0.1 * std::abs(z2);
+	z1 -= 0.1 * std::abs(z1);
 
 	Vertex* markerNode = new Vertex(); // this is a dummy node created to avoid having 'if(parent) == NULL' checks in ConstructSPatialTree.
 	markerNode->level=0;
@@ -626,8 +989,6 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 #ifdef DEBUG
 	AssignLabels(node);
 #endif
-	//std::ofstream of;//("trifmmoutput_afterpreorder.txt",std::ofstream::out);
-	//PrintTree(node, of);
 
 	if(node->left)
 		UpdateNeighbors(node->left);
@@ -639,6 +1000,7 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 	PostorderVisitor(node,v);
 	PreorderVisitor(node, v);
 	v->result=new double[numXElems];
+	for(int i=0;i<numXElems;i++) v->result[i]=0;
 	PostorderVisitorLeaf(node, v);
 	double* ret=v->result;
 	delete v; //v->result is not destroyed.
@@ -774,7 +1136,7 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 			int numElements=node->xRight-node->xLeft;
 			if(numElements > 0) {
 				ComputeU_Scaled(&outU, dataX+node->xLeft, numElements, numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
-				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+				GetTransposeInPlace(outU, numTerms, numElements);
 				if(node->computed) {
 					//compute zl(px, :) = Ui * ul{i};
 					assert(node->zl == NULL);
@@ -868,8 +1230,8 @@ void TriFMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 							{
 								for(int i=0;i<xiVectorSize;i++) { 
 									for(int j=0;j<xjVectorSize;j++) {
-					 					D[i*xjVectorSize+j] = log(abs(D[i*xjVectorSize+j]));
-										if(isSelf && isnan(D[i*xjVectorSize+j]))
+					 					D[i*xjVectorSize+j] = std::log(std::abs(D[i*xjVectorSize+j]));
+										if(isSelf && isinf(D[i*xjVectorSize+j]))
 											D[i*xjVectorSize+j] = 0;
 									}
 								}
@@ -959,7 +1321,7 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 	PreorderVisitor(node, v);
 	//PrintTree(node, of);
         v->result = new double[numXElems*2];
-	memset(v->result, 0, sizeof(double)*numXElems*2);
+	for(int i=0;i<numXElems*2;i++) v->result[i]=0;
 	PostorderVisitorLeaf(node, v); 
 	double* ret=v->result;
 	delete v; // v->result is not destroyed
@@ -973,11 +1335,24 @@ void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 			double* outU=NULL;
 			int numElements=node->xRight-node->xLeft;
 			if(numElements > 0) {
-				ComputeU_Scaled(&outU, dataX+node->xLeft, (node->xRight-node->xLeft), numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
-				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
+			/*PrintArray<int>(&numElements, 1, 1, "fmminput_Uscaled.txt");
+			PrintArray<const double>(dataX+node->xLeft, 1, numElements, "fmminput_Uscaled.txt");
+			PrintArray<int>(&numTerms, 1, 1, "fmminput_Uscaled.txt");
+			PrintArray<double>(&eta0, 1, 1, "fmminput_Uscaled.txt");
+			double arg1=node->center;
+			double arg2=2*(node->radius);
+			PrintArray<double>(&arg1, 1, 1, "fmminput_Uscaled.txt");
+			PrintArray<double>(&arg2, 1, 1, "fmminput_Uscaled.txt");
+			PrintArray<int>(&scalingLocal, 1, 1, "fmminput_Uscaled.txt");*/
+
+
+				ComputeU_Scaled(&outU, dataX+node->xLeft, numElements, numTerms, eta0, node->center, 2*(node->radius), scalingLocal);
+				//PrintArray2<double>(outU, numTerms, numElements, "fmmoutput_Uscaled_BT.txt");
+				GetTransposeInPlace(outU, numTerms, numElements);
+				//PrintArray2<double>(outU, numElements, numTerms, "fmmoutput_Uscaled.txt");
+				//assert(0);
 				if(node->computed) {
 					//compute z(px, :) = Ui * u{i};
-					int numElements=node->xRight-node->xLeft;
 					node->zl=new double[numElements];
 					for(int j=0;j<numElements;j++){
 						double temp=0;
@@ -1022,6 +1397,7 @@ void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 					//computing D=yi-yj.' 
 					for(int i=0;i<xiVectorSize;i++) {
 						for(int j=0;j<xjVectorSize;j++) {
+							assert((nbr->yLeft+j) < orgSize);
 					 		D[i*xjVectorSize+j] = yi[i] - dataY[nbr->yLeft+j];
 						}
 					}
@@ -1045,8 +1421,8 @@ void FMM1TreeVisitor::LeafNodeActions(Vertex* node) {
 							{
 								for(int i=0;i<xiVectorSize;i++) { 
 									for(int j=0;j<xjVectorSize;j++) {
-					 					D[i*xjVectorSize+j] = log(abs(D[i*xjVectorSize+j]));
-										if(isSelf && isnan(D[i*xjVectorSize+j]))
+					 					D[i*xjVectorSize+j] = std::log(std::abs(D[i*xjVectorSize+j]));
+										if(isSelf && isinf(D[i*xjVectorSize+j]))
 											D[i*xjVectorSize+j] = 0;
 									}
 								}
@@ -1109,11 +1485,14 @@ double* fmm1d_local_shift(int r, double *x, double *y, double * q, const double 
 	TreeVisitor* v=new FMM1TreeVisitor(x, y, q, r, scaling, fun, p_org, p_gap, numXElems, node);
 	PostorderVisitor(node,v);
 	PreorderVisitor(node, v);
+	/*std::ofstream of;//("fmmoutputtree_u.txt",std::ofstream::out);
+	PrintTree(node, of);*/
         v->result = new double[numXElems];
+	for(int i=0;i<numXElems;i++) v->result[i]=0;
 	PostorderVisitorLeaf(node, v);
 	double* ret=v->result;
 	delete v; //v->result is not destroyed
-
+	delete markerNode;
 	return ret;
 }	
 

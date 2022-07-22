@@ -14,7 +14,7 @@
 #include "bsxfun.h"
 #include "vhat.h"
 
-template<typename T>
+/*template<typename T>
 void PrintArray(T *A, int row, int col, const char* filename="debugoutput.txt")
 {
 #if 1
@@ -29,7 +29,8 @@ void PrintArray(T *A, int row, int col, const char* filename="debugoutput.txt")
     }
     txtOut.close();
 #endif
-}
+}*/
+
 
 double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size, std::vector<double>& tau, std::vector<double>& w, double N){
     /*ofstream txtOut;
@@ -51,7 +52,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
     int r = 50;   
     //std::vector<double>v(n);
     double *v = new double[n];
-   // if(n < N) 
+  //  if(n < N) 
     {
         int dRows = d.size();
         int dCols = org_size;
@@ -89,7 +90,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
 	std::vector<double> e1(n,1);
 	std::vector<double> zeros(n,0);
 	
-/*	char fname[64];
+	/*char fname[64];
 	sprintf(fname,"vhat_fmminput_call1.txt");
 	std::ofstream txtOut;
 	txtOut.open(fname, std::ofstream::out | std::ofstream::app);
@@ -106,7 +107,12 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
 	txtOut.close();*/
 
 	double* v0 = fmm1d_local_shift_2(r, ptrD, lam, e1.data(), gap, org, 3, d.size(), n);
-/*	sprintf(fname,"vhat_fmmoutput_call1_v0.txt");
+
+	std::vector<int> tmpOrg(d.size(),0);
+	for(int i=0;i<d.size();i++)
+		tmpOrg[i]=i;
+
+	/*sprintf(fname,"vhat_fmmoutput_call1_v0.txt");
 	PrintArray<double>(v0,1,d.size(),fname);
 	
 	sprintf(fname,"vhat_fmminput_call2.txt");
@@ -121,11 +127,12 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
 	PrintArray<double>(tempe1,1,n,fname);
 	tempe1=zeros.data();
 	PrintArray<double>(tempe1,1,d.size(),fname);
-	PrintArray<const int>(org,1,d.size(),fname);
+	const int* tempe2=tmpOrg.data();
+	PrintArray<const int>(tempe2,1,d.size(),fname);
 	txtOut.close();*/
 
-        double* vd = fmm1d_local_shift(r, ptrD, ptrD, e1.data(), zeros.data(), org, 3, d.size(), d.size());
-/*	sprintf(fname,"vhat_fmmoutput_call2_vd.txt");
+        double* vd = fmm1d_local_shift(r, ptrD, ptrD, e1.data(), zeros.data(), tmpOrg.data(), 3, d.size(), d.size());
+	/*sprintf(fname,"vhat_fmmoutput_call2_vd.txt");
 	PrintArray<double>(vd,1,d.size(),fname);*/
 	for(int i=0;i<n;i++)
 		v[i]=exp(0.5 *(v0[i]-vd[i]));
@@ -134,7 +141,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
 	for(int i=0;i<n;i++)
 		if(w[i] <0)
 			v[i] = -1 * v[i];
-/*	sprintf(fname,"vhat_fmmoutput_call2_v.txt");
+	/*sprintf(fname,"vhat_fmmoutput_call2_v.txt");
 	PrintArray<double>(v,1,n,fname);*/
 
     	delete [] v0;
@@ -142,7 +149,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
     }
 #endif
     
- /*   txtOut.open("vhat_output.txt", std::ofstream::out | std::ofstream::app);
+    /*txtOut.open("vhat_output.txt", std::ofstream::out | std::ofstream::app);
     txtOut<<setprecision(12)<<d.size()<<"\n";
     for(int i=0;i<d.size();i++)
 	txtOut<<setprecision(12)<<v[i]<<"\n";

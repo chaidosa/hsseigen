@@ -2,6 +2,7 @@
 #include<cassert>
 #include<cmath>
 #include<set>
+#include<fstream>
 //#include<cfloat>
 #include"computeX_Scaled.h"
 #include"fmm_types.h"
@@ -21,6 +22,7 @@ const double pi = 3.14159265358979323846;
 
 using namespace std;
 
+void PrintTree(const Vertex* node, std::ofstream& of);
 void DestroyTree(Vertex* node);
 class TreeVisitor{
 
@@ -58,7 +60,6 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 				GetTransposeInPlace(outU, numTerms, (node->xRight-node->xLeft));
 				if(node->computed) {
 					//compute z(px, :) = Ui * u{i};
-					int numElements=node->xRight-node->xLeft;
 					node->zl=new double[numElements];
 					for(int j=0;j<numElements;j++){
 						double temp=0;
@@ -84,7 +85,6 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 					double* tj = new double[xjVectorSize];
 					double* xj = new double[xjVectorSize];
 					for(int i=0;i<xjVectorSize;i++) {
-						assert((nbr->yLeft+i) < rootNode->yRight);
 						assert(i < orgSize);
 						xj[i] = dataX[org[nbr->yLeft+i]]; 
 						tj[i] = gap[nbr->yLeft+i];
@@ -119,7 +119,7 @@ void TreeVisitor::LeafNodeActions(Vertex* node) {
 							{
 								for(int i=0;i<xiVectorSize;i++) { 
 									for(int j=0;j<xjVectorSize;j++) {
-					 					D[i*xjVectorSize+j] = log(abs(D[i*xjVectorSize+j]));
+					 					D[i*xjVectorSize+j] = std::log(std::abs(D[i*xjVectorSize+j]));
 										if(isSelf && isnan(D[i*xjVectorSize+j]))
 											D[i*xjVectorSize+j] = 0;
 									}
@@ -431,10 +431,10 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		node = new Vertex();
 		node->parent = parent;
 		node->level = parent->level + 1;
-		node->xLeft = xLb;
+		/*node->xLeft = xLb;
 		node->xRight = xUb;
 		node->yLeft = yLb;
-		node->yRight = yUb;
+		node->yRight = yUb;*/
 		leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
 	}
 	else {
@@ -465,7 +465,7 @@ bool AreAdjacent(const Vertex* node1, const Vertex* node2) {
 		//trivial case.
 		//if((node1->xRight == node2->xLeft) || (node1->xLeft == node2->xRight) || (node1->yRight == node2->yLeft) || (node1->yLeft == node2->yRight))
 		//is-within-a-threshold case.
-		if((node1->radius + node2->radius) <= (TAU * abs(node1->center - node2->center)))
+		if((node1->radius + node2->radius) <= (TAU * std::abs(node1->center - node2->center)))
 			ret=false;
 	return ret;
 }
@@ -626,7 +626,8 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 #ifdef DEBUG
 	AssignLabels(node);
 #endif
-	
+	//std::ofstream of;//("trifmmoutput_afterpreorder.txt",std::ofstream::out);
+	//PrintTree(node, of);
 
 	if(node->left)
 		UpdateNeighbors(node->left);
@@ -641,7 +642,7 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 	PostorderVisitorLeaf(node, v);
 	double* ret=v->result;
 	delete v; //v->result is not destroyed.
-	
+	delete markerNode;
 	return ret;
 }	
 
@@ -700,6 +701,7 @@ void TriFMM1TreeVisitor::PreorderActions(Vertex* node) {
 					}
 				}
 			}
+			else {assert(0);}
 			delete [] outB;
 		}
 	
@@ -942,6 +944,8 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 #ifdef DEBUG
 	AssignLabels(node);
 #endif
+	/*std::ofstream of;//("trifmmoutput_afterpreorder.txt",std::ofstream::out);
+	PrintTree(node, of);*/
 	
 
 	if(node->left)
@@ -953,6 +957,7 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 	TreeVisitor* v=new TriFMM1TreeVisitor(x, y, q, r, scaling, fun, p_org, p_gap, numXElems, node);
 	PostorderVisitor(node,v);
 	PreorderVisitor(node, v);
+	//PrintTree(node, of);
         v->result = new double[numXElems*2];
 	memset(v->result, 0, sizeof(double)*numXElems*2);
 	PostorderVisitorLeaf(node, v); 

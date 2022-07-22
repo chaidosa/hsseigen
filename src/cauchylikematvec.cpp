@@ -42,7 +42,7 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
     int n        = qcSizes[0].first;
     int r        = 50;
 
-    if(n < N)
+    //if(n < N)
     {
         if(ifTrans == 0){
             assert(false);
@@ -73,7 +73,7 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
             delete [] S; 
         }
     }
-
+#if 0
     else{
         //FMM
         if(ifTrans == 0){
@@ -92,5 +92,6 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
             bsxfun('T', &Y, qcSizes[3], s, qcSizes[1]);
         }
     }
+#endif
     return Y;
 }

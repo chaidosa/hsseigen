@@ -22,7 +22,7 @@ CXXFLAGS+= -fopenmp
 #LDFLAGS+= -fopencilk
 #CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)
-	CXXFLAGS += -g
+	CXXFLAGS += -g -DDEBUG
 else
 	CXXFLAGS+= -O3
 endif

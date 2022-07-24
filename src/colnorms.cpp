@@ -23,6 +23,21 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
 %%% Output
 %%% s: norm of each columns of ( v_i / (d_i - lam_j) )
 */ 
+	 /*ofstream txtOut;
+    txtOut.open("colnorms_input.txt", std::ofstream::out | std::ofstream::app);
+    txtOut<<d.size()<<"\n"<<org_size<<"\n"<<tau.size()<<"\n"<<org_size<<"\n"<<d.size()<<"\n"<<N<<"\n";
+    for(int i=0;i<d.size();i++)
+	txtOut<<setprecision(12)<<d[i]<<"\n";
+    for(int i=0;i<org_size;i++)
+	txtOut<<setprecision(12)<<lam[i]<<"\n";
+    for(int i=0;i<tau.size();i++)
+	txtOut<<setprecision(12)<<tau[i]<<"\n";
+    for(int i=0;i<org_size;i++)
+	txtOut<<setprecision(12)<<org[i]<<"\n";
+    for(int i=0;i<d.size();i++)
+	txtOut<<setprecision(12)<<v[i]<<"\n";
+    txtOut.close();*/
+
     int n = org_size;
     int r = 50; 
     double *S=NULL, *s=NULL;
@@ -32,7 +47,7 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
     for(int i = 0; i < org_size; ++i)        
 	temp_vSqr[i] = v[i]*v[i];
     
-    //if(n < N)
+    if(n < N)
     {
         int sRows = org_size;
         int sCols = d.size();
@@ -62,7 +77,6 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
 
         delete [] S;
     }
-#if 0
     else{
         //FMM 1D local shift
     	s=fmm1d_local_shift(r,lam,d.data(),temp_vSqr,tau.data(), org, 2, org_size, org_size);
@@ -71,9 +85,15 @@ double* colnorms(std::vector<double>& d, double* lam, std::vector<double>& tau, 
 	    s[i]=1/std::sqrt(s[i]);
     	}
     }
-#endif
     delete [] temp_vSqr;
 
     //std::vector<double>result(s, s+sSize);
+    
+    /*txtOut.open("colnorms_output.txt", std::ofstream::out | std::ofstream::app);
+    txtOut<<setprecision(12)<<org_size<<"\n";
+    for(int i=0;i<org_size;i++)
+	txtOut<<setprecision(12)<<s[i]<<"\n";
+    txtOut.close();*/
+
     return s;
 }

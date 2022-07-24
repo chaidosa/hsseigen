@@ -52,7 +52,7 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
     int r = 50;   
     //std::vector<double>v(n);
     double *v = new double[n];
-  //  if(n < N) 
+    if(n < N) 
     {
         int dRows = d.size();
         int dCols = org_size;
@@ -79,7 +79,6 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
                 v[itr] = -v[itr];
         }              
     }
-#if 0
     else
     {
 	assert(d.size() == n);
@@ -147,7 +146,6 @@ double * vhat(std::vector<double>& d, double* lam, const int *org, int org_size,
     	delete [] v0;
 	delete [] vd;
     }
-#endif
     
     /*txtOut.open("vhat_output.txt", std::ofstream::out | std::ofstream::app);
     txtOut<<setprecision(12)<<d.size()<<"\n";

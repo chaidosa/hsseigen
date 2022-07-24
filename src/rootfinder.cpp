@@ -177,7 +177,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
 	txtOut<<setprecision(12)<<v[i]<<"\n";
     txtOut.close();*/
 
-	static int fmmcallcount=1;
+	//static int fmmcallcount=1;
     /*
     %%% Input:
     %%% d, v: as in secular equation
@@ -255,9 +255,9 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
         d0[i] = d[i+1] - d[i];
         
         x[i] = (d[i] + d[i+1]) / 2;
-	if((std::isnan(x[i])))
+	/*if((std::isnan(x[i])))
 		printf("FMMCallCount:%d HIT %d: x[i]:%lf d[i]:%lf d[i+1]:%lf dsize:%lu\n",fmmcallcount,i,x[i],d[i],d[i+1], d.size());
-        
+        */
         org[i] = i;
 
         v2_arr[i] = v[i]*v[i];  
@@ -276,7 +276,7 @@ Root *rootfinder(vector<double>& d,vector<double>& v, double N)
     int f0_size = kRows;   
  
    
-    printf("fmmcallcount:%d\n",fmmcallcount++);
+    //printf("fmmcallcount:%d\n",fmmcallcount++);
     if(n >= N)
     {
 		/*char fname[64];

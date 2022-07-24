@@ -226,7 +226,6 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
             //V hat call
             v3_hat = vhat(d3, Lam3, org, org_size, tau, v3, N);
             //Colnorms call
-	    //assert(0);
             s3 = colnorms(d3, Lam3, tau, org, org_size, v3_hat,N); 
 	        s3_size=org_size;
         }
@@ -318,7 +317,8 @@ SECU* secular(double *d, int dSize, double *v, int vSize, double N){
     }
 
     else
-    {        
+    {   
+        printf("comes here\n");	    
         if(Lam3)
             delete [] Lam3;
         res->JSize = {0,0};

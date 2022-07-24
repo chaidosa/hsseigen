@@ -365,11 +365,11 @@ void DestroyTree(Vertex* node)
 	return;
 }
 
-Vertex* ConstructSpatialTree_fmm1d_local_shift(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
+Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
 
 	double c = center - rad/2; //new center
 	double d = rad/2; //new radius
-	double mid;
+	double mid=0.;
 	bool flag=false;
 	int i, j, k, l, countXLeft=0, countXRight=0, countYLeft=0, countYRight=0;
 	Vertex* leftChild=NULL, *rightChild=NULL, *node=NULL;
@@ -480,40 +480,51 @@ Vertex* ConstructSpatialTree_fmm1d_local_shift(double *x, double *y, int xLb, in
 		flag=true;
 	}
 
-#if 1
-	if((countXLeft > 0) || (countYLeft > 0)) {
-		node = new Vertex();
-		node->parent = parent;
-		node->level = parent->level + 1;
-		/*node->xLeft = xLb;
-		node->xRight = xUb;
-		node->yLeft = yLb;
-		node->yRight = yUb;*/
-		leftChild = ConstructSpatialTree_fmm1d_local_shift(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
-	}
-	else {
-		printf("xLb:%d xUb:%d yLb:%d yUb:%d mid:%lf center:%lf radius:%lf\n",xLb, xUb, yLb, yUb, mid, center, rad);
-		assert(0); //should not come here.
-	}
-#endif
-/*	node = new Vertex();
+	node = new Vertex();
 	node->parent = parent;
 	node->level = parent->level + 1;
-	leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); */
+	node->center = center;
+	node->radius = rad;
+	
+	assert((xUb-countXRight) == (xLb+countXLeft));
+	assert((yUb-countYRight) == (yLb+countYLeft));
 
+	if((countXLeft > MAX_POINTS_IN_CELL) || (countYLeft > MAX_POINTS_IN_CELL)) {
+		node->left = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
+	} else{
+		node->left = new Vertex();
+		node->left->parent = node;
+		node->left->xLeft = xLb;
+		node->left->xRight = xLb+countXLeft;
+		node->left->yLeft = yLb;
+		node->left->yRight = yLb+countYLeft;
+		node->left->isLeaf = true;
+		node->left->level = node->level + 1;
+		node->left->center = center; 
+		node->left->radius = rad; 
+	}
+
+	
 	c = center + rad/2; //if(!flag) then the value of c.
 	if(flag) {
 		c = (mid + (center + rad))/2; //overwrite the value of c if flag is true.
 		d = ((center + rad) - mid)/2; 
 	}
-	
-	assert(node != NULL);
-	rightChild = ConstructSpatialTree_fmm1d_local_shift(x,y,xLb+countXLeft,xUb,yLb+countYLeft,yUb, c, d, 0, er, node); 
-	node->left = leftChild;
-	node->right = rightChild;
-	node->center = center;
-	node->radius = rad;
-	//node->eta = eta0/rad;
+	if((countXRight > MAX_POINTS_IN_CELL) || (countYRight > MAX_POINTS_IN_CELL)) {
+		node->right = ConstructSpatialTree(x,y,xUb-countXRight,xUb,yUb-countYRight,yUb, c, d, 0, er, node); 
+	} else{
+		node->right = new Vertex();
+		node->right->parent = node;
+		node->right->xLeft = xLb+countXLeft;
+		node->right->xRight = xUb;
+		node->right->yLeft = yLb+countYLeft;
+		node->right->yRight = yUb;
+		node->right->isLeaf = true;
+		node->right->level = node->level + 1;
+		node->right->center = center; 
+		node->right->radius = rad; 
+	}
+
 	return node;
 }
 
@@ -669,7 +680,7 @@ Vertex* ConstructSpatialTree_trifmm_local_shift(double *x, double *y, int xLb, i
 	return node;
 }
 /* x and y contain elements at indices [xLb,xUb) [yLb,yUb). center is the absolute value of coordinate of the center of the interval. rad is the radius if the interval is bisected. */
-Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
+Vertex* ConstructSpatialTree_temp(double *x, double *y, int xLb, int xUb, int yLb, int yUb, double center, double rad, int el, int er, Vertex* parent) {
 
 	double c = center - rad/2; //new center
 	double d = rad/2; //new radius
@@ -682,7 +693,8 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		assert(0);
 		return NULL;
 	}
-
+	
+	std::cout<<setprecision(12)<<"x("<<x[xLb]<<", "<<x[xUb-1]<<") y("<<y[yLb]<<", "<<y[yUb-1]<<")\n";
 	int sizex = xUb-xLb, sizey = yUb-yLb; //calculate number of elements in the interval
 	if ((sizex <= MAX_POINTS_IN_CELL) && (sizey <= MAX_POINTS_IN_CELL)){
 		//if this function is called with arguments such that the number of elements in an interval is below a threshold, then stop subdividing the interval.
@@ -742,12 +754,17 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 	if((countXLeft == 0) || (countYLeft == 0) || (countXRight == 0) || (countYRight == 0)){
 		countXLeft=0; countXRight=0; countYLeft=0; countYRight=0;
 		//x and y intervals are empty after the bisected point. Adjust center and rad.
-		if(((xUb-xLb) > 0) && ((yUb-yLb) > 0))
+		if(((xUb-xLb) > 0) && ((yUb-yLb) > 0)) {
 			mid = (y[yUb-1]+x[xLb])/2;
-		else if ((xUb-xLb) > 0)
+		}
+		else if ((xUb-xLb) > 0){
 			mid = (center+rad+x[xLb]) / 2;
+			
+		}
 		else if  ((yUb-yLb) > 0)
 			mid = (center-rad+y[yUb-1]) / 2;
+		else
+			assert(0);
 		c = (mid + (center - rad))/2;
 		d = (mid - (center - rad))/2;
 		if(el==1){
@@ -796,7 +813,6 @@ Vertex* ConstructSpatialTree(double *x, double *y, int xLb, int xUb, int yLb, in
 		leftChild = ConstructSpatialTree(x,y,xLb,xLb+countXLeft,yLb,yLb+countYLeft, c, d, el, 1, node); 
 	}
 	else {
-		printf("xLb:%d xUb:%d yLb:%d yUb:%d mid:%lf center:%lf radius:%lf\n",xLb, xUb, yLb, yUb, mid, center, rad);
 		assert(0); //should not come here.
 	}
 #endif
@@ -983,7 +999,6 @@ double* fmm1d_local_shift_2(int r, double *x, double *y, double * q, const doubl
 
 	Vertex* markerNode = new Vertex(); // this is a dummy node created to avoid having 'if(parent) == NULL' checks in ConstructSPatialTree.
 	markerNode->level=0;
-
 	Vertex* node = ConstructSpatialTree(x,y,0,numXElems,0,numYElems, (z1+z2)/2, (z2-z1)/2, 1, 1, markerNode); 
 	markerNode->left=node;
 #ifdef DEBUG
@@ -1293,10 +1308,10 @@ double* trifmm1d_local_shift(int r, double *x, double *y, double * q, const doub
 	orgSize=numXElems;*/
 	std::qsort(x, numXElems, sizeof(double), compare);  
 	std::qsort(y, numYElems, sizeof(double), compare); 
-	double z2 = max(x[numXElems-1], y[numYElems-1]);
-	double z1 = min(x[0], y[0]);
-	z2 += 0.1 * abs(z2);
-	z1 -= 0.1 * abs(z1);
+	double z2 = std::max(x[numXElems-1], y[numYElems-1]);
+	double z1 = std::min(x[0], y[0]);
+	z2 += 0.1 * std::abs(z2);
+	z1 -= 0.1 * std::abs(z1);
 
 	Vertex* markerNode = new Vertex(); // this is a dummy node created to avoid having 'if(parent) == NULL' checks in ConstructSPatialTree.
 	markerNode->level=0;

@@ -6,12 +6,16 @@
 #include<assert.h>
 #include"compr.h"
 #include"QR.h"
+#ifndef OPENBLAS 
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
+#ifndef OPENBLAS 
 }
+#endif
 
 /*A is the input parameter initialized to T[i] for leaf i.
 Q is the output parameter computing Ui, R is the output parameter computing Ri */

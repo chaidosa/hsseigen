@@ -4,12 +4,16 @@
 #include "superdcmv_node.h"
 #include<string.h>
 #include "eigenmatrix.h"
+#ifndef OPENBLAS 
 extern "C"
 {
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
+#ifndef OPENBLAS 
 }
+#endif
 using namespace std;
 
 void superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double **X,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,std::pair<int,int>* indexRange,double N){

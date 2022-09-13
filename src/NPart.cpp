@@ -8,7 +8,7 @@
  * maximum number of leaves possible (a perfect power of two).
  * E.g. 23x23 matrix partitioned as 3 rows per partition i.e. n=23, ni=3. We would have 8 partitions with all the 
  * partitions except the last partition getting 3 rows of the matrix. Last partition gets 2 rows.
- * E.g. 44x44 matrix partitioned as 6 rows per partition i.e. n=44, ni=6, We would have 8 partitions with all the  
+ * E.g. 44x44 matrix partitioned as 6 rows per partition i.e. n=44, ni=6, We would have 7 partitions with all the  
  * partitions except the last partition getting 6 rows of the matrix. Last partition gets 8 rows. */
 
 void NPart(int n, int ni, BinTree** tr, int**m, int& mSize, int ltr)
@@ -20,7 +20,7 @@ void NPart(int n, int ni, BinTree** tr, int**m, int& mSize, int ltr)
 		return;
 	}
 
-	if(ltr == 0) {
+	if(ltr == 0){
 		//k = number of horizontal partitions of input matrix
 		int k=n/ni;
 		

@@ -3,44 +3,31 @@
 #include<stdio.h>
 #include<vector>
 #include<iostream>
-
+#include <unordered_map>
 using namespace std;
 
 class BinTree
 {
 	public:
-	//BinTree():tr(NULL),level(NULL), numNodes(0){}
+	
 	BinTree(int n):numNodes(0){Create(n);}
-	~BinTree();
+	//~BinTree();
+	//return childrens of a node with some ID
 	std::vector<int> GetChildren(int ID);
-	int GetSibling(int ID);
-	/*bool IsLeaf(int ID);*/
-	int GetLeftMostChild(int ID);
-	int GetRightMostChild(int ID);
-	std::vector<int> GetDescendents(int ID);
-	int GetNumNodes() { return numNodes;}
-	std::vector<int> GetLeaves() { return leaves;}
-#ifdef DEBUG
-	void Print();
-#endif
 
-	/* is a list to store the parent IDs. tr[0] contains the parent ID of node number 1, 
-	 * tr[1] contains the parent ID of node number 2, and so on. The root node is represented by
-	 * the ID, n, where n+1 is a perfect power of two (because it is a complete binary tree).
-	 * tr[n-1] = 0 i.e. the parent ID of root node is 0 */
-	int* tr; 
+	std::vector<int> GetTreeDesc();
+	std::vector<vector<int>> hsslevel();
+	int GetNumNodes();
 
-	/* is a list to store the level of each node starting from level 0 (root node) */
-	int* level;
-
-	/* is a list to store the IDs of leaf nodes */
+	vector<int> tr; 
+	//stores children of all the parent
+	std::unordered_map<int, vector<int>> ch;
+	//stores all the leaves
 	std::vector<int> leaves;
-
-	int maxLevel; //the maximum level of a node in the tree for a given value of numNodes 
-	int numNodes; //number of nodes in the complete binary tree.
-
+	int numNodes; //number of nodes in the full binary tree.
+	int numLevels; //number of levels in full binary tree
+	std::vector<vector<int>>nodeAtLvl;
 	//helper functions to create the tree
-	int BinaryPostorderTree(int parentID, int step, bool leftChild);
 	void Create(int n);
 };
 

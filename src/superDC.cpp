@@ -156,7 +156,7 @@ std::pair<double*, double*> computeLeafEig(std::pair<int, int> dSize, double *D,
     double abstol = 1.234e-27;
         
     //cout << "Computing eigenvalues and eigenvectors for node: "<<(i+1)<<"\n";
-    int info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', dSize.first, D, dSize.second, NULL, NULL, NULL, NULL,abstol, &dSize.first, E, EV, dSize.second, Isuppz);
+    int info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', dSize.first, D, dSize.second, 0., 0., 0, 0,abstol, &dSize.first, E, EV, dSize.second, Isuppz);
             
     if(info > 0){
         cout<<"Eigensolver doesn't work";
@@ -229,7 +229,7 @@ bt = btree;
    // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
 
-#if 0
+#ifdef PARALLEL
     vector<int> counter(N+1, 0);
     std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
 
@@ -329,7 +329,6 @@ bt = btree;
 
         }
     }
-
 #else
   std::queue<int> Work;
   std::vector<int> counter(N+1, 0);

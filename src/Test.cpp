@@ -10,6 +10,23 @@
 #include"superdcmv.h"
 #include <sys/time.h>
 #include<assert.h>
+#include<fstream>
+#include<iomanip>
+
+template<typename T>
+void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
+{
+	std::ofstream txtOut;
+    txtOut.open(filename, std::ofstream::out | std::ofstream::app);
+    for(unsigned int i = 0; i <(unsigned)row; i++)
+    {
+        for(int j=0; j < col; j++)
+        {
+            txtOut<<std::setprecision(12)<<Arr[j+i*col]<<"\n";
+        }
+    }
+    txtOut.close();
+}
 
 //define the value that triggers fmm acceleration. TODO: add detailed comment about for what values the acceleration is expected.
 int fmmTrigger=17000; 
@@ -63,12 +80,13 @@ int main(int argc, char* argv[])
 	//x = zeros(n,1);
 	//x(2) = 1;
 	//y = superdcmv(Q,x,0, N);
-	int k = bt->GetNumNodes();
-	double* x=new double[(res->qSizes[k-1]).second];
-	for(int i=0;i<(res->qSizes[k-1]).second;i++)
+	double* x=new double[n];
+	for(int i=0;i<n;i++)
 		x[i]=0;
 	x[0]=1;
-	superdcmv(res->Q, res->qSizes, x, bt, 1, fmmTrigger);
+	std::pair<int, int> xSize={n,1};
+	double * matvecresult=superdcmv(res->Q, res->qSizes, x, xSize, bt, m, 1, fmmTrigger);
+	PrintArray<double>(matvecresult, 1, n, "eigvector.txt");
 	delete[] m;
 	
 	return 0;

@@ -22,18 +22,39 @@ else
 end*/
 
 
-double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, BinTree* bt, int ifTrans,double N){
+double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, std::pair<int, int> xSize, BinTree* bt, int* m, int ifTrans,double N){
 	double* res=NULL;
     if(ifTrans == 0){
         assert(false);
     }
     else{
-            int columns = qSize->second;
-            std::pair<int,int>tempXSize = {columns,1};
-    	    int k = bt->GetNumNodes();
-            res = superdcmv_node(Qt[k],qSize[k],x,tempXSize, bt,k,1,N);
-	    std::pair<int, int> l={0, columns-1};
-    	    res = superdcmv_desc(Qt,qSize,res,tempXSize,bt,k,1,&l,N);           
+    	    int K = bt->GetNumNodes();
+	    std::pair<int, int>* l = new std::pair<int,int>[K];  
+
+	    for(int k = 0; k < K; k++)
+		l[k] = std::make_pair(0,0);    
+
+	    l[0]                  = {0,m[0] - 1};
+	    int it                = 0;
+	    int lt                = 0;
+
+	    for(int k = 0; k < K; k++)
+	    {
+		std::vector<int> ch = bt->GetChildren(k + 1);
+		if(ch.size() == 0)
+		{
+		    l[k] = {lt,lt + m[it] - 1};
+		    lt   = l[k].second + 1;
+		    it   = it + 1;
+		}
+		else
+		    l[k] = {l[ch[0] - 1].first,l[ch[1] - 1].second};
+	    }
+
+
+	    std::pair<int, int> qSizek=qSize[K-1];
+            res = superdcmv_node(Qt[K-1],xSize,x,xSize, bt,K-1,1,N);
+    	    res = superdcmv_desc(Qt,qSize,res,xSize,bt,K-1,1,l,N);           
         }
     return res;
 }

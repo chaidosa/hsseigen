@@ -61,7 +61,7 @@ void Eig_func(int i){
     Eig_func(right-1);   
     
     //compute
-    superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,1024);           
+    superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,fmmTrigger);           
     Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
     std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
@@ -285,7 +285,7 @@ bt = btree;
                     int left = ch[0];
                     int right = ch[1];
                     int i = node - 1;
-                    resDvd->Z[i] = superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,17000);
+                    resDvd->Z[i] = superdcmv_desc(Q0,q0Sizes,(resDvd->Z[i]),resDvd->zSizes[i],bt,i,1,l,fmmTrigger);
                     Lam[i] = new double[(LamSizes[left-1]) + (LamSizes[right-1])];
 
                     std::copy(Lam[left-1], Lam[left-1] + LamSizes[left-1], Lam[i]);
@@ -308,7 +308,7 @@ bt = btree;
                     nonleaf **n_leaf    = new nonleaf*[r];
 
 
-                                        std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
+                    std::pair<double *, nonleaf**> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
                     Lam[i] = result.first;
                     Q0[i]->Q0_nonleaf = result.second;
                     Q0[i]->n_non_leaf = r;

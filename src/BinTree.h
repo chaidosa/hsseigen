@@ -22,7 +22,7 @@ class BinTree
 	vector<int> tr; 
 	//stores children of all the parent
 	std::unordered_map<int, vector<int>> ch;
-	//stores all the leaves
+	//stores all the leaf IDs. The IDs start from 1 and NOT 0.
 	std::vector<int> leaves;
 	int numNodes; //number of nodes in the full binary tree.
 	int numLevels; //number of levels in full binary tree

@@ -8,7 +8,7 @@
 
 using namespace std;
 extern char* testFile;
-#ifdef DEBUG
+#ifdef DEBUGINPUT
 int counter=1.; 
 #endif
 /* Function to create a symmetric banded matrix. e.g. creating a matrix of bandwidth 3 (r) and 6 (n) rows
@@ -47,19 +47,39 @@ int MakeBand(int n, int r, double** bandMatrix)
   myrand.SetInterval(0.0,1.0);
 
   for (i = 0; i < n; i++) {
-    int startJ = std::max(i-r,0);
     int endJ = std::min(i+r,n);
     for (j = i; j < endJ; j++) {
-#ifndef DEBUG
         	A[j + i * n] = 2 * (myrand.Rand() - 0.5);
         	//A[j + i * n] = 2 * (dis(gen) - 0.5);
         	A[i + j * n] = A[j + i*n];
-#else
-        	A[j + i * n] = counter++;
-        	A[i + j * n] = A[j + i*n];
-#endif
     }
   }
+#elif DEBUGINPUT
+  std::ofstream outputStr(testFile,std::ofstream::out);
+  if(!outputStr.is_open()) {
+	cout<<"Error opening"<<testFile<<endl;
+	return -1;
+  }
+
+
+  for (i = 0; i < n; i++) {
+    for(int ii=0;ii<i;ii++)
+	    outputStr<<"0\t";
+    int endJ = std::min(i+r,n);
+    for (j = i; j < endJ; j++) {
+        	A[j + i * n] = counter++;
+        	A[i + j * n] = A[j + i*n];
+		//outputStr<<"["<<i<<","<<j<<"]"<<A[i+j*n];
+		outputStr<<A[i+j*n];
+		if(j!=(n-1))
+			outputStr<<"\t";
+    }
+    for(int ii=endJ;ii<n;ii++)
+	    outputStr<<"0\t";
+    if(i!=(n-1))
+    	outputStr<<"\n";
+  }
+  outputStr.close();
 #else
   std::ifstream inputStr(testFile,std::ifstream::in);
 

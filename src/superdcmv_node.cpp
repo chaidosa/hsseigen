@@ -67,23 +67,27 @@ double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::
     else
     {
         int r = qSize.second;
+        double *tempXX = new double[xSize.first * xSize.second];
         if(ifTrans == 0)
         {
-            assert(false);
-            //for j = r:-1:1
-            //    [X, nflops1] = superdcmv_cauchy(Qi{j}, X, t, N);
+	    for(int j = r-1; j >= 0; j--)
+            {
+              memcpy(tempXX, X, sizeof(double)*(xSize.first * xSize.second));
+              superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, tempXX, xSize, 0, N);
+              memcpy(X, tempXX, sizeof(double)*(xSize.first * xSize.second));  
+            }
         }
         else
         {
             for(int j = 0; j < r; j++)
             {
-              double *tempXX = new double[xSize.first * xSize.second];
               memcpy(tempXX, X, sizeof(double)*(xSize.first * xSize.second));
               superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, tempXX, xSize, 1, N);
               memcpy(X, tempXX, sizeof(double)*(xSize.first * xSize.second));  
             }
-            tempX = X;
         }
+        tempX = X;
+	delete [] tempXX;
     }
     return tempX;
 }

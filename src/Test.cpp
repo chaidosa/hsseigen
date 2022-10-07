@@ -10,10 +10,29 @@
 #include"superdcmv.h"
 #include <sys/time.h>
 #include<assert.h>
+#include<fstream>
+#include<iomanip>
 
 //define the value that triggers fmm acceleration. TODO: add detailed comment about for what values the acceleration is expected.
 int fmmTrigger=17000; 
 const char* testFile="sparseOut.txt"; // Pritesh: Band5.txt is there in Pnk system inside /hsseigen/ directory
+
+template<typename T>
+void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
+{
+	std::ofstream txtOut;
+    txtOut.open(filename, std::ofstream::out | std::ofstream::app);
+    for(unsigned int i = 0; i <(unsigned)row; i++)
+    {
+        for(int j=0; j < col; j++)
+        {
+            txtOut<<std::setprecision(12)<<Arr[j+i*col]<<"\n";
+        }
+    }
+    txtOut.close();
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -63,12 +82,19 @@ int main(int argc, char* argv[])
 	//x = zeros(n,1);
 	//x(2) = 1;
 	//y = superdcmv(Q,x,0, N);
-	int k = bt->GetNumNodes();
-	double* x=new double[(res->qSizes[k-1]).second];
-	for(int i=0;i<(res->qSizes[k-1]).second;i++)
+	int k = bt->GetNumNodes(); //k is the ID of the root node.
+	double* x=new double[32];//double[(res->qSizes[k-1]).second];
+	//for(int i=0;i<(res->qSizes[k-1]).second;i++)
+	for(int i=0;i<32;i++)
 		x[i]=0;
 	x[0]=1;
-	superdcmv(res->Q, res->qSizes, x, bt, 1, fmmTrigger);
+
+        int columns = 32;//(res->qSizes[k-1]).second;
+        std::pair<int,int> xSize = {columns,1};
+	//the index parameter (k) of superdcmv is expected to be the ID of the node. Since the functions called within superdcmv and their callees use the index to offset into qSize and Q, the index is decremented by 1.
+	double* matvecprod=superdcmv(res->Q, res->qSizes, x, &xSize, m, mSize, bt, k-1, 0, fmmTrigger);
+	PrintArray<double>(matvecprod, columns, 1, "eigvec.txt"); 
+
 	delete[] m;
 	
 	return 0;

@@ -31,7 +31,8 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
     nonleaf *Q = Qq;
     double *X = Xx;
     if(ifTrans == 0){
-        assert(false);
+	    //TODO: 
+	    assert(false);
     }
     
     else{

@@ -22,19 +22,38 @@ else
 end*/
 
 
-double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, BinTree* bt, int ifTrans,double N){
+double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, std::pair<int, int>* xSize, int * m, int mSize, BinTree* bt, int k, int ifTrans,double N){
 	double* res=NULL;
-    if(ifTrans == 0){
+    if(ifTrans == 1){
         assert(false);
     }
     else{
-            int columns = qSize->second;
-            std::pair<int,int>tempXSize = {columns,1};
-    	    int k = bt->GetNumNodes();
-            res = superdcmv_node(Qt[k],qSize[k],x,tempXSize, bt,k,1,N);
-	    std::pair<int, int> l={0, columns-1};
-    	    res = superdcmv_desc(Qt,qSize,res,tempXSize,bt,k,1,&l,N);           
-        }
+            res = superdcmv_node(Qt[k],qSize[k],x,*xSize, bt,k,ifTrans,N);
+    	    
+	    int numNodes  = bt->GetNumNodes();
+	    std::pair<int, int>* l = new std::pair<int,int>[numNodes];  
+    	    for(int i = 0; i < numNodes; i++)
+	    	l[i] = std::make_pair(0,0);    
+    	
+	    l[0] = {0,m[0] - 1};
+    	    int it = 0;
+    	    int lt = 0;
+
+    	    for(int i = 0; i < numNodes; i++) {
+		std::vector<int> ch = bt->GetChildren(i + 1);
+		if(ch.size() == 0){
+		    l[i] = {lt,lt + m[it] - 1};
+		    lt   = l[i].second + 1;
+		    it   = it + 1;
+		}
+		else{
+		    l[i] = {l[ch[0] - 1].first,l[ch[1] - 1].second};
+		}
+	    }
+    	    
+	    res = superdcmv_desc(Qt,qSize,res,*xSize,bt,k,ifTrans,l,N);           
+	    delete [] l;
+    }
     return res;
 }
 

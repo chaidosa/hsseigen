@@ -418,6 +418,7 @@ bt = btree;
 
     resSDC->Q = Q0;
     resSDC->L = Lam[N-1];
+    resSDC->lSize = LamSizes[N-1];
     resSDC->qSizes = q0Sizes;
     return resSDC;
 } 

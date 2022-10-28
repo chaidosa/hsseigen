@@ -9,6 +9,7 @@ class SDC
 
 public:
     double *L;
+    int lSize;
     EIG_MAT ** Q;
     std::pair<int,int> *qSizes;
 

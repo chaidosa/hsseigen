@@ -1,4 +1,5 @@
 #include<cassert>
+#include "bsxfun.h"
 #include "superdcmv.h"
 #include "superdcmv_node.h"
 #include "superdcmv_desc.h"
@@ -22,12 +23,13 @@ else
 end*/
 
 
-double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, std::pair<int, int>* xSize, int * m, int mSize, BinTree* bt, int k, int ifTrans,double N){
+double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, std::pair<int, int>* xSize, int * m, int mSize, int* I, BinTree* bt, int k, int ifTrans,double N){
 	double* res=NULL;
     if(ifTrans == 1){
         assert(false);
     }
     else{
+	    arrange_elements3(x, xSize->first, I, true); //x(I)=x if true. x=x(I) if false
             res = superdcmv_node(Qt[k],qSize[k],x,*xSize, bt,k,ifTrans,N);
     	    
 	    int numNodes  = bt->GetNumNodes();

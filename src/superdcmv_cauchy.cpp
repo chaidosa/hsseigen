@@ -31,8 +31,19 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
     nonleaf *Q = Qq;
     double *X = Xx;
     if(ifTrans == 0){
-	    //TODO: 
-	    assert(false);
+	//orthogonal Cauchy eignematrix
+	int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
+        double **Qc = Q->QC;        
+        double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, ifTrans, N);
+        memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));
+	delete[] ret;
+
+	//2nd deflation permutation
+        double *tempXX = new double[(xSize.first - Q->n1) * xSize.second];
+        memcpy(tempXX, X+(Q->n1 * xSize.second), sizeof(double)*((xSize.first - Q->n1) * xSize.second));
+
+	
+
     }
     
     else{

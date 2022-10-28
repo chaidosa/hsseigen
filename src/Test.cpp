@@ -12,6 +12,8 @@
 #include<assert.h>
 #include<fstream>
 #include<iomanip>
+#include<numeric>
+#include<algorithm>
 
 //define the value that triggers fmm acceleration. TODO: add detailed comment about for what values the acceleration is expected.
 int fmmTrigger=17000; 
@@ -77,7 +79,11 @@ int main(int argc, char* argv[])
 	
 	
 	SDC* res = superDC(hss, bt, m, mSize, nProc);
-
+	
+	//this sorting of eigenvalues from smallest to largest is necessary and the index values
+	vector<int> I(res->lSize);
+ 	std::iota(I.begin(),I.end(),0); 
+	std::sort( I.begin(),I.end(), [&](int i,int j){return res->L[i]<res->L[j];} );
 	//computing matvec using res->Q
 	//x = zeros(n,1);
 	//x(2) = 1;
@@ -91,8 +97,9 @@ int main(int argc, char* argv[])
 
         int columns = 32;//(res->qSizes[k-1]).second;
         std::pair<int,int> xSize = {columns,1};
+	assert(res->lSize==32);
 	//the index parameter (k) of superdcmv is expected to be the ID of the node. Since the functions called within superdcmv and their callees use the index to offset into qSize and Q, the index is decremented by 1.
-	double* matvecprod=superdcmv(res->Q, res->qSizes, x, &xSize, m, mSize, bt, k-1, 0, fmmTrigger);
+	double* matvecprod=superdcmv(res->Q, res->qSizes, x, &xSize, m, mSize, I.data(), bt, k-1, 0, fmmTrigger);
 	PrintArray<double>(matvecprod, columns, 1, "eigvec.txt"); 
 
 	delete[] m;

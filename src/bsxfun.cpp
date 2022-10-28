@@ -119,7 +119,19 @@ void arrange_elements2(double *Xc, std::pair<int,int>XSize,int *Tt, std::pair<in
      LAPACKE_dlapmr(LAPACK_ROW_MAJOR,true, XSize.first, XSize.second, Xc, XSize.second, Tt);
 }
 
+void arrange_elements3(double *Arr,int arrSize,int *Indices, bool reverse){
+    //TODO: this is the slower version. write the faster version based on Jon Bently exercise solution.
+    double* tempArr=new double[arrSize];
+    memcpy(tempArr, Arr, sizeof(double)*arrSize);
+	for(unsigned int i = 0;i < arrSize; i++){
+		if(reverse)
+            		Arr[Indices[i]] = tempArr[i];
+		else
+            		Arr[i] = tempArr[Indices[i]];
+    }
+    delete[] tempArr;
 
+}
 double vec_norm(std::vector<double> &v){
     double result = 0;
     for(unsigned int i = 0; i <(int)v.size(); ++i){

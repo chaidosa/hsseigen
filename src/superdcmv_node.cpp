@@ -15,7 +15,7 @@ extern "C"
 }
 #endif
 
-double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::pair<int, int>xSize,BinTree *bt, int index, int ifTrans,double N){
+double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::pair<int, int>& xSize,BinTree *bt, int index, int ifTrans,double N){
 /*
 %%% Input:
 %%% Q: hss sturctured cauchylike eigenmatrix of descendants of i
@@ -46,6 +46,8 @@ double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qSize.first,xSize.second,qSize.second,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second); //Nikhil: memory for Q0_leaf seems to have not been allocated (multiple places). Confirm.
             //delete [] X;
             tempX = tempQX;
+	    xSize.first=qSize.first;
+	    //xSize.second=xSize.second;
             tempQX = NULL;
         }
 
@@ -60,6 +62,7 @@ double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::
             cblas_dgemm(CblasRowMajor,CblasTrans,CblasNoTrans,qSize.second,xSize.second,qSize.first,alpha,Q->Q0_leaf,qSize.second,X,xSize.second,beta,tempQX,xSize.second);
             //delete [] X;
             tempX = tempQX;
+	    xSize.first=qSize.second;
             tempQX = NULL;
         }
     }
@@ -67,27 +70,12 @@ double *superdcmv_node(EIG_MAT *Qt,std::pair<int, int>qSize, double *tempX,std::
     else
     {
         int r = qSize.second;
-        double *tempXX = new double[xSize.first * xSize.second];
         if(ifTrans == 0)
-        {
 	    for(int j = r-1; j >= 0; j--)
-            {
-              memcpy(tempXX, X, sizeof(double)*(xSize.first * xSize.second));
-              superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, tempXX, xSize, 0, N);
-              memcpy(X, tempXX, sizeof(double)*(xSize.first * xSize.second));  
-            }
-        }
+              superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, X, xSize, 0, N);
         else
-        {
             for(int j = 0; j < r; j++)
-            {
-              memcpy(tempXX, X, sizeof(double)*(xSize.first * xSize.second));
-              superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, tempXX, xSize, 1, N);
-              memcpy(X, tempXX, sizeof(double)*(xSize.first * xSize.second));  
-            }
-        }
-        tempX = X;
-	delete [] tempXX;
+              superdcmv_cauchy(Q->Q0_nonleaf[j],{7 , 1}, X, xSize, 1, N);
     }
     return tempX;
 }

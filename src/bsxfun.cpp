@@ -112,11 +112,11 @@ void arrange_elements(double *Arr,std::pair<int,int>arrSize,double *Indices, std
 }
 
 //used for arranging  arrays
-void arrange_elements2(double *Xc, std::pair<int,int>XSize,int *Tt, std::pair<int,int>tSize){
+void arrange_elements2(double *Xc, std::pair<int,int>XSize,int *Tt, std::pair<int,int>tSize, bool forward){
     if(XSize.first == 1)
         return;
     assert(XSize.first == tSize.first);
-     LAPACKE_dlapmr(LAPACK_ROW_MAJOR,true, XSize.first, XSize.second, Xc, XSize.second, Tt);
+    LAPACKE_dlapmr(LAPACK_ROW_MAJOR,forward, XSize.first, XSize.second, Xc, XSize.second, Tt);
 }
 
 void arrange_elements3(double *Arr,int arrSize,int *Indices, bool reverse){

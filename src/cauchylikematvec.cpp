@@ -45,9 +45,24 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
     //if(n < N)
     {
         if(ifTrans == 0){
-            assert(false);
+	    double *S = new double[(qcSizes[5].first)*(qcSizes[2].first)];  
+            int sRows = qcSizes[5].first;
+            int sCols = qcSizes[2].first;
+            for(int row = 0;row < sRows; row++){
+                for(int col = 0; col < sCols; col++){
+                    double temp = d[row]-d[org[col]];
+                    temp -= tau[col];
+                    temp = 1 / temp;
+                    temp = temp * v[row];
+                    temp = temp * s[col];
+                    S[col + row*(qcSizes[2].first)] = temp;
+		}
+	    }
+	    
+	    Y = new double[qcSizes[5].first*xSize.second];
+            cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qcSizes[5].first,xSize.second,qcSizes[2].first,alpha,S,qcSizes[2].first,X,xSize.second,beta,Y,xSize.second);           
+            delete [] S;
         }
-
         else
         {
             double *S = new double[(qcSizes[5].first)*(qcSizes[2].first)];  

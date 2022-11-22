@@ -41,11 +41,72 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
 	//2nd deflation permutation
         double *tempXX = new double[(xSize.first - Q->n1) * xSize.second];
         memcpy(tempXX, X+(Q->n1 * xSize.second), sizeof(double)*((xSize.first - Q->n1) * xSize.second));
-
 	
+	int *tempJ = new int[Q->JSize.first];
+        for(int i = 0; i < Q->JSize.first; i++)
+            tempJ[i] = Q->J[i] + 1;
+	/*calls _lapmr, which rearranges the rows of the m-by-n matrix tempXX as specified by the permutation tempJ(1),tempJ(2),...,tempJ(m) of the integers 1,...,m.. If the last argument is true (by default) then tempXX[i]=tempXX[J[i]] otherwise tempXX[J[i]]=tempXX[i]*/
+	assert(Q->JSize.first == (xSize.first - Q->n1));
+        arrange_elements2(tempXX, {xSize.first - Q->n1, xSize.second}, (tempJ), Q->JSize, false);
 
+        // Givens rotation. 
+	/*Optimizing cblas_dgemm usage without using temporary array tempArr. Using ldb argument of cblas_dgemm and inspecting p and j appropriately. e.g. if p<j, then ldb=(j-p)*xSize.second and tempXX+p*xSize.second is Matrix B. If j<p, then matrix B=tempXX+j*xSize.second and ldb=(p-j)*xSize.second  */
+
+        //double *tempArr = new double[2*xSize.second];
+        double *MulR = new double[2*xSize.second];
+	assert(((Q->GSize.first) % 4) == 0);
+        for(int l = (Q->GSize.first)-1; l >=0 ; l = l - 4){
+            int p =(int)Q->G[l-3];
+            int j =(int)Q->G[l-2];
+            double c = Q->G[l-1];
+            double s = Q->G[l];            
+            
+	    assert(j == p+1); //delete this after a single round of testing.
+	    int ldb=(j-p)*xSize.second;
+	    double* matrixB=tempXX+p*xSize.second;
+	    if(j<p) {
+	    	ldb=(p-j)*xSize.second;
+	    	matrixB=tempXX+j*xSize.second;
+	    }
+
+            //memcpy(tempArr, tempXX + p*xSize.second, sizeof(double)*(xSize.second));
+            //memcpy(tempArr+xSize.second, tempXX + j*xSize.second, sizeof(double)*(xSize.second));
+            double GivensArr[2*2] = {c, s, -s, c};
+           
+            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 2, xSize.second, 2, 1, GivensArr, 2, matrixB, ldb, 0.0, MulR, xSize.second);
+            
+            memcpy(tempXX + p *xSize.second, MulR, sizeof(double)*(xSize.second));
+            memcpy(tempXX + j *xSize.second, MulR + xSize.second, sizeof(double)*(xSize.second));
+        }
+
+        //delete [] tempArr;
+        delete [] MulR;
+ 	
+	//eigenvalue sorting permutation
+	assert(Q->ISize.first == (xSize.first - Q->n1));
+	//if this assertion holds, then TODO: remove the temporary memory creation for tempI and reuse tempJ created earlier.
+        int *tempI = new int[Q->ISize.first];        
+        for(int row = 0; row < Q->ISize.first; row++)
+            tempI[row] = Q->I[row] + 1;
+
+        arrange_elements2(tempXX, {xSize.first - Q->n1, xSize.second}, (tempI), Q->ISize, false);
+	delete[] tempI;
+
+	//conjugate normalizer. TODO: when v2c is complex, take conjugate of v2c and pass as argument.
+        bsxfun('T',&tempXX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
+
+	// 1st deflation permutation
+        memcpy(X+(Q->n1 * xSize.second), tempXX, sizeof(double)*((xSize.first - Q->n1) * xSize.second));
+        delete[] tempXX;
+
+	assert(Q->TSize.first == xSize.first);
+        int *temp = new int[Q->TSize.first];
+        for(int i = 0; i < Q->TSize.first; i++)
+            temp[i] = (Q->T[i]) + 1;        
+       
+        arrange_elements2(X, xSize, (temp), Q->TSize, false);
+        delete [] temp;      
     }
-    
     else{
         // 1st deflation permutation
         int *temp = new int[Q->TSize.first];
@@ -79,6 +140,7 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
             double c = Q->G[l+2];
             double s = Q->G[l+3];            
            
+           assert(j == p+1);
            for(int cpy = 0; cpy < 2; cpy++){
                memcpy(tempArr+cpy*xSize.second, tempXX + (p + cpy)*xSize.second, sizeof(double)*(xSize.second));
            }

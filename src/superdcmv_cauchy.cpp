@@ -5,15 +5,16 @@
 #include "eigenmatrix.h"
 #include "bsxfun.h"
 #include "cauchylikematvec.h"
-
-extern "C"{
-
+#ifndef OPENBLAS 
+extern "C"
+{
+#endif
     #include<lapacke.h>
     #include<lapack.h>
     #include<cblas.h>
-
+#ifndef OPENBLAS 
 }
-
+#endif
 
 double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
 /*

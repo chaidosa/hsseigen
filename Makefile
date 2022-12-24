@@ -4,14 +4,18 @@
 OPENBLAS=0
 ifeq ($(OPENBLAS), 1)
 	#set BLAS_INSTALL_PATH appropriately if you have a local installation of blas library. If there is a system-wide installation available, leave this as blank
+	BLAS_INSTALL_PATH=/home/abhishekj/OPENBLAS
 #set BLAS_LIB_NAME as blas (or mklblas or openblas or someothercustomname depending upon the library you are using).
-	#BLAS_LIB_NAME=openblas_nonthreaded
-	#CXXFLAGS = -DOPENBLAS -I$(BLAS_INSTALL_PATH)/include
-	LDFLAGS =-lblas -llapack -llapacke 
+	BLAS_LIB_NAME=openblas
+	CXXFLAGS = -DOPENBLAS -I$(BLAS_INSTALL_PATH)/include
+	#LDFLAGS =-lblas -llapack -llapacke 
+	LDFLAGS = -L$(BLAS_INSTALL_PATH)/lib -l$(BLAS_LIB_NAME)
 	CC=g++
 else
-	CC=icpx
-	LDFLAGS = -lmkl_rt
+# 	CC=icpx
+# 	LDFLAGS = -lmkccl_rt
+	LDFLAGS =-lblas -llapack -llapacke 
+	CC=g++
 endif
 
 # Compiler settings - Can be customized.

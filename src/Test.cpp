@@ -47,18 +47,19 @@ int main(int argc, char* argv[])
 		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth> <no of processor>\n");
 		
 	}else{
-		testFile=argv[1];
-		n=atoi(argv[2]);
-		r=atoi(argv[3]);
-		MorB = atoi(argv[4]);
-		w = atoi(argv[5]);
-		nProc = atoi(argv[6]);
+		testFile=argv[1]; 		// filename
+		n=atoi(argv[2]); 		// matrix size
+		r=atoi(argv[3]); 		// diag_block size
+		MorB = atoi(argv[4]);   // band2hss 
+		w = atoi(argv[5]);		// bandwidth
+		nProc = atoi(argv[6]);	// num. Processors
 	}
 
 	BinTree* bt=NULL;
-	double * A=NULL;
+	double * A=NULL; // The matrix A from test_input.txt of size n*n
+	
 	//create a banded matrix
-	int status = MakeBand(n,w,&A);
+	int status = MakeBand(n,w,&A); //Makes band matrix of n rows and w bandwidth
 	if(status) 
 		exit(-1);
 	

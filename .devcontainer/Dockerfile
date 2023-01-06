@@ -4,7 +4,7 @@ RUN apt-get update
 
 RUN apt-get install build-essential -y
 
-RUN apt-get install git wget -y
+RUN apt-get install git wget gdb vim -y
 
 RUN apt-get install gfortran -y
 
@@ -13,8 +13,8 @@ RUN mkdir -p /OpenBlas \
     && tar -xf OpenBLAS-0.3.21.tar.gz && cd OpenBLAS-0.3.21 && make -s FC=gfortran \
     && make PREFIX=/OpenBlas install && rm -rf /OpenBlas/OpenBLAS-0.3.21.tar.gz && rm -rf /OpenBlas/OpenBLAS-0.3.21 
 
-RUN export "LD_LIBRARY_PATH=/OpenBlas/lib:$LD_LIBRARY_PATH" \
-    && export "PATH=/OpenBlas/include:$PATH"
+RUN echo "export LD_LIBRARY_PATH=/OpenBlas/lib:$LD_LIBRARY_PATH" >> /etc/profile \
+    && echo  "export PATH=/OpenBlas/include:$PATH" >> /etc/profile
 
 # ARG USERNAME=hss
 # ARG USER_UID=1001

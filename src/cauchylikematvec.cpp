@@ -50,7 +50,7 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
             int sCols = qcSizes[2].first;
             for(int row = 0;row < sRows; row++){
                 for(int col = 0; col < sCols; col++){
-                    double temp = d[row]-d[org[col]];
+                    double temp = d[row]-d[org[row]];
                     temp -= tau[col];
                     temp = 1 / temp;
                     temp = temp * v[row];

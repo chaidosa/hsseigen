@@ -28,6 +28,11 @@ testm2: ../NPart.cpp ../BinTree.cpp ../test_mat2hsssym.cpp ../QR.cpp ../compr_ne
 testmakeband: ../makeband.cpp testmakeband.cpp
 			$(GCC) -DDEBUGINPUT $^ -o $@ $(CFLAGS)
 
+testcauchylikematvec: ../cauchylikematvec.cpp ../bsxfun.cpp  test_cauchylikematvec.cpp
+						g++ -DOPENBLAS -I/OpenBlas/include -std=c++11  -O3 -o cauchylikematvec.o -c ../cauchylikematvec.cpp
+						g++ -DOPENBLAS -I/OpenBlas/include -std=c++11  -O3 -o test_cauchylikematvec.o -c test_cauchylikematvec.cpp
+						$(GCC) -DOPENBLAS -I/OpenBlas/include -std=c++11 -L/OpenBlas/lib cauchylikematvec.o test_cauchylikematvec.o -lopenblas -o $@
+
 clean:
 	rm -rf fmm
 	rm -rf vhat
@@ -35,3 +40,4 @@ clean:
 	rm -rf rootf
 	rm -rf testm2
 	rm -rf testmakeband
+	rm *.o

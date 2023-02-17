@@ -5,6 +5,7 @@
 #include "eigenmatrix.h"
 #include "bsxfun.h"
 #include "cauchylikematvec.h"
+#include <fstream>
 #ifndef OPENBLAS 
 extern "C"
 {
@@ -15,6 +16,26 @@ extern "C"
 #ifndef OPENBLAS 
 }
 #endif
+
+#include <iomanip>
+
+void printX(string file, double *X){
+    std::ofstream OutFile(file);
+    for(int i=0; i<32; i++){
+        OutFile << setprecision(20) << X[i] << "\n";
+    }
+    OutFile.close();
+}
+
+void loadX(string file, double *X){
+    std::ifstream InFile(file);
+    for (int i = 0; i < 32; i++)
+    {
+        InFile >> setprecision(20) >> X[i];
+    }
+    InFile.close();
+    
+}
 
 double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
 /*
@@ -33,16 +54,21 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
     double *X = Xx;
     if(ifTrans == 0){
 	//orthogonal Cauchy eignematrix
+        int load=0;
+        if(load){loadX("X_cauchy_cauchylikein.txt", X);}
 	int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
         double **Qc = Q->QC;        
         double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, ifTrans, N);
+        if(load){printX("X_cauchy_cauchylike_T=0.txt", ret);}
         memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));
+        load = 0;
+
+
 	delete[] ret;
 
 	//2nd deflation permutation
         double *tempXX = new double[(xSize.first - Q->n1) * xSize.second];
         memcpy(tempXX, X+(Q->n1 * xSize.second), sizeof(double)*((xSize.first - Q->n1) * xSize.second));
-	
 	int *tempJ = new int[Q->JSize.first];
         for(int i = 0; i < Q->JSize.first; i++)
             tempJ[i] = Q->J[i] + 1;
@@ -91,7 +117,9 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
             tempI[row] = Q->I[row] + 1;
 
         arrange_elements2(tempXX, {xSize.first - Q->n1, xSize.second}, (tempI), Q->ISize, false);
-	delete[] tempI;
+        delete[] tempI;
+
+
 
 	//conjugate normalizer. TODO: when v2c is complex, take conjugate of v2c and pass as argument.
         bsxfun('T',&tempXX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
@@ -113,7 +141,6 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
         int *temp = new int[Q->TSize.first];
         for(int i = 0; i < Q->TSize.first; i++)
             temp[i] = (Q->T[i]) + 1;        
-       
         arrange_elements2(X, xSize, (temp), Q->TSize);
         delete [] temp;      
 
@@ -122,9 +149,11 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
         memcpy(tempXX, X+(Q->n1 * xSize.second), sizeof(double)*((xSize.first - Q->n1) * xSize.second));
 
         bsxfun('T',&tempXX,{xSize.first - Q->n1,xSize.second},Q->v2c,Q->v2cSize);
+        
        
         //eigenvalue sorting permutation
         int *tempI = new int[Q->ISize.first];        
+        
         for(int row = 0; row < Q->ISize.first; row++)
             tempI[row] = Q->I[row] + 1;
 
@@ -157,7 +186,7 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
 
         delete [] tempArr;
         delete [] MulR;
- 
+
         // second deflation permutation
         int *tempJ = new int[Q->JSize.first];
         for(int i = 0; i < Q->JSize.first; i++)
@@ -168,9 +197,13 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
         memcpy(X+(Q->n1 * xSize.second), tempXX, sizeof(double)*((xSize.first - Q->n1) * xSize.second));
         delete[] tempXX;
         
+        int print = 0;
+        if (print){printX("X_cauchy_cauchylikein.txt", X);}
         int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
         double **Qc = Q->QC;        
         double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, 1, N);
+        if (print){printX("X_cauchy_cauchylike_T=1.txt", ret);}
+        print = 0;
         memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));
 	delete[] ret;
     }
@@ -179,3 +212,8 @@ return X;
 }
 
 
+// int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
+//         double **Qc = Q->QC;        
+//         double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, ifTrans, N);
+//         // int print = 0;
+//         memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));

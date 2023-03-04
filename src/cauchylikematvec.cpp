@@ -124,7 +124,7 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
             int sCols = qcSizes[2].first;
             for(int row = 0; row < sRows; row++){
                 for(int col = 0; col < sCols; col++){
-                    double temp = d[row]-d[org[col]-1]; //ok
+                    double temp = d[row]-d[org[col]]; //ok
                     temp -= tau[col];  // ok
                     temp = 1 / temp;  // ok
                     temp = temp * v[row];  // ok

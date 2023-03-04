@@ -32,7 +32,20 @@ void loadX(int Xsize, ifstream& fp, T* X){
     }
 }
 
-
+/**
+ * Dumpfile format
+ * qcsize[5].first
+ * qcsize[2].first
+ * xsize.second
+ * v (vsize lines)
+ * s (ssize lines)
+ * d (dsize lines)
+ * lam (lamsize lines)
+ * tau (tausize lines)
+ * org (orgsize lines)
+ * X   (Xsize lines)
+ * Yexpected
+*/
 int main(int argc, char**argv){
     ifstream inputfile("/workspaces/hsseigen/src/UnitTests/CauchyLikedump.txt");
 
@@ -82,6 +95,12 @@ int main(int argc, char**argv){
     int orgSize = qcSize[5].first;
     int* Org = new int[orgSize];
     loadX(orgSize, inputfile, Org);
+
+    for (int i = 0; i < orgSize; i++)
+    {
+        Org[i] = Org[i] -1;
+    }
+    
     
     int xSize = xsize.first;
     double* X = new double[xSize];

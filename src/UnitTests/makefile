@@ -33,6 +33,11 @@ testcauchylikematvec: ../cauchylikematvec.cpp ../bsxfun.cpp  test_cauchylikematv
 						g++ -DOPENBLAS -I/OpenBlas/include -std=c++11  -O3 -o test_cauchylikematvec.o -c test_cauchylikematvec.cpp
 						$(GCC) -DOPENBLAS -I/OpenBlas/include -std=c++11 -L/OpenBlas/lib cauchylikematvec.o test_cauchylikematvec.o -lopenblas -o $@
 
+test_superdcmv_cauchy: ../superdcmv_cauchy.cpp ../bsxfun.cpp ../cauchylikematvec.cpp test_superdcmv_cauchy.cpp
+						g++ -DOPENBLAS -I/OpenBlas/include -std=c++11  -O3 -o cauchylikematvec.o -c ../cauchylikematvec.cpp
+						g++ -DOPENBLAS -I/OpenBlas/include -std=c++11  -O3 -o test_superdcmv_cauchy.o -c test_superdcmv_cauchy.cpp
+						g++ -DOPENBLAS -I/OpenBlas/include -std=c++11  -O3 -o superdcmv_cauchy.o -c ../superdcmv_cauchy.cpp
+						$(GCC) -DOPENBLAS -I/OpenBlas/include -std=c++11 -L/OpenBlas/lib cauchylikematvec.o test_superdcmv_cauchy.o superdcmv_cauchy.o -lopenblas -o $@
 clean:
 	rm -rf fmm
 	rm -rf vhat
@@ -40,5 +45,6 @@ clean:
 	rm -rf rootf
 	rm -rf testm2
 	rm -rf testmakeband
-	rm -rf test_cauchylikematvec
+	rm -rf testcauchylikematvec
+	rm -rf test_superdcmv_cauchy
 	rm *.o

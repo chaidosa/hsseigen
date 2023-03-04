@@ -50,18 +50,19 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
 %%% ifTrans = 0: X = Q * X 
 %%% ifTrans = 1: X = Q^T * X;
 */
+// int load=0;
+// if(load){loadX("X_cauchy_cauchylikein.txt", X);}
+// if(load){printX("X_cauchy_cauchylike_T=0.txt", ret);}
+// load = 0;
+
     nonleaf *Q = Qq;
     double *X = Xx;
     if(ifTrans == 0){
 	//orthogonal Cauchy eignematrix
-        int load=0;
-        if(load){loadX("X_cauchy_cauchylikein.txt", X);}
 	int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
         double **Qc = Q->QC;        
         double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, ifTrans, N);
-        if(load){printX("X_cauchy_cauchylike_T=0.txt", ret);}
         memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));
-        load = 0;
 
 
 	delete[] ret;

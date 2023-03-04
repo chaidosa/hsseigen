@@ -40,4 +40,5 @@ clean:
 	rm -rf rootf
 	rm -rf testm2
 	rm -rf testmakeband
+	rm -rf test_cauchylikematvec
 	rm *.o

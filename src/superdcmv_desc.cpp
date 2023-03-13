@@ -44,7 +44,7 @@ double *superdcmv_desc(EIG_MAT **Q,std::pair<int, int>*qSize, double *X,std::pai
 
     if(ifTrans == 0){
         //X = Q*X;
-        for (int j = index -1; j < k; j--)
+        for (int j = index -1; j > k; j--)
         {
             int K = rg[j].second-rg[j].first+1; 
             int columns = xSize.second;

@@ -19,23 +19,6 @@ extern "C"
 
 #include <iomanip>
 
-void printX(string file, double *X){
-    std::ofstream OutFile(file);
-    for(int i=0; i<32; i++){
-        OutFile << setprecision(20) << X[i] << "\n";
-    }
-    OutFile.close();
-}
-
-void loadX(string file, double *X){
-    std::ifstream InFile(file);
-    for (int i = 0; i < 32; i++)
-    {
-        InFile >> setprecision(20) >> X[i];
-    }
-    InFile.close();
-    
-}
 
 double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
 /*
@@ -198,13 +181,11 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
         memcpy(X+(Q->n1 * xSize.second), tempXX, sizeof(double)*((xSize.first - Q->n1) * xSize.second));
         delete[] tempXX;
         
-        int print = 0;
-        if (print){printX("X_cauchy_cauchylikein.txt", X);}
+       
         int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
         double **Qc = Q->QC;        
         double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, 1, N);
-        if (print){printX("X_cauchy_cauchylike_T=1.txt", ret);}
-        print = 0;
+        
         memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));
 	delete[] ret;
     }
@@ -212,9 +193,3 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
 return X;
 }
 
-
-// int rowSize = (Q->n)-(Q->n1 + Q->n2 + 1) + 1;
-//         double **Qc = Q->QC;        
-//         double* ret = cauchylikematvec(Qc, (Q->qcSizes), Q->Org, X+(Q->n1 + Q->n2)*xSize.second, {rowSize, xSize.second}, ifTrans, N);
-//         // int print = 0;
-//         memcpy(X+(Q->n1 + Q->n2)*xSize.second, ret, sizeof(double)*(rowSize * xSize.second));

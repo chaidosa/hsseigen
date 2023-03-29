@@ -16,7 +16,7 @@ else
 # 	CC=icpx
 # 	LDFLAGS = -lmkccl_rt
 	LDFLAGS =-lblas -llapack -llapacke 
-	CC=g++
+	CC=g++ -DOPENBLAS
 endif
 
 # Compiler settings - Can be customized.

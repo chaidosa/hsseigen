@@ -16,7 +16,7 @@ RUN apt-get install git wget gdb vim -y
 # RUN echo "export LD_LIBRARY_PATH=/OpenBlas/lib:$LD_LIBRARY_PATH" >> /etc/profile \
 #     && echo  "export PATH=/OpenBlas/include:$PATH" >> /etc/profile
 
-RUN apt-get install libblas-dev liblapack-dev liblapacke-dev libatlas-base-dev -y
+RUN apt-get install libblas-dev liblapack-dev liblapacke-dev libatlas-base-dev libopenblas-dev -y
 
 ARG USERNAME=hsseigen
 ARG USER_UID=1001

@@ -17,7 +17,6 @@ extern "C"
 }
 #endif
 
-#include <iomanip>
 
 
 double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::pair<int, int>xSize,int ifTrans,double N){
@@ -33,10 +32,7 @@ double * superdcmv_cauchy(nonleaf *Qq,std::pair<int, int>qSize, double *Xx,std::
 %%% ifTrans = 0: X = Q * X 
 %%% ifTrans = 1: X = Q^T * X;
 */
-// int load=0;
-// if(load){loadX("X_cauchy_cauchylikein.txt", X);}
-// if(load){printX("X_cauchy_cauchylike_T=0.txt", ret);}
-// load = 0;
+
 
     nonleaf *Q = Qq;
     double *X = Xx;

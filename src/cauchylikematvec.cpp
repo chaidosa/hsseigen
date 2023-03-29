@@ -13,78 +13,8 @@ extern "C"
 }
 #endif
 
-#include <fstream>
-#include <iomanip>
 
 
-class CauchyLikeMatrix
-{
-private:
-    double* v; double *s; double *d; double *lam; double *tau;const int *org; double *X;
-
-    double* S;
-    double* Y;
-
-public:
-    CauchyLikeMatrix(double* v, double *s, double *d, double *lam, double *tau,const int *org, double *X);
-    ~CauchyLikeMatrix();
-    
-    void dumpS(string path);
-    
-    void Matmul();
-    void bsxfun_d_dT();
-
-};
-
-CauchyLikeMatrix::CauchyLikeMatrix(double* v, double *s, double *d, double *lam, double *tau,const int *org, double *X)
-{
-    this->v = v; this->s = s; this->d = d; this->lam = lam; this->tau = tau; this->org = org; this->X = X;
-    this->S = new double[31*31];
-    this->Y = new double[31];
-}
-
-CauchyLikeMatrix::~CauchyLikeMatrix()
-{
-    delete [] S;
-}
-
-void CauchyLikeMatrix::Matmul(){
-    for (int i = 0; i < 31; i++)
-    {
-
-        for (int j = 0; j < 31; j++)
-        {
-            this->Y[i] += this->S[i*31 + j] * this->X[j];
-        }
-    }
-}
-
-void CauchyLikeMatrix::bsxfun_d_dT(){
-    for (int i = 0; i < 1; i++)
-    {
-        for (int j = 0; j < 31; j++)
-        {
-            cout << "d[i], d[org[j]] " << d[i] << ", " << d[org[j]-1] << " " <<  d[i] - d[org[j]-1] << "\n";
-        }
-        
-    }
-    // cout << "completed bsxfun1\n"; 
-    // this->dumpS("/workspaces/hsseigen/src/UnitTests/S1dump.txt");
-}
-
-void CauchyLikeMatrix::dumpS(string path){
-    std::ofstream out(path);
-
-    for (int i = 0; i < 31; i++)
-    {
-        for (int j = 0; j < 31; j++)
-        {   
-            cout << setprecision(32) << this->S[i*31 + j] << "\n";
-            // out << this->S[i*31 + j] << "\n";
-        }   
-    }
-    
-}
 
 double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *org, double *Xx, std::pair<int,int>xSize,int ifTrans, double N){
 /*
@@ -137,8 +67,7 @@ double *cauchylikematvec(double **Qcd, std::pair<int,int>*qcSizes, const int *or
             cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,qcSizes[5].first,xSize.second,qcSizes[2].first,alpha,S,qcSizes[2].first,X,xSize.second,beta,Y,xSize.second);           
             delete [] S;
 
-            // CauchyLikeMatrix S(v, s, d, lam, tau, org, X);
-            // S.bsxfun_d_dT();
+            
         }
         else
         {

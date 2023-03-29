@@ -31,9 +31,9 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 
 # Prerequisites
 
-1. Install lapack and blas.
+1. Install lapack, blas and openblas.
 
-$\rightarrow$ On an ubuntu machine `sudo apt-get install libblas-dev liblapack-dev liblapacke-dev libatlas-base-dev`.
+$\rightarrow$ On an ubuntu machine `sudo apt-get install libblas-dev liblapack-dev liblapacke-dev libatlas-base-dev libopenblas-dev`.
 
 $\rightarrow$ Links to install [lapack](https://netlib.org/lapack/) and [blas](https://netlib.org/blas/) on other systems.
 
@@ -42,7 +42,7 @@ $\rightarrow$ Links to install [lapack](https://netlib.org/lapack/) and [blas](h
 
 $\rightarrow$ Instructions to install icpx can be found here [intel-website](https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html).
 
-3. Install [GNU make](https://www.gnu.org/software/make/) and [gcc compiler](https://gcc.gnu.org/)
+3. Install [GNU make](https://www.gnu.org/software/make/) and [gcc compiler](https://gcc.gnu.org/).
 
 # Usage 
 

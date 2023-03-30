@@ -41,7 +41,7 @@ OBJDIR = obj
 SRC = $(wildcard $(SRCDIR)/*$(EXT))
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
 
-all: $(APPNAME)
+all: objdir $(APPNAME)
 
 # Builds the app
 $(APPNAME): $(OBJ)
@@ -53,6 +53,10 @@ $(APPNAME): $(OBJ)
 
 # Includes all .h files
 #-include $(DEP) 
+
+.PHONY: objdir
+objdir:
+	mkdir -p obj/
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
 $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)

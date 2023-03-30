@@ -15,15 +15,15 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolvers.
 
 - Efficient computation of all eigenvalues of symmetric Hierarchically Semiseparable (HSS) matrices.
-- We propose a shared-memory parallel algorithm and the corresponding implementation of the SuperDC eigensolver.
+- A shared-memory parallel algorithm and the corresponding implementation of the SuperDC eigensolver.
 - Optimized the original SuperDC algorithm to reduce the storage requirement from O($N^2$) to O (N) in case of banded matrices.
 
 ### Keywords
 
-- Symmetric eigenvalue problems
-- Hierarchically semi-separable matrix
-- divide-and-conquer
-- Shared memory architecture
+- Symmetric eigenvalue problems.
+- Hierarchically semi-separable matrix or HSS matrix.
+- Divide-and-conquer.
+- Shared memory architecture.
 
 # Authors
 
@@ -35,8 +35,7 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 
 $\rightarrow$ On an ubuntu machine `sudo apt-get install libblas-dev liblapack-dev liblapacke-dev libatlas-base-dev libopenblas-dev`.
 
-$\rightarrow$ Links to install [lapack](https://netlib.org/lapack/) and [blas](https://netlib.org/blas/) on other systems.
-
+$\rightarrow$ Links to install [lapack](https://netlib.org/lapack/), [blas](https://netlib.org/blas/) and [openblas](https://www.openblas.net/) on other systems.
 
 2. Install intel icpx compiler.
 
@@ -44,17 +43,31 @@ $\rightarrow$ Instructions to install icpx can be found here [intel-website](htt
 
 3. Install [GNU make](https://www.gnu.org/software/make/) and [gcc compiler](https://gcc.gnu.org/).
 
+# CodeSpaces Support
+
+1. To begin working on the project with all the pre-requsites satisfied, fork the repository and begin working in Code Spaces.
+
+2. After forking the repository, click on the **`<> Code`** button.
+
+3. You should see option to create code space on master.
+
+4. Click on the **`Create code space on master`** button and you will be redirected to a working environment.
+
 # Usage 
 
-1.  **Make sure you've created a directory name `obj` in the project.**
+## Compilation
 
-2. **In the terminal write the command `make` for compiling the serial version.**
+1. **In the terminal write the command `make` for compiling the serial version.**
 
-3. **After compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth>` to run the code.**
+2. **In the terminal write the command `make PARALLEL=1` for compiling the shared memory version.**
 
-4. **In the terminal write the command `make PARALLEL=1` for compiling the shared memory version.**
+3. **A binary called `Test` is created in the root directory of the project.**
 
-5. **After compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth> <no of processor>` to run the code.**
+
+## How to run
+1. **After compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth>` to run the code.**
+
+2. **After compiling the code use `./Test <filename> <matrix_size> <diagblock_size> <Band2HSS(pass 2) or Mat2HSSsym(pass 1)> <bandwidth> <no of processor>` to run the code.**
 
 
 ### Explanation of arguments.
@@ -67,7 +80,7 @@ $\rightarrow$ Instructions to install icpx can be found here [intel-website](htt
 | `<Band2HSS(pass 2) or Mat2HSSsym(pass 1)>`| Whether input matrix is banded (pass 2) or not (pass 1) (can be infered from file name)|
 | `<bandwidth>`                             | Half bandwidth of input matrix (can be infered from file name)|
 | `<no of processor>`                       | The number of cores you want to run the shared-memory version on.|
-|||
+
 
 
 # Drive link to input data:

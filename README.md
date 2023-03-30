@@ -86,3 +86,7 @@ $\rightarrow$ Instructions to install icpx can be found here [intel-website](htt
 # Drive link to input data:
 
 1. You can download HSS structured test matrices [here](https://drive.google.com/drive/folders/1Qs-U8bQf_apAt8LKpTy5IX-W5Y0RBPGk)
+
+# Miscellaneous
+
+1. We have tested the project using openblas, lapack, and intel toolchains

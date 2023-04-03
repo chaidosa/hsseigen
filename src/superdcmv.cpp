@@ -3,7 +3,6 @@
 #include "superdcmv.h"
 #include "superdcmv_node.h"
 #include "superdcmv_desc.h"
-#include <fstream>
 /*[Q0, I, tr, m] = Q{:};
 k = length(tr);
 rg = indrange(tr, m);
@@ -32,12 +31,6 @@ double* superdcmv(EIG_MAT **Qt, std::pair<int, int>*qSize, double *x, std::pair<
 	    arrange_elements3(x, xSize->first, I, true); //x(I)=x if true. x=x(I) if false
             res = superdcmv_node(Qt[k],qSize[k],x,*xSize, bt,k,ifTrans,N);
 		
-		// std::ofstream X_Node("X_Node.txt");
-		// for (int i = 0; i < 32; i++)
-		// {
-		// 	X_Node << x[i] << "\n";
-		// }
-		// X_Node.close();
     	    
 	    int numNodes  = bt->GetNumNodes();
 	    std::pair<int, int>* l = new std::pair<int,int>[numNodes];  

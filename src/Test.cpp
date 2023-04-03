@@ -22,8 +22,7 @@ const char* testFile="sparseOut.txt"; // Pritesh: Band5.txt is there in Pnk syst
 template<typename T>
 void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
 {
-	std::ofstream txtOut;
-    txtOut.open(filename, std::ofstream::out | std::ofstream::app);
+	std::ofstream txtOut(filename);
     for(unsigned int i = 0; i <(unsigned)row; i++)
     {
         for(int j=0; j < col; j++)
@@ -58,7 +57,7 @@ int main(int argc, char* argv[])
 	BinTree* bt=NULL;
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
 	
-	//create a banded matrix
+	// create a banded matrix
 	int status = MakeBand(n,w,&A); //Makes band matrix of n rows and w bandwidth
 	if(status) 
 		exit(-1);
@@ -67,13 +66,13 @@ int main(int argc, char* argv[])
 	int numNodes = 0;
 	
 
+
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.
 	 * Arguments of NPart: n is the number of rows/columns in an input matrix. r is the number of rows in a partition (horizontal) of the matrix 
 	 * Number of leaves = n/r. Num nodes in the tree = num leaves* 2 - 1*/
 	int *m=NULL;
 	int mSize;
 	NPart(n, r, &bt, &m, mSize, numNodes);
-
 
 
 	GEN *hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
@@ -90,15 +89,15 @@ int main(int argc, char* argv[])
 	//x(2) = 1;
 	//y = superdcmv(Q,x,0, N);
 	int k = bt->GetNumNodes(); //k is the ID of the root node.
-	double* x=new double[32];//double[(res->qSizes[k-1]).second];
+	double* x=new double[n];//double[(res->qSizes[k-1]).second];
 	//for(int i=0;i<(res->qSizes[k-1]).second;i++)
-	for(int i=0;i<32;i++)
+	for(int i=0;i<n;i++)
 		x[i]=0;
 	x[0]=1;
 
-        int columns = 32;//(res->qSizes[k-1]).second;
+        int columns = n;//(res->qSizes[k-1]).second;
         std::pair<int,int> xSize = {columns,1};
-	assert(res->lSize==32);
+	assert(res->lSize==n);
 	//the index parameter (k) of superdcmv is expected to be the ID of the node. Since the functions called within superdcmv and their callees use the index to offset into qSize and Q, the index is decremented by 1.
 	double* matvecprod=superdcmv(res->Q, res->qSizes, x, &xSize, m, mSize, I.data(), bt, k-1, 0, fmmTrigger);
 	PrintArray<double>(matvecprod, columns, 1, "eigvec.txt"); 

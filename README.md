@@ -31,7 +31,7 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 
 # Prerequisites
 
-1. Install lapack, blas and openblas.
+1. Install lapack, blas OR openblas.
 
 $\rightarrow$ On an ubuntu machine `sudo apt-get install libblas-dev liblapack-dev liblapacke-dev libatlas-base-dev libopenblas-dev`.
 

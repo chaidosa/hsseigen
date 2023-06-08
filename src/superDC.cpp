@@ -11,8 +11,11 @@
 #include "secular.h"
 #include "Generators.h"
 #include "omp.h"
-
 #include <sys/time.h>
+
+#ifdef MPI
+
+#endif
 
 extern "C"
 {
@@ -229,7 +232,7 @@ bt = btree;
    // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
 
 
-#ifdef PARALLEL
+#if defined(PARALLEL)
     vector<int> counter(N+1, 0);
     std::vector<int> WorkQueue(bt->leaves.begin(), bt->leaves.end());
 
@@ -329,6 +332,8 @@ bt = btree;
 
         }
     }
+#elif defined(MPI)
+    cout << "Hello MPI" << "\n";
 #else
   std::queue<int> Work;
   std::vector<int> counter(N+1, 0);

@@ -32,6 +32,10 @@ else
 	CXXFLAGS += -O3
 endif
 
+ifeq ($(MPI), 1)
+	CC = mpicxx
+endif
+
 # Makefile settings - Can be customized.
 APPNAME = Test
 EXT = .cpp

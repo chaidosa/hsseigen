@@ -13,8 +13,10 @@
 #include "omp.h"
 #include <sys/time.h>
 
-#ifdef MPI
+// #define MPI 1 // For development
 
+#ifdef MPI
+#include <mpi.h>
 #endif
 
 extern "C"
@@ -333,7 +335,30 @@ bt = btree;
         }
     }
 #elif defined(MPI)
-    cout << "Hello MPI" << "\n";
+    MPI_Init(NULL, NULL);
+    int nprocs;
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+    int ndims = 2;
+    int dims[2];
+    const int periods[2] = {0, 0};
+    int reorder = 0;
+    MPI_Comm comm_cart;
+
+    int n_proc_rows = sqrt(nprocs); // make it work on non square architecture
+    int n_proc_cols = n_proc_rows;
+
+    dims[0] = n_proc_cols;
+    dims[1] = n_proc_rows;
+
+    MPI_Cart_create(MPI_COMM_WORLD, ndims, dims, periods, reorder, &comm_cart);
+
+    int my_rank;
+    MPI_Comm_rank(comm_cart, &my_rank);
+
+    cout << "My rank is " << my_rank << "\n";
+    MPI_Abort(MPI_COMM_WORLD, 1);
+    MPI_Finalize();
 #else
   std::queue<int> Work;
   std::vector<int> counter(N+1, 0);

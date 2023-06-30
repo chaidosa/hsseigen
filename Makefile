@@ -4,13 +4,13 @@
 OPENBLAS=1
 ifeq ($(OPENBLAS), 1)
 	#set BLAS_INSTALL_PATH appropriately if you have a local installation of blas library. If there is a system-wide installation available, leave this as blank
-	# BLAS_INSTALL_PATH=/OpenBlas
+	BLAS_INSTALL_PATH=/OpenBlas
 #set BLAS_LIB_NAME as blas (or mklblas or openblas or someothercustomname depending upon the library you are using).
-	# BLAS_LIB_NAME=openblas
-	# CXXFLAGS = -DOPENBLAS -I$(BLAS_INSTALL_PATH)/include
-	CXXFLAGS = -DOPENBLAS
+	BLAS_LIB_NAME=openblas
+	CXXFLAGS = -DOPENBLAS -I$(BLAS_INSTALL_PATH)/include
+	# CXXFLAGS = -DOPENBLAS
 	LDFLAGS =-lblas -llapack -llapacke 
-	# LDFLAGS = -L$(BLAS_INSTALL_PATH)/lib -l$(BLAS_LIB_NAME)
+	LDFLAGS = -L$(BLAS_INSTALL_PATH)/lib -l$(BLAS_LIB_NAME)
 	CC=g++
 else
 # 	CC=icpx
@@ -32,8 +32,9 @@ else
 	CXXFLAGS += -O3
 endif
 
-ifeq ($(MPI), 1)
-	CC = mpicxx
+ifeq ($(DIST), 1)
+	CC = mpic++
+	CXXFLAGS += -DDIST
 endif
 
 # Makefile settings - Can be customized.

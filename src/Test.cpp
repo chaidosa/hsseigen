@@ -34,9 +34,20 @@ void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
 }
 
 
+#ifdef DIST
+// extern "C"{
+#include <mpi.h>
+#include <cmath>
+// }
+#endif
 
 int main(int argc, char* argv[])
 {
+
+#ifdef DIST
+	MPI_Init( &argc, &argv);
+#endif
+
 	int n=16;
 	int r=4;
 	int MorB = 2; // to select which routine to use Band2HSS (2) or Mat2HSSsymm (1).
@@ -64,7 +75,12 @@ int main(int argc, char* argv[])
 	
 	
 	int numNodes = 0;
-	
+
+	#if defined(DIST)
+		int procs;
+    	MPI_Comm_size(MPI_COMM_WORLD, &procs);
+		r = (int)n/procs;
+	#endif
 
 
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.
@@ -76,10 +92,40 @@ int main(int argc, char* argv[])
 
 
 	GEN *hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+
+
+	SDC* res; 
+
+	#if defined(DIST)
+	/**
+     * Create a 2d grid of processors PxQ where LCM(P,Q) = 1
+     */
+    int nprocs, myrank;
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+
+    // int p = 2, q = 3;
+
+	// if (p*q != nprocs)
+	// {
+	// 	cout << "Error PxQ must be equal to nprocs" << "\n";
+	// 	MPI_Abort(MPI_COMM_WORLD, 0);
+	// }
 	
-	
-	SDC* res = superDC(hss, bt, m, mSize, nProc);
-	
+
+	// MPI_Comm process_grid;
+    // int dims[2] = {p, q}; // integer array of size ndims specifying the number of processes in each dimension
+    // int periods[2] = {0, 0};
+
+    // MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 0, &process_grid);
+
+	// cout << "Reached dsuperdc" << "\n";
+	res = dsuperDc(hss, bt, m, mSize, nProc, MPI_COMM_WORLD);
+
+	#else
+	res = superDC(hss, bt, m, mSize, nProc);
+	#endif
 	//this sorting of eigenvalues from smallest to largest is necessary and the index values
 	vector<int> I(res->lSize);
  	std::iota(I.begin(),I.end(),0); 
@@ -103,6 +149,10 @@ int main(int argc, char* argv[])
 	PrintArray<double>(matvecprod, columns, 1, "eigvec.txt"); 
 
 	delete[] m;
-	
+
+#ifdef DIST
+	MPI_Finalize();
+#endif
+
 	return 0;
 }

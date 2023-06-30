@@ -13,10 +13,10 @@
 #include "omp.h"
 #include <sys/time.h>
 
-// #define MPI 1 // For development
-
-#ifdef MPI
+#ifdef DIST
+// extern "C"{
 #include <mpi.h>
+// }
 #endif
 
 extern "C"
@@ -107,7 +107,6 @@ std::pair<double *, nonleaf**> r_RankOneUpdate(double* Lam, int lamSize, std::pa
     
     double *temp_d   = Lam;
     int temp_d_size = lamSize;
-
     for(int j = 0; j < r; j++)
     {
                           
@@ -333,32 +332,7 @@ bt = btree;
             }
 
         }
-    }
-#elif defined(MPI)
-    MPI_Init(NULL, NULL);
-    int nprocs;
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-
-    int ndims = 2;
-    int dims[2];
-    const int periods[2] = {0, 0};
-    int reorder = 0;
-    MPI_Comm comm_cart;
-
-    int n_proc_rows = sqrt(nprocs); // make it work on non square architecture
-    int n_proc_cols = n_proc_rows;
-
-    dims[0] = n_proc_cols;
-    dims[1] = n_proc_rows;
-
-    MPI_Cart_create(MPI_COMM_WORLD, ndims, dims, periods, reorder, &comm_cart);
-
-    int my_rank;
-    MPI_Comm_rank(comm_cart, &my_rank);
-
-    cout << "My rank is " << my_rank << "\n";
-    MPI_Abort(MPI_COMM_WORLD, 1);
-    MPI_Finalize();
+    }    
 #else
   std::queue<int> Work;
   std::vector<int> counter(N+1, 0);
@@ -451,10 +425,319 @@ bt = btree;
     resSDC->lSize = LamSizes[N-1];
     resSDC->qSizes = q0Sizes;
     return resSDC;
-} 
+}
+
+#ifdef DIST
 
 
 
+SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm process_grid)
+{
+    // struct timeval timeStart, timeEnd;
+    // gettimeofday(&timeStart, 0);
+    bt = btree;
+    cout << "Reached superDC\n";
+    // Dividing Stage
+    resDvd = divide2(A, bt, m, mSize);
+
+    // cout << "Success Divide\n";
+    // Conquering stage
+    N = bt->GetNumNodes();
+
+    Q0 = new EIG_MAT *[N];
+    q0Sizes = new std::pair<int, int>[N];
+    Lam = new double *[N];
+    LamSizes = new int[N];
+    l = new std::pair<int, int>[N];
+
+    for (int k = 0; k < N; k++)
+        l[k] = std::make_pair(0, 0);
+
+    l[0] = {0, m[0] - 1};
+    int it = 0;
+    int lt = 0;
+
+    for (int k = 0; k < N; k++)
+    {
+        std::vector<int> ch = bt->GetChildren(k + 1);
+        if (ch.size() == 0)
+        {
+            l[k] = {lt, lt + m[it] - 1};
+            lt = l[k].second + 1;
+            it = it + 1;
+        }
+        else
+        {
+            l[k] = {l[ch[0] - 1].first, l[ch[1] - 1].second};
+        }
+    }
+
+    for (int k = 0; k < N; k++)
+        q0Sizes[k] = std::make_pair(0, 0);
+
+#if defined(DIST)
+
+    /**
+     * Get the grid information
+    */
+    int nprocs, myrank;
+    MPI_Comm_size(process_grid, &nprocs);
+    MPI_Comm_rank(process_grid, &myrank);
+
+    
+
+    // int coords[2];
+    // int dims[2];
+    // int reorder[2];
+    // MPI_Cart_get(process_grid, 2, dims, reorder, coords);
+    // int my_col = coords[1]; // for row wise ordering
+    // int my_row = coords[0];
+
+    // Timer start
+    double tstart, tend;
+    tstart = MPI_Wtime();
+
+    /**
+     * Compute the leaf eigenvalues, define communicators and distribute
+     */
+
+    vector<vector<int>> level_order_nodes = bt->nodeAtLvl;
+
+    vector<vector<int>> core_map(level_order_nodes.size());
+    vector<vector<int>> level_map(level_order_nodes.size());
+    core_map[0].push_back(0);
+    level_map[0].push_back(0);
+    if (level_order_nodes.size() >= 2)
+    {   
+        core_map[1].resize(2);
+        level_map[1].resize(2);
+        core_map[1][0] = 0;
+        core_map[1][1] = 1;
+
+        level_map[1][0] = 0;
+        level_map[1][1] = 1;
+    }
+
+    for (int level = 2; level < level_order_nodes.size(); level++)
+    {
+        int num_nodes = (int)pow(2, level);
+        core_map[level].resize(num_nodes);
+        level_map[level].resize(num_nodes);
+        
+        int even_step = (int)pow(2, level-1) -2;
+        for(int i=0; i<num_nodes/2; i++){
+            if (i%2==0)
+            {
+                core_map[level][i] = core_map[level-1][i/2];
+                level_map[level][core_map[level-1][i/2]] = i; 
+            } else
+            {
+                core_map[level][i] = even_step+2;
+                level_map[level][even_step+2] = i;
+                even_step+=2;
+            }
+        }
+
+        int odd_step = (int)pow(2, level-1) -1;
+        for (int i = num_nodes/2; i < num_nodes; i++)
+        {
+            if (i%2==0)
+            {
+                core_map[level][i] = core_map[level-1][i/2];
+                level_map[level][core_map[level-1][i/2]] = i; 
+            } else
+            {
+                core_map[level][i] = odd_step+2;
+                level_map[level][odd_step+2] = i;
+                odd_step+=2;
+            }
+        }
+    }
+
+    for (int level = level_order_nodes.size() - 1; level >= 0; level--)
+    {   
+        vector<int> work_done;
+        for (int node_index = 0; node_index < level_order_nodes[level].size(); node_index++)
+        {
+            if (core_map[level][node_index] == myrank)
+            {   
+                work_done.push_back(node_index);
+                int node = level_order_nodes[level][node_index];
+                if (bt->GetChildren(node).empty())
+                {
+                    int i = node - 1;
+                    std::pair<double *, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
+
+                    Lam[i] = E.first;
+                    LamSizes[i] = resDvd->dSizes[i].first;
+
+                    Q0[i] = new EIG_MAT();
+                    Q0[i]->Q0_leaf = E.second;
+                    Q0[i]->Q0_nonleaf = NULL;
+                    q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};
+                }
+
+                else if (!bt->GetChildren(node).empty())
+                {
+                    vector<int> ch = bt->GetChildren(node);
+                    int left = ch[0];
+                    int right = ch[1];
+                    int i = node - 1;
+                    resDvd->Z[i] = superdcmv_desc(Q0, q0Sizes, (resDvd->Z[i]), resDvd->zSizes[i], bt, i, 1, l, fmmTrigger);
+                    Lam[i] = new double[(LamSizes[left - 1]) + (LamSizes[right - 1])];
+                    std::copy(Lam[left - 1], Lam[left - 1] + LamSizes[left - 1], Lam[i]);
+                    std::copy(Lam[right - 1], Lam[right - 1] + LamSizes[right - 1], Lam[i] + LamSizes[left - 1]);
+
+                    LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
+                    delete[] Lam[left - 1];
+                    delete[] Lam[right - 1];
+
+                    LamSizes[left - 1] = 0;
+                    LamSizes[right - 1] = 0;
+
+                    int r = resDvd->zSizes[i].second;
+
+                    Q0[i] = new EIG_MAT();
+                    Q0[i]->Q0_leaf = NULL;
+
+                    nonleaf **n_leaf = new nonleaf *[r];
+                    std::pair<double *, nonleaf **> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
+                    Lam[i] = result.first;
+                    Q0[i]->Q0_nonleaf = result.second;
+                    Q0[i]->n_non_leaf = r;
+                    q0Sizes[i] = {1, r};
+                }
+            }
+        }
+
+        if (myrank>=(int)pow(2, level-1))
+        {   // send
+            int myindx = level_map[level][myrank];
+            int send_to = core_map[level][myindx-1];
+
+            // first send the number of results to sent
+            int t = work_done.size();
+            
+            // first send contains sizes and if sending leaf or node
+            MPI_Send((void*)&t, 1, MPI_INTEGER, send_to, 0, process_grid);
+
+            for (int i = 0; i < t; i++)
+            {
+                int node = level_order_nodes[level][work_done[i]];
+                int indx = node - 1;
+                int LamSize = LamSizes[indx];
+                int q0_size_first = q0Sizes[indx].first;
+                int q0_size_second = q0Sizes[indx].second;
+                bool is_leaf = bt->GetChildren(indx).empty();
+                double *send_buf = new double[5+LamSize+q0_size_first*q0_size_second];
+                
+                send_buf[0] = indx;
+                send_buf[1] = LamSize;
+                send_buf[2] = q0_size_first;
+                send_buf[3] = q0_size_second;
+                send_buf[4] = is_leaf;
+
+                // for (int k = 0; k < LamSize; k++)
+                // {
+                //     assert(send_buf[k+5] == Lam[indx][k]);
+                // }
+                
+                MPI_Send(send_buf, 5, MPI_DOUBLE, send_to, 0, process_grid);
+
+                if (is_leaf){
+
+                }else
+                {
+                    /* code */
+                }
+                
+            }
+            
+        } else
+        {   // recv
+            int myindx = level_map[level][myrank];
+            int recv_from = core_map[level][myindx+1];
+
+            // number of results to recv
+            int t = 0;
+            MPI_Status status;
+            MPI_Recv((void*)&t, 1, MPI_INTEGER, recv_from, 0, process_grid, &status);
+
+            for (int i = 0; i < t; i++)
+            {
+                double *recv_sizes_first = new double[5];
+                MPI_Recv((void *)recv_sizes_first, 5, MPI_DOUBLE, recv_from, 0, process_grid, &status);
+
+                int indx = (int)recv_sizes_first[0];
+                int lamsz = (int)recv_sizes_first[1];
+                int qsz_first = (int)recv_sizes_first[2];
+                int qsz_second = (int)recv_sizes_first[3];
+                int isLeaf = (int)recv_sizes_first[4];
+
+                if (isLeaf){
+
+                }else
+                {
+                    
+                }
+                
+
+            }
+            
+        }
+        
+        
+        
+
+
+        MPI_Barrier(process_grid);
+    }
+
+    /**
+     * Calculate execution time
+     */
+    tend = MPI_Wtime();
+    double etime = tend - tstart;
+    double max_etime = 0.0;
+    MPI_Reduce(&etime, &max_etime, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    if (myrank == 0)
+    {
+        cout << "Distributed Superdc took " << max_etime << " seconds"
+             << "\n";
+    }
+    MPI_Barrier(process_grid);
+    MPI_Abort(MPI_COMM_WORLD, 0);
+#endif
+
+    // gettimeofday(&timeEnd, 0);
+    // long long elapsed = (timeEnd.tv_sec - timeStart.tv_sec) * 1000000LL + timeEnd.tv_usec - timeStart.tv_usec;
+    // printf("\nDone. %f usecs\n", elapsed / (double)1000000);
+
+    std::ofstream txtOut;
+    txtOut.open("output.txt", std::ofstream::out);
+    // txtOut << setprecision(10) << elapsed / (double)1000000 << " seconds" << endl;
+    vector<double> tempeig;
+    for (int k = 0; k < LamSizes[N - 1]; k++)
+        tempeig.push_back(Lam[N - 1][k]);
+
+    std::sort(tempeig.begin(), tempeig.end());
+    int count = 0;
+    for (int k = 0; k < LamSizes[N - 1]; k++)
+    {
+        count++;
+        txtOut << setprecision(20) << tempeig[k] << endl;
+    }
+    cout << count;
+
+    SDC *resSDC = new SDC();
+
+    resSDC->Q = Q0;
+    resSDC->L = Lam[N - 1];
+    resSDC->lSize = LamSizes[N - 1];
+    resSDC->qSizes = q0Sizes;
+    return resSDC;
+}
+#endif
 /*
 #include<bits/stdc++.h>
 #include<string.h>

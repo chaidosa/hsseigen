@@ -340,6 +340,19 @@ bt = btree;
   for(int itr = 0; itr < bt->leaves.size(); itr++){
         Work.push(bt->leaves[itr]);
   }
+  
+  vector<vector<int>> level_order_nodes = bt->nodeAtLvl;
+
+  for (int i = 0; i < level_order_nodes.size(); i++)
+  {
+        cout << "At level: " << i << " nodes are: ";
+        for (int j = 0; j < level_order_nodes[i].size(); j++)
+        {
+            cout << level_order_nodes[i][j] << " ";
+        }
+        cout << "\n";
+  }
+  cout << "\n\n";
 
   while(!Work.empty()){
         vector<int> ch;
@@ -436,7 +449,7 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
     // struct timeval timeStart, timeEnd;
     // gettimeofday(&timeStart, 0);
     bt = btree;
-    cout << "Reached superDC\n";
+    // cout << "Reached superDC\n";
     // Dividing Stage
     resDvd = divide2(A, bt, m, mSize);
 
@@ -554,8 +567,37 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
         }
     }
 
+    // print out level order tree and core map
+
+    if (myrank == 0)
+    {
+        for (int i = 0; i < level_order_nodes.size(); i++)
+        {
+            cout << "At level: " << i << " nodes are: ";
+            for (int j = 0; j < level_order_nodes[i].size(); j++)
+            {
+                cout << level_order_nodes[i][j] << " ";
+            }
+            cout << "\n";
+        }
+        cout << "\n\n" ;
+        for (int i = 0; i < core_map.size(); i++)
+        {
+            cout << "At level: " << i << " nodes are computed by ranks: ";
+            for (int j = 0; j < core_map[i].size(); j++)
+            {
+                cout << core_map[i][j] << " ";
+            }
+            cout << "\n";
+        }
+        cout << "\n\n" ;
+    }
+
+    // MPI_Barrier(MPI_COMM_WORLD);
     for (int level = level_order_nodes.size() - 1; level >= 0; level--)
     {   
+        if (level==0)
+            cout << "Started level 0\n";
         vector<int> work_done;
         for (int node_index = 0; node_index < level_order_nodes[level].size(); node_index++)
         {
@@ -570,11 +612,13 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
 
                     Lam[i] = E.first;
                     LamSizes[i] = resDvd->dSizes[i].first;
-
+                    // cout << "Rank " << myrank << " generated Qi " << i << "\n";
                     Q0[i] = new EIG_MAT();
                     Q0[i]->Q0_leaf = E.second;
                     Q0[i]->Q0_nonleaf = NULL;
                     q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};
+                    // sleep(1);
+                    // MPI_Barrier(MPI_COMM_WORLD);
                 }
 
                 else if (!bt->GetChildren(node).empty())
@@ -584,6 +628,10 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
                     int right = ch[1];
                     int i = node - 1;
                     resDvd->Z[i] = superdcmv_desc(Q0, q0Sizes, (resDvd->Z[i]), resDvd->zSizes[i], bt, i, 1, l, fmmTrigger);
+
+                    if(level==0)
+                        cout << "Reached here 633 level0\n";
+
                     Lam[i] = new double[(LamSizes[left - 1]) + (LamSizes[right - 1])];
                     std::copy(Lam[left - 1], Lam[left - 1] + LamSizes[left - 1], Lam[i]);
                     std::copy(Lam[right - 1], Lam[right - 1] + LamSizes[right - 1], Lam[i] + LamSizes[left - 1]);
@@ -606,90 +654,425 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
                     Q0[i]->Q0_nonleaf = result.second;
                     Q0[i]->n_non_leaf = r;
                     q0Sizes[i] = {1, r};
+
+                    if(level==0)
+                        cout << "Reached here 659 level0\n";
                 }
             }
         }
 
-        if (myrank>=(int)pow(2, level-1))
-        {   // send
+        int SEND_Error;
+        if (myrank >= (int)pow(2, level - 1) && myrank < (int)pow(2, level) && level>0)
+        { // send
             int myindx = level_map[level][myrank];
-            int send_to = core_map[level][myindx-1];
+            int send_to = core_map[level][myindx - 1];
 
             // first send the number of results to sent
+            // if (level==1)
+            // cout << "Myrank, " << myrank << " sends to: " << send_to << "\n";
             int t = work_done.size();
-            
+
             // first send contains sizes and if sending leaf or node
-            MPI_Send((void*)&t, 1, MPI_INTEGER, send_to, 0, process_grid);
+            SEND_Error= MPI_Send((void *)&t, 1, MPI_INT, send_to, 0, process_grid);
+
+            // if(level==1 && myrank==1)
+            // cout << "Sent t" << "\n";
+
+            if (SEND_Error!=MPI_SUCCESS)
+            {
+                cout << "SendError at 670" << "\n";
+            }
+            
 
             for (int i = 0; i < t; i++)
             {
                 int node = level_order_nodes[level][work_done[i]];
-                int indx = node - 1;
+                const int indx = node - 1;
                 int LamSize = LamSizes[indx];
                 int q0_size_first = q0Sizes[indx].first;
                 int q0_size_second = q0Sizes[indx].second;
-                bool is_leaf = bt->GetChildren(indx).empty();
-                double *send_buf = new double[5+LamSize+q0_size_first*q0_size_second];
-                
+                bool is_leaf = bt->GetChildren(node).empty();
+                double *send_buf = new double[5];
+
+                // if (!is_leaf)
+                // {
+                //     assert(q0_size_second==Q0[indx]->n_non_leaf);
+                //     cout << "Assert success " << (q0_size_second==Q0[indx]->n_non_leaf) << " isleaf " << is_leaf << "\n";
+                // }
+
+                if(level==1){
+                    cout << "Sending qosz " << q0_size_first << "," << q0_size_second << "\n";
+                }
+
                 send_buf[0] = indx;
                 send_buf[1] = LamSize;
                 send_buf[2] = q0_size_first;
                 send_buf[3] = q0_size_second;
                 send_buf[4] = is_leaf;
 
-                // for (int k = 0; k < LamSize; k++)
-                // {
-                //     assert(send_buf[k+5] == Lam[indx][k]);
-                // }
+                SEND_Error= MPI_Send(send_buf, 5, MPI_DOUBLE, send_to, 0, process_grid);
+                delete[] send_buf;
+
                 
-                MPI_Send(send_buf, 5, MPI_DOUBLE, send_to, 0, process_grid);
-
-                if (is_leaf){
-
-                }else
+                if (SEND_Error != MPI_SUCCESS)
                 {
-                    /* code */
+                    cout << "SendError at 696"
+                         << "\n";
+                }                        
+
+                if (is_leaf)
+                {
+
+                    SEND_Error = MPI_Send(Lam[indx], LamSize, MPI_DOUBLE, send_to, 0, process_grid);
+                    if (SEND_Error != MPI_SUCCESS)
+                    {
+                        cout << "SendError at 700"
+                             << "\n";
+                    }
+
+                    SEND_Error = MPI_Send(Q0[indx]->Q0_leaf, q0_size_first * q0_size_second, MPI_DOUBLE, send_to, 0, process_grid);
+                    if (SEND_Error != MPI_SUCCESS)
+                    {
+                        cout << "SendError at 670"
+                             << "\n";
+                    }
                 }
-                
-            }
-            
-        } else
-        {   // recv
-            int myindx = level_map[level][myrank];
-            int recv_from = core_map[level][myindx+1];
-
-            // number of results to recv
-            int t = 0;
-            MPI_Status status;
-            MPI_Recv((void*)&t, 1, MPI_INTEGER, recv_from, 0, process_grid, &status);
-
-            for (int i = 0; i < t; i++)
-            {
-                double *recv_sizes_first = new double[5];
-                MPI_Recv((void *)recv_sizes_first, 5, MPI_DOUBLE, recv_from, 0, process_grid, &status);
-
-                int indx = (int)recv_sizes_first[0];
-                int lamsz = (int)recv_sizes_first[1];
-                int qsz_first = (int)recv_sizes_first[2];
-                int qsz_second = (int)recv_sizes_first[3];
-                int isLeaf = (int)recv_sizes_first[4];
-
-                if (isLeaf){
-
-                }else
-                {
+                else
+                {   
                     
+                    
+                    double *send_buf = new double[q0_size_second * (12 + 10 + 4)];
+                    for (int j = 0; j < q0_size_second; j++)
+                    {   
+                        int buff_indx = 0;
+                        buff_indx = j * (12 + 8 + 4);
+                        int step = 0;
+                        for (int k = 0; k < 6; k++)
+                        {
+                                send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->qcSizes[k].first;
+                                step += 1;
+                                send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->qcSizes[k].second;
+                                step += 1;
+                        }
+
+                        
+
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->JSize.first;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->JSize.second;
+                        step += 1;
+
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->GSize.first;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->GSize.second;
+                        step += 1;
+
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->ISize.first;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->ISize.second;
+                        step += 1;
+
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->v2cSize.first;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->v2cSize.second;
+                        step += 1;
+
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->TSize.first;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->TSize.second;
+                        step += 1;
+
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->n;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->n1;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->n2;
+                        step += 1;
+                        send_buf[buff_indx + step] = Q0[indx]->Q0_nonleaf[j]->n3;
+                        step += 1;
+                    }
+
+                    
+                    
+                    SEND_Error = MPI_Send(send_buf, q0_size_second * (12 + 10 + 4), MPI_DOUBLE, send_to, 0, process_grid);
+                    if (SEND_Error != MPI_SUCCESS)
+                    {
+                        cout << "SendError at 670"
+                             << "\n";
+                    }
+
+
+                    SEND_Error = MPI_Send(Lam[indx], LamSize, MPI_DOUBLE, send_to, 0, process_grid);
+                    if (SEND_Error != MPI_SUCCESS)
+                    {
+                        cout << "SendError at 670"
+                             << "\n";
+                    }
+                    delete[] send_buf;
+                    
+                    for (int l = 0; l < q0_size_second; l++)
+                    {
+                        nonleaf *serialize = Q0[indx]->Q0_nonleaf[l];
+
+                        int total_sz = 0;
+                        for (int m = 0; m < 6; m++)
+                        {
+                                total_sz += serialize->qcSizes[m].first * serialize->qcSizes[m].second;
+                        }
+
+
+                        total_sz += ((serialize->JSize.first * serialize->JSize.second) + (serialize->GSize.first * serialize->GSize.second));
+                        total_sz += ((serialize->ISize.first * serialize->ISize.second) + (serialize->v2cSize.first * serialize->v2cSize.second));
+                        total_sz += ((serialize->TSize.first * serialize->TSize.second) + 4);
+
+                        double *send_buf_doubles = new double[total_sz];
+                        int step = 0;
+                        for (int m = 0; m < 6; m++)
+                        {
+                                if (m != 5)
+                                {
+                                    memcpy(send_buf_doubles + step, serialize->QC[m], sizeof(double) * serialize->qcSizes[m].first * serialize->qcSizes[m].second);
+                                }
+                                step += serialize->qcSizes[m].first * serialize->qcSizes[m].second;
+                                assert(step<total_sz);
+                        }
+
+
+                        memcpy(send_buf_doubles + step, serialize->J, sizeof(double) * serialize->JSize.first * serialize->JSize.second);
+                        step += serialize->JSize.first * serialize->JSize.second;
+                                assert(step<total_sz);
+
+
+                        memcpy(send_buf_doubles + step, serialize->G, sizeof(double) * serialize->GSize.first * serialize->GSize.second);
+                        step += serialize->GSize.first * serialize->GSize.second;
+                                assert(step<total_sz);
+
+
+                        memcpy(send_buf_doubles + step, serialize->I, sizeof(double) * serialize->ISize.first * serialize->ISize.second);
+                        step += serialize->ISize.first * serialize->ISize.second;
+                                assert(step<total_sz);
+
+
+                        memcpy(send_buf_doubles + step, serialize->v2c, sizeof(double) * serialize->v2cSize.first * serialize->v2cSize.second);
+                        step += serialize->v2cSize.first * serialize->v2cSize.second;
+                                assert(step<total_sz);
+
+
+                        // // memcpy(send_buf_doubles+step, serialize->T, sizeof(double)*serialize->TSize.first*serialize->TSize.second);
+                        step += serialize->TSize.first * serialize->TSize.second;
+                                assert(step<total_sz);
+
+                        SEND_Error =  MPI_Send(send_buf_doubles, total_sz, MPI_DOUBLE, send_to, 0, process_grid);
+                        if (level==1)
+                        {
+                            cout << "reached 845\n";
+                        }
+                        
+                        if (SEND_Error != MPI_SUCCESS)
+                        {
+                                cout << "SendError at 670"
+                                     << "\n";
+                        }
+                        
+                        delete[] send_buf_doubles;
+
+                        // send T and org seperately;
+                        int *T_ORG = new int[serialize->qcSizes[5].first * serialize->qcSizes[5].second + serialize->TSize.first * serialize->TSize.second];
+                        int offset = 0;
+
+
+                        memcpy(T_ORG + offset, serialize->Org, sizeof(int) * serialize->qcSizes[5].first * serialize->qcSizes[5].second);
+                        offset += serialize->qcSizes[5].first * serialize->qcSizes[5].second;
+
+                        memcpy(T_ORG + offset, serialize->T, sizeof(int) * serialize->TSize.first * serialize->TSize.second);
+                        offset += serialize->qcSizes[5].first * serialize->qcSizes[5].second;
+
+                        SEND_Error = MPI_Send(T_ORG, serialize->qcSizes[5].first * serialize->qcSizes[5].second + serialize->TSize.first * serialize->TSize.second, MPI_INT, send_to, 0, process_grid);
+                        if (SEND_Error != MPI_SUCCESS)
+                        {
+                                cout << "SendError at 670"
+                                     << "\n";
+                        }
+                        delete[] T_ORG;
+                    }
                 }
-                
-
             }
-            
         }
-        
-        
-        
+        else
+        { // recv
+
+            if (myrank < (int)pow(2, level) && level>0)
+            {
+
+                int myindx = level_map[level][myrank];
+                int recv_from = core_map[level][myindx + 1];
+
+                // number of results to recv
+                int t = 0;
+                MPI_Status status;
+                MPI_Recv((void *)&t, 1, MPI_INT, recv_from, 0, process_grid, &status);
+                // cout << "Myrank, worksz: " << myrank << "," << t << "\n";
+
+               
+
+                for (int i = 0; i < t; i++)
+                {
+                    double *recv_sizes_first = new double[5];
+                    MPI_Recv((void *)recv_sizes_first, 5, MPI_DOUBLE, recv_from, 0, process_grid, &status);
+
+                    int indx = (int)recv_sizes_first[0];
+                    int lamsz = (int)recv_sizes_first[1];
+                    int qsz_first = (int)recv_sizes_first[2];
+                    int qsz_second = (int)recv_sizes_first[3];
+                    int isLeaf = (int)recv_sizes_first[4];
+                 if (level==1)
+                    cout << "Recving rank is: " << myrank << " q0sz is " << qsz_first << "," << qsz_second << " indx is: " << indx <<  "\n";
+
+                    q0Sizes[indx] = make_pair(qsz_first, qsz_second);
+                    LamSizes[indx] = lamsz;
+
+                    // cout << "Myrank, recvd Qi: " << myrank << "," << indx << "\n";
+                    if (isLeaf)
+                    {
+                        Lam[indx] = new double[lamsz];
+                        Q0[indx] = new EIG_MAT();
+                        Q0[indx]->Q0_nonleaf = NULL;
+                        Q0[indx]->Q0_leaf = new double[qsz_first * qsz_first];
+                        MPI_Recv(Lam[indx], lamsz, MPI_DOUBLE, recv_from, 0, process_grid, &status);
+                        MPI_Recv(Q0[indx]->Q0_leaf, qsz_first * qsz_first, MPI_DOUBLE, recv_from, 0, process_grid, &status);
+                    }
+                    else
+                    {
+                        double *recv_buf = new double[qsz_second * (12 + 10 + 4)];
+                        MPI_Recv(recv_buf, qsz_second * (12 + 10 + 4), MPI_DOUBLE, recv_from, 0, process_grid, &status);
+
+                        Lam[indx] = new double[lamsz];
+                        MPI_Recv(Lam[indx], lamsz, MPI_DOUBLE, recv_from, 0, process_grid, &status);
+
+                        Q0[indx] = new EIG_MAT();
+                        Q0[indx]->Q0_leaf = NULL;
+                        Q0[indx]->n_non_leaf = qsz_second;
+                        Q0[indx]->Q0_nonleaf = new nonleaf*[qsz_second];
 
 
+                        // Initialize Q0 sizes, n n1 n2 n3, memory.
+
+                        vector<int> total_sz;
+                        total_sz.resize(qsz_second, 0);
+                        for (int j = 0; j < qsz_second; j++)
+                        {   
+                                Q0[indx]->Q0_nonleaf[j] = new nonleaf();
+                                nonleaf *node = Q0[indx]->Q0_nonleaf[j];
+
+
+
+                                int buff_indx = j * (12 + 8 + 4);
+                                int step = 0;
+                                for (int k = 0; k < 6; k++)
+                                {
+                                    node->qcSizes[k] = make_pair((int)recv_buf[buff_indx + step], (int)recv_buf[buff_indx + step + 1]);
+                                    step += 2;
+
+                                    if (k != 5)
+                                    {
+                                        node->QC[k] = new double[node->qcSizes[k].first * node->qcSizes[k].second];
+                                        total_sz[j] += node->qcSizes[k].first * node->qcSizes[k].second;
+                                    }
+                                    else
+                                    {
+                                        node->Org = new int[node->qcSizes[k].first * node->qcSizes[k].second];
+                                        total_sz[j] += node->qcSizes[k].first * node->qcSizes[k].second;
+                                    }
+                                }
+
+
+                                node->JSize = make_pair((int)recv_buf[buff_indx + step], (int)recv_buf[buff_indx + step + 1]);
+                                step += 2;
+                                node->J = new double[node->JSize.first * node->JSize.second];
+                                total_sz[j] += node->JSize.first * node->JSize.second;
+
+                                node->GSize = make_pair((int)recv_buf[buff_indx + step], (int)recv_buf[buff_indx + step + 1]);
+                                step += 2;
+                                node->G = new double[node->GSize.first * node->GSize.second];
+                                total_sz[j] += node->GSize.first * node->GSize.second;
+
+                                node->ISize = make_pair((int)recv_buf[buff_indx + step], (int)recv_buf[buff_indx + step + 1]);
+                                step += 2;
+                                node->I = new double[node->ISize.first * node->ISize.second];
+                                total_sz[j] += node->ISize.first * node->ISize.second;
+
+                                node->v2cSize = make_pair((int)recv_buf[buff_indx + step], (int)recv_buf[buff_indx + step + 1]);
+                                step += 2;
+                                node->v2c = new double[node->v2cSize.first * node->v2cSize.second];
+                                total_sz[j] += node->v2cSize.first * node->v2cSize.second;
+
+                                node->TSize = make_pair((int)recv_buf[buff_indx + step], (int)recv_buf[buff_indx + step + 1]);
+                                step += 2;
+                                node->T = new int[node->TSize.first * node->TSize.second];
+                                total_sz[j] += node->TSize.first * node->TSize.second;
+
+                                node->n = recv_buf[buff_indx + step];
+                                step += 1;
+                                node->n1 = recv_buf[buff_indx + step];
+                                step += 1;
+                                node->n2 = recv_buf[buff_indx + step];
+                                step += 1;
+                                node->n3 = recv_buf[buff_indx + step];
+                                step += 1;
+
+                                total_sz[j] += 4;
+                        }
+                        delete[] recv_buf;
+
+                        // recv serialzed nonleaf data and deserialize
+
+                        for (int nonlf = 0; nonlf < qsz_second; nonlf++)
+                        {
+                                recv_buf = new double[total_sz[nonlf]];
+                                MPI_Recv(recv_buf, total_sz[nonlf], MPI_DOUBLE, recv_from, 0, process_grid, &status);
+                                nonleaf *node = Q0[indx]->Q0_nonleaf[nonlf];
+                                int offset = 0;
+                                for (int i = 0; i < 5; i++)
+                                {
+                                    memcpy(node->QC[i], recv_buf + offset, sizeof(double) * node->qcSizes[i].first * node->qcSizes[i].second);
+                                    offset += node->qcSizes[i].first * node->qcSizes[i].second;
+                                }
+                                offset += node->qcSizes[5].first * node->qcSizes[5].second;
+
+                                memcpy(node->J, recv_buf + offset, sizeof(double) * node->JSize.first * node->JSize.second);
+                                offset += node->JSize.first * node->JSize.second;
+
+                                memcpy(node->G, recv_buf + offset, sizeof(double) * node->GSize.first * node->GSize.second);
+                                offset += node->GSize.first * node->GSize.second;
+
+                                memcpy(node->I, recv_buf + offset, sizeof(double) * node->ISize.first * node->ISize.second);
+                                offset += node->ISize.first * node->ISize.second;
+
+                                memcpy(node->v2c, recv_buf + offset, sizeof(double) * node->v2cSize.first * node->v2cSize.second);
+                                offset += node->v2cSize.first * node->v2cSize.second;
+                                delete[] recv_buf;
+                               
+
+                                // recv T and Org ints
+                                offset = 0;
+                                int *recv_org_T = new int[node->qcSizes[5].first * node->qcSizes[5].second + node->TSize.first * node->TSize.second];
+                                MPI_Recv(recv_org_T, node->qcSizes[5].first * node->qcSizes[5].second + node->TSize.first * node->TSize.second, MPI_INT, recv_from, 0, process_grid, &status);
+                                
+                                memcpy(node->Org, recv_org_T, sizeof(int) * node->qcSizes[5].first * node->qcSizes[5].second);
+                                offset += node->qcSizes[5].first * node->qcSizes[5].second;
+
+                                memcpy(node->T, recv_org_T + offset, sizeof(int) * node->TSize.first * node->TSize.second);
+
+                                delete[] recv_org_T;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (myrank==0)
+        cout << "Completed level " << level << "\n";
+        // sleep(1);
         MPI_Barrier(process_grid);
     }
 
@@ -706,7 +1089,7 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
              << "\n";
     }
     MPI_Barrier(process_grid);
-    MPI_Abort(MPI_COMM_WORLD, 0);
+    // MPI_Abort(MPI_COMM_WORLD, 0);
 #endif
 
     // gettimeofday(&timeEnd, 0);

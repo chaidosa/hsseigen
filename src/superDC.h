@@ -5,7 +5,7 @@
 #include "band2hss.h"
 #include "eigenmatrix.h"
 
-#define DIST 1 // For development
+// #define DIST 1 // For development
 
 #ifdef DIST
 #include <mpi.h>

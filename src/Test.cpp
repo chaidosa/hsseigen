@@ -122,7 +122,8 @@ int main(int argc, char* argv[])
 
 	// cout << "Reached dsuperdc" << "\n";
 	res = dsuperDc(hss, bt, m, mSize, nProc, MPI_COMM_WORLD);
-
+	
+	if (myrank==0){
 	#else
 	res = superDC(hss, bt, m, mSize, nProc);
 	#endif
@@ -151,6 +152,7 @@ int main(int argc, char* argv[])
 	delete[] m;
 
 #ifdef DIST
+	}
 	MPI_Finalize();
 #endif
 

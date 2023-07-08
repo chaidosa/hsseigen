@@ -6,6 +6,7 @@ class nonleaf{
         public:
         double *QC[5];
         std::pair<int,int>qcSizes[6];        
+        // Mathematically org is a vector of size = qcSizes[5].first and qcSizes[5].second=1
         int *Org;
         
         double *J;

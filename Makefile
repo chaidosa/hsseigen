@@ -1,7 +1,6 @@
 ########################################################################
 ####################### Makefile Template ##############################
 ########################################################################
-OPENBLAS=1
 ifeq ($(OPENBLAS), 1)
 	#set BLAS_INSTALL_PATH appropriately if you have a local installation of blas library. If there is a system-wide installation available, leave this as blank
 	BLAS_INSTALL_PATH=/OpenBlas
@@ -35,6 +34,11 @@ endif
 ifeq ($(DIST), 1)
 	CC = mpic++
 	CXXFLAGS += -DDIST
+endif
+
+ifeq ($(HYBRD), 1)
+	CC = mpic++
+	CXXFLAGS += -DHYBRD -fopenmp
 endif
 
 # Makefile settings - Can be customized.

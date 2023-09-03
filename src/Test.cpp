@@ -34,7 +34,7 @@ void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
 }
 
 
-#ifdef DIST
+#if defined(DIST) || defined(HYBRD)
 // extern "C"{
 #include <mpi.h>
 #include <cmath>
@@ -44,9 +44,11 @@ void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
 int main(int argc, char* argv[])
 {
 
-#ifdef DIST
+#if defined(DIST) || defined(HYBRD)
 	MPI_Init( &argc, &argv);
 #endif
+
+
 
 	int n=16;
 	int r=4;
@@ -65,23 +67,31 @@ int main(int argc, char* argv[])
 		nProc = atoi(argv[6]);	// num. Processors
 	}
 
+	int myrank = 0;
+	#if defined(DIST) || defined(HYBRD)
+		int procs;
+    	MPI_Comm_size(MPI_COMM_WORLD, &procs);
+		r = (int)n/procs;
+	    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	#endif
+
+	#ifdef HYBRD
+		r = atoi(argv[3]);
+	#endif
+
+
 	BinTree* bt=NULL;
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
 	
 	// create a banded matrix
+	if (myrank==0){
 	int status = MakeBand(n,w,&A); //Makes band matrix of n rows and w bandwidth
 	if(status) 
 		exit(-1);
+	}
 	
 	
 	int numNodes = 0;
-
-	#if defined(DIST)
-		int procs;
-    	MPI_Comm_size(MPI_COMM_WORLD, &procs);
-		r = (int)n/procs;
-	#endif
-
 
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.
 	 * Arguments of NPart: n is the number of rows/columns in an input matrix. r is the number of rows in a partition (horizontal) of the matrix 
@@ -90,19 +100,32 @@ int main(int argc, char* argv[])
 	int mSize;
 	NPart(n, r, &bt, &m, mSize, numNodes);
 
+	GEN *hss;
+	#if defined(DIST) || defined(HYBRD)
+	MPI_Barrier(MPI_COMM_WORLD);
 
-	GEN *hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+	if (myrank==0){
+		hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+	} else {
+		hss = InitGen(n);
+	}
+	
+	sendGen(hss, MPI_COMM_WORLD, n);
+	MPI_Barrier(MPI_COMM_WORLD);
 
+	#else
+	cout << "Completed Hss tree\n";
+	hss =  HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+	#endif
 
 	SDC* res; 
 
-	#if defined(DIST)
+	#if defined(DIST) || defined(HYBRD)
 	/**
      * Create a 2d grid of processors PxQ where LCM(P,Q) = 1
      */
-    int nprocs, myrank;
+    int nprocs;
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
 
     // int p = 2, q = 3;
@@ -121,8 +144,17 @@ int main(int argc, char* argv[])
     // MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 0, &process_grid);
 
 	// cout << "Reached dsuperdc" << "\n";
+	#endif
+
+	#ifdef DIST
 	res = dsuperDc(hss, bt, m, mSize, nProc, MPI_COMM_WORLD);
-	
+	#endif
+
+	#ifdef HYBRD
+	res = HybridSuperDC(hss, bt, m, mSize, nProc, MPI_COMM_WORLD);
+	#endif
+
+	#if defined(DIST) || defined(HYBRD)
 	if (myrank==0){
 	#else
 	res = superDC(hss, bt, m, mSize, nProc);
@@ -151,10 +183,10 @@ int main(int argc, char* argv[])
 
 	delete[] m;
 
-#ifdef DIST
-	}
-	MPI_Finalize();
-#endif
+	#if	defined(DIST) || defined(HYBRD)
+		}
+		MPI_Finalize();
+	#endif
 
 	return 0;
 }

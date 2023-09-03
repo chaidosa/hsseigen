@@ -430,8 +430,6 @@ bt = btree;
 
 #ifdef DIST
 #include "distributedRoutines.h"
-
-
 SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm process_grid)
 {
     // struct timeval timeStart, timeEnd;
@@ -907,6 +905,136 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
 
 }
 #endif
+
+
+#ifdef HYBRD
+#include "distributedRoutines.h"
+#include <cmath>
+
+SDC *HybridSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm process_grid)
+{
+    // struct timeval timeStart, timeEnd;
+    // gettimeofday(&timeStart, 0);
+    bt = btree;
+    // cout << "Reached superDC\n";
+    // Dividing Stage
+    resDvd = divide2(A, bt, m, mSize);
+
+    // cout << "Success Divide\n";
+    // Conquering stage
+    N = bt->GetNumNodes();
+
+    Q0 = new EIG_MAT *[N];
+    q0Sizes = new std::pair<int, int>[N];
+    Lam = new double *[N];
+    LamSizes = new int[N];
+    l = new std::pair<int, int>[N];
+
+    for (int k = 0; k < N; k++)
+        l[k] = std::make_pair(0, 0);
+
+    l[0] = {0, m[0] - 1};
+    int it = 0;
+    int lt = 0;
+
+    for (int k = 0; k < N; k++)
+    {
+        std::vector<int> ch = bt->GetChildren(k + 1);
+        if (ch.size() == 0)
+        {
+            l[k] = {lt, lt + m[it] - 1};
+            lt = l[k].second + 1;
+            it = it + 1;
+        }
+        else
+        {
+            l[k] = {l[ch[0] - 1].first, l[ch[1] - 1].second};
+        }
+    }
+
+    for (int k = 0; k < N; k++)
+        q0Sizes[k] = std::make_pair(0, 0);
+
+    #ifdef HYBRD
+    
+    // Number of nodes and rank
+    int nprocs, myrank;
+    MPI_Comm_size(process_grid, &nprocs);
+    MPI_Comm_rank(process_grid, &myrank);
+
+    
+
+    // int coords[2];
+    // int dims[2];
+    // int reorder[2];
+    // MPI_Cart_get(process_grid, 2, dims, reorder, coords);
+    // int my_col = coords[1]; // for row wise ordering
+    // int my_row = coords[0];
+
+    // Timer start
+    double tstart, tend;
+    tstart = MPI_Wtime();
+
+    // Divide Work btw nodes
+    int MaxLevel = (int)log2(nprocs);
+    set<int> Q0_list;
+    
+    // Each node must solve the subtree and append to Q0_list
+
+    
+
+    tend = MPI_Wtime();
+    double etime = tend - tstart;
+    double max_etime = 0.0;
+    MPI_Reduce(&etime, &max_etime, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    if (myrank == 0)
+    {
+        cout << "Hybrid Superdc took " << max_etime << " seconds"
+             << "\n";
+    }
+    MPI_Barrier(process_grid);
+    
+    #endif
+
+    #ifdef HYBRD
+    if (myrank==0){
+    #endif
+    std::ofstream txtOut;
+    txtOut.open("output.txt", std::ofstream::out);
+    // txtOut << setprecision(10) << elapsed / (double)1000000 << " seconds" << endl;
+    vector<double> tempeig;
+    for (int k = 0; k < LamSizes[N - 1]; k++)
+        tempeig.push_back(Lam[N - 1][k]);
+
+    std::sort(tempeig.begin(), tempeig.end());
+    int count = 0;
+    for (int k = 0; k < LamSizes[N - 1]; k++)
+    {
+        count++;
+        txtOut << setprecision(20) << tempeig[k] << endl;
+    }
+    cout << count;
+    SDC *resSDC = new SDC();
+
+    resSDC->Q = Q0;
+    resSDC->L = Lam[N - 1];
+    resSDC->lSize = LamSizes[N - 1];
+    resSDC->qSizes = q0Sizes;
+    return resSDC;
+    
+    #ifdef HYBRD
+    } 
+    else
+    {
+        return new SDC();
+    }
+    #endif
+
+    return nullptr;
+}
+#endif
+
+
 /*
 #include<bits/stdc++.h>
 #include<string.h>

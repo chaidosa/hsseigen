@@ -105,14 +105,15 @@ int main(int argc, char* argv[])
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if (myrank==0){
-		hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB);
+		hss = HssGenerators(A, n*n, bt, m , mSize, w, MorB); 
 	} else {
-		hss = InitGen(n);
+		hss = InitGen(bt->GetNumNodes()); 
 	}
 	
-	sendGen(hss, MPI_COMM_WORLD, n);
-	MPI_Barrier(MPI_COMM_WORLD);
-
+	// cout << "\nStarted Hssgen\n";
+	sendGen(hss, MPI_COMM_WORLD, bt->GetNumNodes()); // check
+	// MPI_Barrier(MPI_COMM_WORLD);
+	// cout << "\nCompletes Hssgen\n";
 	#else
 	cout << "Completed Hss tree\n";
 	hss =  HssGenerators(A, n*n, bt, m , mSize, w, MorB);

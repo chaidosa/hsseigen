@@ -25,6 +25,9 @@ GEN *band2hss(double *AA, int aSize, BinTree* bt, int* m, int mSize, int w){
 
      //To store the diagonal blocks
     double** D = new double*[n];
+    for (int i = 0; i < n; i++) D[i] = NULL;
+    
+    
 
     //create a list to hold the matrix dimensions of the diagonal matrices 
 	std::pair<int, int>* dSizes = new std::pair<int, int>[n];
@@ -33,6 +36,7 @@ GEN *band2hss(double *AA, int aSize, BinTree* bt, int* m, int mSize, int w){
 
      //To store the Generator U
     double** U = new double*[n];
+    for (int i = 0; i < n; i++) U[i] = NULL;
 
     //create a list to hold the matrix dimensions of the generator U
 	std::pair<int, int>* uSizes = new std::pair<int, int>[n];
@@ -41,6 +45,8 @@ GEN *band2hss(double *AA, int aSize, BinTree* bt, int* m, int mSize, int w){
 
     //to store generator R
     double** R = new double*[n];
+    for (int i = 0; i < n; i++) R[i] = NULL;
+
 
     //create a list to hold the matrix dimensions of the generator R
 	std::pair<int, int>* rSizes = new std::pair<int, int>[n];
@@ -49,6 +55,8 @@ GEN *band2hss(double *AA, int aSize, BinTree* bt, int* m, int mSize, int w){
 
     //to store generator B
     double** B = new double*[n];
+    for (int i = 0; i < n; i++) B[i] = NULL;
+
 
     //create a list to hold the matrix dimensions of the generator B
 	std::pair<int, int>* bSizes = new std::pair<int, int>[n];

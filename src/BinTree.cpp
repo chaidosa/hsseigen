@@ -98,7 +98,7 @@ void BinTree::Create(int n){
     }
 
     numNodes = n;
-    std::cout<<"Creating tree with "<<n<<" nodes";
+    // std::cout<<"Creating tree with "<<n<<" nodes";
 
     tr = ntree(n);
     for(int i = 0; i < numNodes; i++){

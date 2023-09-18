@@ -494,14 +494,13 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
 
     // Timer start
     double tstart, tend;
-    tstart = MPI_Wtime();
 
     /**
      * Compute the leaf eigenvalues, define communicators and distribute
      */
 
     vector<vector<int>> level_order_nodes = bt->nodeAtLvl;
-
+    int MaxLevel = (int)(log(nprocs)/log(2));
     vector<vector<int>> core_map(level_order_nodes.size());
     vector<vector<int>> level_map(level_order_nodes.size());
     core_map[0].push_back(0);
@@ -522,7 +521,7 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
         int num_nodes = (int)pow(2, level);
         core_map[level].resize(num_nodes);
         level_map[level].resize(num_nodes);
-        
+
         int even_step = (int)pow(2, level-1) -2;
         for(int i=0; i<num_nodes/2; i++){
             if (i%2==0)
@@ -532,6 +531,11 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
             } else
             {
                 core_map[level][i] = even_step+2;
+                if (level > MaxLevel)
+                {
+                    core_map[level][i] = core_map[level][i-1];
+                }
+                
                 level_map[level][even_step+2] = i;
                 even_step+=2;
             }
@@ -547,6 +551,10 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
             } else
             {
                 core_map[level][i] = odd_step+2;
+                if (level>MaxLevel){
+                    core_map[level][i] = core_map[level][i-1];
+                }
+
                 level_map[level][odd_step+2] = i;
                 odd_step+=2;
             }
@@ -558,8 +566,69 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
 
     // A set to store the Qo[indx] which the process has
     set<int> Q0_list;
+    tstart = MPI_Wtime();
 
-    for (int level = level_order_nodes.size() - 1; level >= 0; level--)
+    for (int level = level_order_nodes.size() - 1; level > MaxLevel; level--){
+        
+        for (int node_index = 0; node_index < level_order_nodes[level].size(); node_index++){
+            if (core_map[level][node_index] == myrank)
+            {   
+                int node = level_order_nodes[level][node_index];
+                if (bt->GetChildren(node).empty())
+                {
+                    int i = node - 1;
+                    std::pair<double *, double *> E = computeLeafEig(make_pair(resDvd->dSizes[i].first, resDvd->dSizes[i].second), resDvd->D[i], i);
+
+                    Lam[i] = E.first;
+                    LamSizes[i] = resDvd->dSizes[i].first;
+                    
+                    Q0[i] = new EIG_MAT();
+                    Q0[i]->Q0_leaf = E.second;
+                    Q0[i]->Q0_nonleaf = NULL;
+                    q0Sizes[i] = {resDvd->dSizes[i].first, resDvd->dSizes[i].second};
+                    
+                    Q0_list.insert(i);
+                }
+
+                else if (!bt->GetChildren(node).empty())
+                {
+                    vector<int> ch = bt->GetChildren(node);
+                    int left = ch[0];
+                    int right = ch[1];
+                    int i = node - 1;
+                    resDvd->Z[i] = superdcmv_desc(Q0, q0Sizes, (resDvd->Z[i]), resDvd->zSizes[i], bt, i, 1, l, fmmTrigger);
+
+                    Lam[i] = new double[(LamSizes[left - 1]) + (LamSizes[right - 1])];
+                    std::copy(Lam[left - 1], Lam[left - 1] + LamSizes[left - 1], Lam[i]);
+                    std::copy(Lam[right - 1], Lam[right - 1] + LamSizes[right - 1], Lam[i] + LamSizes[left - 1]);
+
+                    LamSizes[i] = (LamSizes[left - 1]) + (LamSizes[right - 1]);
+                    delete[] Lam[left - 1];
+                    delete[] Lam[right - 1];
+
+                    LamSizes[left - 1] = 0;
+                    LamSizes[right - 1] = 0;
+
+                    int r = resDvd->zSizes[i].second;
+
+                    Q0[i] = new EIG_MAT();
+                    Q0[i]->Q0_leaf = NULL;
+
+                    nonleaf **n_leaf = new nonleaf *[r];
+                    std::pair<double *, nonleaf **> result = r_RankOneUpdate(Lam[i], LamSizes[i], resDvd->zSizes[i], resDvd->Z[i], n_leaf, r);
+                    Lam[i] = result.first;
+                    Q0[i]->Q0_nonleaf = result.second;
+                    Q0[i]->n_non_leaf = r;
+                    q0Sizes[i] = {1, r};
+
+                    Q0_list.insert(i);
+                }
+            }
+        }
+    
+    }
+
+    for (int level = MaxLevel; level >= 0; level--)
     {   
 
         vector<int> work_done;

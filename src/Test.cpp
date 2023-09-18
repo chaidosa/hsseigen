@@ -57,7 +57,12 @@ int main(int argc, char* argv[])
 	int nProc = 1; // no of procs to use
 	if(argc!=7){
 		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth> <no of processor>\n");
-		
+		// testFile = "/home/c200010021/hssdata/halfb5_32k.txt";
+		// n = 32768;
+		// r = 64;
+		// MorB = 2;
+		// w = 5;
+		// nProc = 1;
 	}else{
 		testFile=argv[1]; 		// filename
 		n=atoi(argv[2]); 		// matrix size
@@ -71,7 +76,7 @@ int main(int argc, char* argv[])
 	#if defined(DIST) || defined(HYBRD)
 		int procs;
     	MPI_Comm_size(MPI_COMM_WORLD, &procs);
-		r = (int)n/procs;
+		// r = (int)n/procs;
 	    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	#endif
 

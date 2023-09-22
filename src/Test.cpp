@@ -38,7 +38,21 @@ void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
 // extern "C"{
 #include <mpi.h>
 #include <cmath>
+#include <cstring>
 // }
+
+void fill_arr(double *A, int n){
+
+    //srand( (unsigned)time(NULL) );
+
+    for (int i = 0; i < n; i++)
+
+    {
+
+        A[i] = (double) rand()/10e+8;
+
+    }
+}
 #endif
 
 int main(int argc, char* argv[])
@@ -87,15 +101,47 @@ int main(int argc, char* argv[])
 
 	BinTree* bt=NULL;
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
-	
-	// create a banded matrix
-	if (myrank==0){
-	int status = MakeBand(n,w,&A); //Makes band matrix of n rows and w bandwidth
-	if(status) 
-		exit(-1);
+
+// create a banded matrix
+#if defined(DIST)
+	int numElemsInaRow = n;
+	int size = (w + w + 1) * numElemsInaRow;
+	A = new double[size];
+	memset(A, 0, sizeof(double) * size);
+
+	for (int i = 0; i < (w + 1); i++)
+	{
+		if (i != w)
+		{
+			int nn = numElemsInaRow - w + i;
+			double *temp_arr = new double[nn];
+			fill_arr(temp_arr, nn);
+
+			double *Point_a = A + (i * numElemsInaRow) + (w - i);
+			double *Point_b = A + (2 * w - i) * numElemsInaRow;
+
+			memcpy(Point_a, temp_arr, sizeof(double) * nn);
+			memcpy(Point_b, temp_arr, sizeof(double) * nn);
+			delete[] temp_arr;
+		}
+
+		else
+		{
+
+			double *temp_arr = new double[numElemsInaRow];
+			fill_arr(temp_arr, numElemsInaRow);
+			double *point = A + i * numElemsInaRow;
+
+			memcpy(point, temp_arr, sizeof(double) * numElemsInaRow);
+			delete[] temp_arr;
+		}
 	}
-	
-	
+#else
+	int status = MakeBand(n, w, &A); // Makes band matrix of n rows and w bandwidth
+	if (status)
+		exit(-1);
+#endif
+
 	int numNodes = 0;
 
 	/*(you can either reuse the tree created earlier or let the call to NPart create a new tree based on the size of the partition specified.

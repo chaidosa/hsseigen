@@ -33,13 +33,9 @@ void PrintArray(T *Arr, int row, int col, const char* filename="output.txt")
     txtOut.close();
 }
 
-
-#if defined(DIST) || defined(HYBRD)
-// extern "C"{
-#include <mpi.h>
 #include <cmath>
 #include <cstring>
-// }
+
 
 void fill_arr(double *A, int n){
 
@@ -53,6 +49,11 @@ void fill_arr(double *A, int n){
 
     }
 }
+
+#if defined(DIST) || defined(HYBRD)
+// extern "C"{
+#include <mpi.h>
+// }
 #endif
 
 int main(int argc, char* argv[])
@@ -94,16 +95,14 @@ int main(int argc, char* argv[])
 	    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	#endif
 
-	#ifdef HYBRD
-		r = atoi(argv[3]);
-	#endif
-
 
 	BinTree* bt=NULL;
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
 
-// create a banded matrix
-#if defined(DIST)
+// create a banded matrix if diagonal matrix
+if (MorB==2){
+
+
 	int numElemsInaRow = n;
 	int size = (w + w + 1) * numElemsInaRow;
 	A = new double[size];
@@ -136,11 +135,12 @@ int main(int argc, char* argv[])
 			delete[] temp_arr;
 		}
 	}
-#else
+}
+else{ // normal matrix load
 	int status = MakeBand(n, w, &A); // Makes band matrix of n rows and w bandwidth
 	if (status)
 		exit(-1);
-#endif
+}
 
 	int numNodes = 0;
 

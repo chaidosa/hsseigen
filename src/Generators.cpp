@@ -63,7 +63,7 @@ GEN* InitGen(int N){
     return init;
 }
 
-#ifdef DIST
+#if defined(DIST) || defined(HYBRD)
 #include <mpi.h>
 void sendGen(GEN* send, MPI_Comm process_grid, int N){
     int numD = N;

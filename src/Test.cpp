@@ -100,8 +100,9 @@ int main(int argc, char* argv[])
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
 
 // create a banded matrix if diagonal matrix
-if (MorB==2){
+#if defined(DIST) || (HYBRD)
 
+if (MorB==2 && myrank == 0){
 
 	int numElemsInaRow = n;
 	int size = (w + w + 1) * numElemsInaRow;
@@ -136,11 +137,16 @@ if (MorB==2){
 		}
 	}
 }
-else{ // normal matrix load
+else if (MorB==1 && myrank==0){ // normal matrix load
 	int status = MakeBand(n, w, &A); // Makes band matrix of n rows and w bandwidth
 	if (status)
 		exit(-1);
 }
+#else
+	int status = MakeBand(n, w, &A); // Makes band matrix of n rows and w bandwidth
+	if (status)
+		exit(-1);
+#endif
 
 	int numNodes = 0;
 

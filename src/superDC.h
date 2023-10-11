@@ -6,10 +6,8 @@
 #include "eigenmatrix.h"
 
 // #define DIST 1 // For development
+// #define HYBRD 1 // For Development only
 
-#ifdef DIST
-#include <mpi.h>
-#endif
 
 class SDC
 {
@@ -33,7 +31,13 @@ extern int fmmTrigger;
 SDC* superDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc);
 
 #ifdef DIST
+#include <mpi.h>
 SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm process_grid);
+#endif
+
+#ifdef HYBRD
+#include <mpi.h>
+SDC* HybridSuperDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc, MPI_Comm process_grid);
 #endif
 
 #endif

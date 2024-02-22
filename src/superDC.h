@@ -7,7 +7,7 @@
 
 // #define DIST 1 // For development
 // #define HYBRD 1 // For Development only
-
+// #define PARALLEL_TASKS 1
 
 class SDC
 {
@@ -38,6 +38,10 @@ SDC *dsuperDc(GEN *A, BinTree *btree, int *m, int mSize, int nProc, MPI_Comm pro
 #ifdef HYBRD
 #include <mpi.h>
 SDC* HybridSuperDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc, MPI_Comm process_grid);
+#endif
+
+#ifdef PARALLEL_TASK
+SDC *taskSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc);
 #endif
 
 #endif

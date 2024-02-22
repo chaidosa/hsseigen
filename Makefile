@@ -23,6 +23,10 @@ CXXFLAGS += -std=c++11
 ifeq ($(PARALLEL),1)
 	CXXFLAGS += -fopenmp -DPARALLEL
 endif
+
+ifeq ($(TASK),1)
+	CXXFLAGS += -fopenmp -DPARALLEL_TASK
+endif
 #LDFLAGS+= -fopencilk
 #CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)

@@ -214,7 +214,13 @@ else if (MorB==1 && myrank==0){ // normal matrix load
 
 	#if defined(DIST) || defined(HYBRD)
 	if (myrank==0){
-	#else
+	#endif
+
+	#if defined(PARALLEL_TASK)
+	res = taskSuperDC(hss, bt, m, mSize, nProc);
+	#endif
+
+	#if !defined(DIST) && !defined(HYBRD) && !defined(PARALLEL_TASK)
 	res = superDC(hss, bt, m, mSize, nProc);
 	#endif
 	//this sorting of eigenvalues from smallest to largest is necessary and the index values

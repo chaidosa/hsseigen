@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
 
 // create a banded matrix if diagonal matrix
-#if defined(DIST) || (HYBRD)
+#if defined(DIST) || defined(HYBRD) || defined(PARALLEL_TASK) || defined(OPEN_CILK)
 
 if (MorB==2 && myrank == 0){
 

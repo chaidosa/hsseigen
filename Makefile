@@ -27,12 +27,17 @@ endif
 ifeq ($(TASK),1)
 	CXXFLAGS += -fopenmp -DPARALLEL_TASK
 endif
+
+ifeq ($(CILK),1)
+	CC = clang++
+	CXXFLAGS += -fopencilk -DOPEN_CILK
+endif
 #LDFLAGS+= -fopencilk
 #CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)
 	CXXFLAGS += -g -DDEBUG
 else
-	CXXFLAGS += -O3 -g
+	CXXFLAGS += -O3
 endif
 
 ifeq ($(DIST), 1)

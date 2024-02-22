@@ -44,4 +44,8 @@ SDC* HybridSuperDC(GEN *A, BinTree* bt, int * m, int mSize, int nProc, MPI_Comm 
 SDC *taskSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc);
 #endif
 
+#ifdef OPEN_CILK
+SDC *cilkSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc);
+#endif
+
 #endif

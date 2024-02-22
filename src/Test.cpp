@@ -220,7 +220,11 @@ else if (MorB==1 && myrank==0){ // normal matrix load
 	res = taskSuperDC(hss, bt, m, mSize, nProc);
 	#endif
 
-	#if !defined(DIST) && !defined(HYBRD) && !defined(PARALLEL_TASK)
+	#if defined(OPEN_CILK)
+	res = cilkSuperDC(hss, bt, m, mSize, nProc);
+	#endif
+
+	#if !defined(DIST) && !defined(HYBRD) && !defined(PARALLEL_TASK) && !defined(OPEN_CILK)
 	res = superDC(hss, bt, m, mSize, nProc);
 	#endif
 	//this sorting of eigenvalues from smallest to largest is necessary and the index values

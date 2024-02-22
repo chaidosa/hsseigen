@@ -11,7 +11,6 @@
 #include "eigenmatrix.h"
 #include "secular.h"
 #include "Generators.h"
-#include "omp.h"
 #include <sys/time.h>
 
 #ifdef DIST

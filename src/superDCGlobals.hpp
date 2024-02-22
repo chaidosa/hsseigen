@@ -9,9 +9,11 @@
 #include "eigenmatrix.h"
 #include "secular.h"
 #include "Generators.h"
-#include "omp.h"
 #include <sys/time.h>
 
+#if defined(PARALLEL) || defined(PARALLEL_TASK)
+#include "omp.h"
+#endif
 
 #ifdef DIST
 // extern "C"{

@@ -59,14 +59,14 @@ void recursiveSuperDCSolver(int node, int nproc){
     // conquer left child
     // #pragma omp single
     // {
-    #pragma omp task
+    #pragma omp task 
     recursiveSuperDCSolver(left, nproc);
     // }
 
     // conquer right child
     // #pragma omp single 
     // {
-    #pragma omp task
+    #pragma omp task 
     recursiveSuperDCSolver(right, nproc);
     // }
 

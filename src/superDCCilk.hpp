@@ -71,7 +71,7 @@ void recursiveSuperDCSolver(int node, int nproc){
     cilk_spawn recursiveSuperDCSolver(left, nproc);
 
     // conquer right child
-    recursiveSuperDCSolver(right, nproc);
+    cilk_spawn recursiveSuperDCSolver(right, nproc);
 
     cilk_sync;
 

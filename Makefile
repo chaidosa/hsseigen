@@ -126,5 +126,5 @@ $(SCALEAPP): $(OBJScale)
 
 Scale: objscale $(SCALEAPP)
 
-runSortScale: Scale Benchmark
-	python3 /home/sysad/customsoftware/opencilk_2_0_0/share/Cilkscale_vis/cilkscale.py -c ./Testscale -b ./Testbench -cpus 1,2,3,4,8,16,32  --output-csv report.csv --output-plot report.pdf --args ../hssdata/triad_8k.txt 65536 64 2 1 32
+runSortScale: # Scale Benchmark
+	python3 /home/sysad/customsoftware/opencilk_2_0_0/share/Cilkscale_vis/cilkscale.py -c ./Testscale -b ./Testbench -cpus 1,2,3,4,8,16,32,48  --output-csv report.csv --output-plot report.pdf --args ../hssdata/triad_8k.txt 65536 64 2 1 96 10

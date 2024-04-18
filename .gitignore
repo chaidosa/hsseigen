@@ -13,3 +13,8 @@ Testbench
 Testscale
 report*
 output*
+*.out.*
+cilk.txt
+Test*
+*.png
+*.zip

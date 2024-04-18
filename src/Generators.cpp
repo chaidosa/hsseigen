@@ -15,7 +15,7 @@ GEN* HssGenerators(double *A, int aSize, BinTree* bt, int* m, int mSize, int w, 
     
     GEN *res;
     if(MorB == 2){
-        cout << "Using Band2HSS\n";
+        // cout << "Using Band2HSS\n";
         res = band2hss(A, aSize, bt, m, mSize, w);
     }
     else if(MorB == 1){

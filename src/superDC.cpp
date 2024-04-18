@@ -280,7 +280,7 @@ bt = btree;
         count++;
         txtOut<<setprecision(20)<<tempeig[k]<<endl;
     }
-    cout << count;
+    // cout << count;
     SDC *resSDC = new SDC();
 
     resSDC->Q = Q0;

@@ -1,0 +1,2048 @@
+Tree height experiments:
+Tridiagonal: 
+Cutoff 5
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 41.854137 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 55.995022 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 42.461985 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 39.847694 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 41.708018 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 40.084400 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 41.850453 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 39.457384 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 40.447967 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 42.611410 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 43.164196 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 41.010717 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 40.094224 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 37.957773 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 41.974993 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 40.241544 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 38.580831 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 37.926983 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 41.388896 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 38.708110 usecs
+Cutoff 6
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.155847 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.644261 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.665662 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 10.994423 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.539041 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.307589 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.057180 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.176970 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.555131 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.366774 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.229300 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 10.911117 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.139213 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.149370 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.391097 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.922357 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 10.732245 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.407607 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.862793 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 11.557371 usecs
+Cutoff 7
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.087218 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.084922 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.064205 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.108498 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.124793 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.053379 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 1.951719 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.151517 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.127794 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.037833 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.057987 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.029490 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.077023 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.065549 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.045509 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.070140 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 1.989927 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.075069 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.111319 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 2.040203 usecs
+Cutoff 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.763391 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.769281 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.771816 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.798798 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.769564 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.822718 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.770243 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.770181 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.761609 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.747603 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.782538 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.768380 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.757170 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.758013 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.751638 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.753782 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.761125 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.745803 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.758379 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.759063 usecs
+Cutoff 9
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.400186 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.411994 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.479451 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.492317 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.461614 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.491944 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.483706 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.447334 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.431980 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.471517 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.463400 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.439656 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.429546 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.421007 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.488860 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.435155 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.456550 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.487996 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.490958 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.510169 usecs
+Cutoff 10
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.377222 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.364451 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.378103 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.377691 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.318193 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.370706 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.380704 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.375602 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.374299 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.378762 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.321182 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.320192 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.383540 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.351217 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.313987 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.386627 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.374152 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.357321 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.365032 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.365831 usecs
+ 
+Banded: 
+Cutoff 5
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 56.510002 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 57.374473 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 54.829446 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 51.967395 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 51.727241 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 51.469134 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 54.367336 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 53.808775 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 51.329174 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 54.748616 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 55.023818 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 55.067046 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 54.448055 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 52.999217 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 53.820944 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 51.222257 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 54.874586 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 55.540091 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 53.928266 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 53.014113 usecs
+Cutoff 6
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.837290 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.274538 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.192509 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.414086 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.204415 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.207084 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.277283 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.352863 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.600918 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.541556 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.345891 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.524268 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.538596 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.125381 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.116051 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.350424 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.441163 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.349371 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.098373 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.228162 usecs
+Cutoff 7
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.821452 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.363344 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.966618 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.399581 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.907487 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.886867 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.995646 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.267292 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.401200 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.299308 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.467188 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.130769 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.977462 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 19.195907 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.788381 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.781389 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.810440 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 17.762118 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.416119 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 18.573151 usecs
+Cutoff 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.056305 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.405923 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.514790 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.207479 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.061054 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.621062 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.741700 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.293640 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.814336 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.875146 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.228569 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.974310 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.188836 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.901258 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.015014 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.530525 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.307890 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.667094 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.152438 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.380848 usecs
+Cutoff 9
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.743458 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.880242 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.110056 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.940524 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.935509 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.844714 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.099707 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.807554 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.014493 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.886037 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.547052 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.739479 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.734845 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.612220 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.450646 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.150462 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.388263 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.927256 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.435323 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.316908 usecs
+Cutoff 10
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.141801 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.180945 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.346911 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.861252 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.779956 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.987118 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.133369 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.563988 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.301025 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.463141 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.543591 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.780226 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.677887 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.844729 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.595268 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.310761 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.767194 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.779719 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.592246 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.734318 usecs
+ 
+ 
+Comparision experiments:
+Parallel Task tied: 
+Tridiagonal: 
+N threads = 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.563561 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.522786 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.462802 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.450854 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.547619 usecs
+ 
+N threads = 16
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.353607 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.363178 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.357085 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.371537 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.352182 usecs
+ 
+N threads = 32
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.326684 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.341338 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.324730 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.322486 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.326407 usecs
+ 
+N threads = 64
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.324761 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.308453 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.296297 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.295014 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.326025 usecs
+ 
+N threads = 96
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.302197 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.341802 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.366421 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.363139 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.387718 usecs
+ 
+ 
+Banded: 
+N threads = 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 35.929471 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 36.296512 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 36.315421 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 39.796157 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 36.244729 usecs
+ 
+N threads = 16
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.234804 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.286388 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 25.843588 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.653712 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.274666 usecs
+ 
+N threads = 32
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.644337 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.169759 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.468965 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.677250 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.687329 usecs
+ 
+N threads = 64
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.401122 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.614528 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.455727 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.532555 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.503300 usecs
+ 
+N threads = 96
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.523659 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.445845 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.394801 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.090218 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.867934 usecs
+ 
+ 
+ 
+Parallel task untied: 
+Tridiagonal: 
+N threads = 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.564922 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.497085 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.490760 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.485472 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.487197 usecs
+ 
+N threads = 16
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.358287 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.366464 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.356803 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.360982 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.378656 usecs
+ 
+N threads = 32
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.368079 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.337536 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.318132 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.310477 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.338103 usecs
+ 
+N threads = 64
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.293560 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.331569 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.297105 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.314625 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.373804 usecs
+ 
+N threads = 96
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.286396 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.383972 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.359941 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.370599 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.379779 usecs
+ 
+ 
+Banded: 
+N threads = 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 36.267558 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 33.925400 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 38.623331 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 37.265881 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 36.350370 usecs
+ 
+N threads = 16
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.178442 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 25.533825 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.041577 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.271640 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 26.482897 usecs
+ 
+N threads = 32
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.856649 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.236375 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.433746 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.456413 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.230534 usecs
+ 
+N threads = 64
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.781515 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.007114 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.609565 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.154943 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 20.521136 usecs
+ 
+N threads = 96
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 23.797375 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.805109 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 22.833045 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.465361 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 21.944182 usecs
+ 
+ 
+ 
+Parallel Cilk: 
+Tridiagonal: 
+N threads = 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.395740 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.301126 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.307858 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.333976 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.331420 usecs
+ 
+N threads = 16
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.302785 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.373138 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.300403 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.438549 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.397265 usecs
+ 
+N threads = 32
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.373192 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.376404 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.365423 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.400565 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.314572 usecs
+ 
+N threads = 64
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.322349 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.363376 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.397867 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.312809 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.496876 usecs
+ 
+N threads = 96
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.372567 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.331394 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.313568 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.340568 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 0.380085 usecs
+ 
+ 
+Banded: 
+N threads = 8
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 30.737621 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 29.097035 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.001975 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 32.419614 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 33.852628 usecs
+ 
+N threads = 16
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.142165 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.744077 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 28.418807 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.364831 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 32.074832 usecs
+ 
+N threads = 32
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 30.824892 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.296492 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 32.055000 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.791172 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 30.776146 usecs
+ 
+N threads = 64
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.525860 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.261806 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.378077 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.068984 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 30.081810 usecs
+ 
+N threads = 96
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 31.807652 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 30.591836 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 27.561544 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 28.660090 usecs
+Completed Hss tree
+Reached superDC
+Success Divide
+
+Done. 30.527389 usecs
+ 
+ 
+ 
+ 

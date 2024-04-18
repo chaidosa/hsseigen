@@ -34,7 +34,7 @@ void Eig_func(int i);
 #endif
 
 #ifdef PARALLEL_TASK
-void recursiveSuperDCSolver(int node, int nproc){
+void recursiveSuperDCSolver(int node, int level, int cutoff){
     vector<int> children = bt->GetChildren(node);
 
     if (children.empty())
@@ -56,21 +56,19 @@ void recursiveSuperDCSolver(int node, int nproc){
     int left = children[0];
     int right = children[1];
     
+    if (level < cutoff){
     // conquer left child
-    // #pragma omp single
-    // {
     #pragma omp task 
-    recursiveSuperDCSolver(left, nproc);
-    // }
+    recursiveSuperDCSolver(left, ++level, cutoff);
 
     // conquer right child
-    // #pragma omp single 
-    // {
     #pragma omp task 
-    recursiveSuperDCSolver(right, nproc);
-    // }
-
+    recursiveSuperDCSolver(right, ++level, cutoff);
     #pragma omp taskwait
+    } else {
+        recursiveSuperDCSolver(left, ++level, cutoff);
+        recursiveSuperDCSolver(right, ++level, cutoff);
+    }
 
     // merge results
     // #pragma omp single
@@ -109,7 +107,7 @@ void recursiveSuperDCSolver(int node, int nproc){
     return;
 }
 
-SDC *taskSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc)
+SDC *taskSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc, int cutoff)
 {
 
     struct timeval timeStart, timeEnd;
@@ -162,10 +160,10 @@ SDC *taskSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc)
     // gettimeofday(&timeStart, 0);
     // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
     omp_set_num_threads(nProc);
-    #pragma omp parallel default(none) firstprivate(nProc) shared(bt)
+    #pragma omp parallel default(none) firstprivate(nProc) shared(bt, cutoff)
     {
     #pragma omp single
-    recursiveSuperDCSolver(bt->nodeAtLvl[0][0], nProc);
+    recursiveSuperDCSolver(bt->nodeAtLvl[0][0], 0, cutoff);
     }
     
 
@@ -187,7 +185,7 @@ SDC *taskSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc)
         count++;
         txtOut << setprecision(20) << tempeig[k] << endl;
     }
-    cout << count;
+    // cout << count;
     SDC *resSDC = new SDC();
 
     resSDC->Q = Q0;

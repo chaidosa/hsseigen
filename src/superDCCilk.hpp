@@ -45,9 +45,9 @@ void Eig_func(int i);
 #endif
 
 #ifdef OPEN_CILK
-void recursiveSuperDCSolver(int node, int nproc){
+void recursiveSuperDCSolver(int node, int nproc, int level, int cutoff){
     vector<int> children = bt->GetChildren(node);
-
+    level++;
     if (children.empty())
     {
         int i = node-1;
@@ -67,13 +67,21 @@ void recursiveSuperDCSolver(int node, int nproc){
     int left = children[0];
     int right = children[1];
     
+    if (level<cutoff){
     // conquer left child    
-    cilk_spawn recursiveSuperDCSolver(left, nproc);
+    cilk_spawn recursiveSuperDCSolver(left, nproc, level, cutoff);
 
     // conquer right child
-    cilk_spawn recursiveSuperDCSolver(right, nproc);
+    cilk_spawn recursiveSuperDCSolver(right, nproc, level, cutoff);
 
     cilk_sync;
+    } else{
+    // conquer left child    
+     recursiveSuperDCSolver(left, nproc, level, cutoff);
+
+    // conquer right child
+     recursiveSuperDCSolver(right, nproc, level, cutoff);
+    }
 
     // merge results
     int i = node-1;
@@ -108,7 +116,7 @@ void recursiveSuperDCSolver(int node, int nproc){
     return;
 }
 
-SDC *cilkSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc)
+SDC *cilkSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc, int cutoff)
 {
 
     struct timeval timeStart, timeEnd;
@@ -160,7 +168,7 @@ SDC *cilkSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc)
     //  struct timeval timeStart, timeEnd;
     // gettimeofday(&timeStart, 0);
     // cout<<"Number of processors:"<<omp_get_num_procs()<<endl;
-    recursiveSuperDCSolver(bt->nodeAtLvl[0][0], nProc);
+    recursiveSuperDCSolver(bt->nodeAtLvl[0][0], nProc, 0, cutoff);
 
     gettimeofday(&timeEnd, 0);
     long long elapsed = (timeEnd.tv_sec - timeStart.tv_sec) * 1000000LL + timeEnd.tv_usec - timeStart.tv_usec;
@@ -180,7 +188,7 @@ SDC *cilkSuperDC(GEN *A, BinTree *btree, int *m, int mSize, int nProc)
         count++;
         txtOut << setprecision(20) << tempeig[k] << endl;
     }
-    cout << count;
+    // cout << count;
     SDC *resSDC = new SDC();
 
     resSDC->Q = Q0;

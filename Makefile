@@ -23,12 +23,21 @@ CXXFLAGS += -std=c++11
 ifeq ($(PARALLEL),1)
 	CXXFLAGS += -fopenmp -DPARALLEL
 endif
+
+ifeq ($(TASK),1)
+	CXXFLAGS += -fopenmp -DPARALLEL_TASK
+endif
+
+ifeq ($(CILK),1)
+	CC = clang++
+	CXXFLAGS += -fopencilk -DOPEN_CILK
+endif
 #LDFLAGS+= -fopencilk
 #CXXFLAGS += -DMKL_ILP64
 ifeq ($(DEBUG),1)
 	CXXFLAGS += -g -DDEBUG
 else
-	CXXFLAGS += -O3 -g
+	CXXFLAGS += -O3
 endif
 
 ifeq ($(DIST), 1)
@@ -80,3 +89,42 @@ clean:
 .PHONY: cleandep
 cleandep:
 	rm $(DEP)
+
+CILKBENCH = Testbench
+CILKSCALE = Testscale
+
+objbench:
+	rm -rf obj/bench/
+	mkdir -p obj/bench/
+
+objscale:
+	rm -rf obj/scale/
+	mkdir -p obj/scale/
+
+BENCHAPP = Testbench
+
+OBJBench = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/bench/%.o)
+
+$(OBJDIR)/bench/%.o: $(SRCDIR)/%$(EXT)
+	clang++ $(CXXFLAGS) -fopencilk -DOPEN_CILK -fcilktool=cilkscale-benchmark -o $@ -c $<
+
+$(BENCHAPP): $(OBJBench)
+	clang++ $(CXXFLAGS) -fopencilk -DOPEN_CILK -fcilktool=cilkscale-benchmark $^ $(LDFLAGS) -o Testbench
+
+Benchmark: objbench $(BENCHAPP)
+
+
+SCALEAPP = Testscale
+
+OBJScale = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/scale/%.o)
+
+$(OBJDIR)/scale/%.o: $(SRCDIR)/%$(EXT)
+	clang++ $(CXXFLAGS) -fopencilk -DOPEN_CILK -fcilktool=cilkscale -o $@ -c $<
+
+$(SCALEAPP): $(OBJScale)
+	clang++ $(CXXFLAGS) -fopencilk -DOPEN_CILK -fcilktool=cilkscale $^ $(LDFLAGS) -o Testscale
+
+Scale: objscale $(SCALEAPP)
+
+runSortScale: # Scale Benchmark
+	python3 /home/sysad/customsoftware/opencilk_2_0_0/share/Cilkscale_vis/cilkscale.py -c ./Testscale -b ./Testbench -cpus 1,2,3,4,8,16,32,48  --output-csv report.csv --output-plot report.pdf --args ../hssdata/triad_8k.txt 65536 64 2 1 96 10

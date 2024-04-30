@@ -6,7 +6,7 @@
 #include "band2hss.h"
 #include "Generators.h"
 
-#if defined(DIST) || defined(HYBRD)
+#if defined(DIST) || defined(HYBRD) || defined(PARALLEL_TASK) || defined(OPEN_CILK) || 1
 GEN *band2hss(double *AA, int aSize, BinTree* bt, int* m, int mSize, int w){
     /**
      * @brief Computes HSS form of a banded matrix A

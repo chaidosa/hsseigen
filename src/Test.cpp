@@ -71,21 +71,21 @@ int main(int argc, char* argv[])
 	int w = 4;	//  band of the matrix, can be changes according to the requirement.
 	int nProc = 1; // no of procs to use
 	if(argc!=7){
-		printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth> <no of processor>\n");
+		// printf("Usage: ./Test <filename> <matrix_size> <diagblock_size> <Band2HSS or Mat2HSSsym> <bandwidth> <no of processor>\n");
 		// testFile = "/home/c200010021/hssdata/halfb5_32k.txt";
 		// n = 32768;
 		// r = 64;
 		// MorB = 2;
 		// w = 5;
 		// nProc = 1;
-	}else{
+	}else{ }
 		testFile=argv[1]; 		// filename
 		n=atoi(argv[2]); 		// matrix size
 		r=atoi(argv[3]); 		// diag_block size
 		MorB = atoi(argv[4]);   // band2hss 
 		w = atoi(argv[5]);		// bandwidth
 		nProc = atoi(argv[6]);	// num. Processors
-	}
+	// }
 
 	int myrank = 0;
 	#if defined(DIST) || defined(HYBRD)
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 	double * A=NULL; // The matrix A from test_input.txt of size n*n
 
 // create a banded matrix if diagonal matrix
-#if defined(DIST) || (HYBRD)
+#if defined(DIST) || defined(HYBRD) || defined(PARALLEL_TASK) || defined(OPEN_CILK) || 1
 
 if (MorB==2 && myrank == 0){
 
@@ -155,6 +155,7 @@ else if (MorB==1 && myrank==0){ // normal matrix load
 	 * Number of leaves = n/r. Num nodes in the tree = num leaves* 2 - 1*/
 	int *m=NULL;
 	int mSize;
+	r = (int)(n/pow(2, atoi(argv[7])));
 	NPart(n, r, &bt, &m, mSize, numNodes);
 
 	GEN *hss;
@@ -214,7 +215,19 @@ else if (MorB==1 && myrank==0){ // normal matrix load
 
 	#if defined(DIST) || defined(HYBRD)
 	if (myrank==0){
-	#else
+	#endif
+
+	#if defined(PARALLEL_TASK)
+	int cutoff = atoi(argv[7]);
+	res = taskSuperDC(hss, bt, m, mSize, nProc, cutoff);
+	#endif
+
+	#if defined(OPEN_CILK)
+	int cutoff = atoi(argv[7]);
+	res = cilkSuperDC(hss, bt, m, mSize, nProc, cutoff);
+	#endif
+
+	#if !defined(DIST) && !defined(HYBRD) && !defined(PARALLEL_TASK) && !defined(OPEN_CILK)
 	res = superDC(hss, bt, m, mSize, nProc);
 	#endif
 	//this sorting of eigenvalues from smallest to largest is necessary and the index values

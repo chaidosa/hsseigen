@@ -17,7 +17,7 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 - Efficient computation of all eigenvalues of symmetric Hierarchically Semiseparable (HSS) matrices.
 - A shared-memory parallel algorithm and the corresponding implementation of the SuperDC eigensolver.
 - Optimized the original SuperDC algorithm to reduce the storage requirement from O($N^2$) to O (N) in case of banded matrices.
-
+https://dl.acm.org/doi/10.1145/3673038.3673119
 ### Keywords
 
 - Symmetric eigenvalue problems.
@@ -27,7 +27,8 @@ Implementation of the 'divide and conquer' algorithm for Superfast HSS eigensolv
 
 # Authors
 
-- Anonymous
+Abhishek Josyula, Pritesh Verma, Amar Gaonkar,
+Amlan Barua, Nikhil Hegde
 
 # Prerequisites
 
